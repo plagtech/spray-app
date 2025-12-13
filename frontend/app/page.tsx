@@ -88,17 +88,18 @@ export default function SprayApp() {
 
       {/* Header */}
       <header className="bg-white border-b">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/images/logo.jpg" alt="Spray" className="w-8 h-8 object-contain invert" />
-            <h1 className="text-xl font-bold text-slate-900">Spray</h1>
-          </div>
-          <ConnectButton />
-        </div>
-      </header>
+  <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <img src="/images/spraay-logo.png" alt="Spraay" className="w-10 h-10 object-contain" />
+      <h1 className="text-2xl font-bold text-slate-900">Spraay.app</h1>
+    </div>
+    <ConnectButton />
+  </div>
+</header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-12 max-w-3xl">
+      <main className="container mx-auto px-6 py-12 max-w-4xl">
+  <div className="border-4 border-slate-900 rounded-2xl p-8 bg-white shadow-xl">
         {/* Title */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-slate-900 mb-3">
