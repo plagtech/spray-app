@@ -72,8 +72,8 @@ export default function SprayApp() {
         value: totalCost,
       });
     } catch (error) {
-      console.error('Spray failed:', error);
-    }
+    console.error('Spray failed:', error);
+  }
   };
 
   const isStep1Valid = recipients.every(r => isAddress(r.address));
