@@ -80,7 +80,7 @@ export default function SprayApp() {
   const isStep2Valid = recipients.every(r => parseFloat(r.amount || '0') > 0);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* Testnet Banner */}
       <div className="bg-yellow-500 text-black py-2 text-center text-sm font-medium">
         ⚠️ TESTNET MODE - Base Sepolia - Using Test ETH Only
@@ -99,7 +99,7 @@ export default function SprayApp() {
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12 max-w-4xl">
-        <div className="border-4 border-slate-900 rounded-2xl p-8 bg-white shadow-xl">
+        <div className="border-8 border-slate-900 rounded-3xl p-10 bg-white shadow-2xl mx-auto">
           {/* Title */}
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-slate-900 mb-3">
