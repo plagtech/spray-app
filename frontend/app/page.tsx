@@ -113,21 +113,6 @@ export default function SprayApp() {
               </p>
             </div>
 
-            <div className="flex items-center justify-center mb-12">
-              {[1, 2, 3].map((step) => (
-                <div key={step} className="flex items-center">
-                  <div className={`flex items-center justify-center w-14 h-14 rounded-full font-bold text-xl ${
-                    currentStep >= step ? 'bg-purple-600 text-white' : 'bg-slate-200 text-slate-500'
-                  }`}>
-                    {step}
-                  </div>
-                  {step < 3 && (
-                    <div className={`w-32 h-2 ${currentStep > step ? 'bg-purple-600' : 'bg-slate-200'}`} />
-                  )}
-                </div>
-              ))}
-            </div>
-
             <div>
               {currentStep === 1 && (
                 <div>
