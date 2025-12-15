@@ -88,9 +88,7 @@ export default function SprayApp() {
       <header className="bg-white border-b">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-              S
-            </div>
+            <img src="/images/spraay-logo.png" alt="Spraay" className="w-12 h-12 object-contain" />
             <h1 className="text-3xl font-bold text-slate-900">Spraay.app</h1>
           </div>
           <ConnectButton />
@@ -100,12 +98,10 @@ export default function SprayApp() {
       <main className="container mx-auto px-6 py-12">
         <div className="max-w-5xl mx-auto">
           <div style={{ 
-            border: '8px solid #1e293b', 
             borderRadius: '24px', 
             padding: '60px', 
             backgroundColor: '#ffffff', 
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            margin: '0 auto'
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)'
           }}>
             
             <div className="text-center mb-12">
