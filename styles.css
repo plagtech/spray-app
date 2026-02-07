@@ -290,6 +290,25 @@ body {
     font-size: 0.9rem;
 }
 
+.contract-button {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--dark-red);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid var(--accent-red);
+}
+
+.contract-button:hover {
+    background-color: var(--accent-red);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+}
+
 /* Use Cases */
 .use-cases {
     padding: 80px 0;
