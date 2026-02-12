@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spraay — Batch Crypto Payments on Base</title>
+    <title>Spraay – Batch Crypto Payments on Base</title>
     <meta name="description" content="Send crypto to 200+ recipients in a single transaction. Batch ETH and ERC-20 payments on Base. Integrated with Coinbase AgentKit and Bankr.">
-    <meta property="og:title" content="Spraay — Batch Crypto Payments on Base">
+    <meta property="og:title" content="Spraay – Batch Crypto Payments on Base">
     <meta property="og:description" content="Send ETH or ERC-20 tokens to 200+ recipients in a single transaction on Base. ~80% gas savings.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://spraay.app">
@@ -43,7 +43,7 @@
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
 
-        /* ── Nav ─────────────────────────────────────────── */
+        /* ── Nav ─────────────────────────────────────── */
         nav {
             position: fixed; top: 0; width: 100%; z-index: 100;
             background: rgba(6,6,6,0.92); backdrop-filter: blur(12px);
@@ -78,7 +78,7 @@
         }
         .btn-outline:hover { background: var(--crimson-glow); }
 
-        /* ── Hero ────────────────────────────────────────── */
+        /* ── Hero ──────────────────────────────────── */
         .hero {
             padding: 10rem 0 5rem; text-align: center;
             background: radial-gradient(ellipse at 50% 0%, rgba(139,0,0,0.12) 0%, transparent 60%);
@@ -105,7 +105,7 @@
         }
         .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }
 
-        /* ── Integrations Banner ─────────────────────────── */
+        /* ── Integrations Banner ─────────────────── */
         .integrations {
             padding: 3rem 0;
             border-top: 1px solid var(--border);
@@ -141,7 +141,7 @@
         .tag-live { background: rgba(34,197,94,0.15); color: #22c55e; }
         .tag-pending { background: rgba(234,179,8,0.15); color: #eab308; }
 
-        /* ── Features ────────────────────────────────────── */
+        /* ── Features ────────────────────────────── */
         .features { padding: 5rem 0; }
         .section-title {
             font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;
@@ -165,7 +165,7 @@
         .feature-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.4rem; }
         .feature-card p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; }
 
-        /* ── How It Works ────────────────────────────────── */
+        /* ── How It Works ────────────────────────── */
         .how-it-works { padding: 5rem 0; }
         .steps { display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; }
         .step {
@@ -181,7 +181,7 @@
         .step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
         .step p { font-size: 0.85rem; color: var(--text-dim); }
 
-        /* ── Use Cases ───────────────────────────────────── */
+        /* ── Use Cases ───────────────────────────── */
         .use-cases { padding: 5rem 0; }
         .use-case-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -196,7 +196,7 @@
         .use-case h3 { font-size: 1rem; margin-bottom: 0.3rem; }
         .use-case p { font-size: 0.85rem; color: var(--text-dim); }
 
-        /* ── Contract ────────────────────────────────────── */
+        /* ── Contract ────────────────────────────── */
         .contract-section {
             padding: 3rem 0; text-align: center;
             border-top: 1px solid var(--border);
@@ -215,7 +215,7 @@
         }
         .contract-address a:hover { text-decoration: underline; }
 
-        /* ── CTA ─────────────────────────────────────────── */
+        /* ── CTA ─────────────────────────────────── */
         .cta {
             padding: 5rem 0; text-align: center;
             background: radial-gradient(ellipse at 50% 100%, rgba(139,0,0,0.1) 0%, transparent 60%);
@@ -223,7 +223,7 @@
         .cta h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.8rem; }
         .cta p { color: var(--text-dim); margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
 
-        /* ── Footer ──────────────────────────────────────── */
+        /* ── Footer ──────────────────────────────── */
         footer {
             padding: 2.5rem 0; border-top: 1px solid var(--border);
         }
@@ -239,7 +239,7 @@
         .footer-links a:hover { color: var(--text); }
         .footer-copy { font-size: 0.8rem; color: var(--text-muted); }
 
-        /* ── Responsive ──────────────────────────────────── */
+        /* ── Responsive ──────────────────────────── */
         @media (max-width: 640px) {
             .hero { padding: 8rem 0 3rem; }
             .hero-stats { gap: 2rem; }
@@ -256,6 +256,7 @@
             <div class="logo">SPRAAY</div>
             <div class="nav-links">
                 <a href="/tao">Bittensor</a>
+                <a href="/plasma">Plasma</a>
                 <a href="https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC" target="_blank">Contract</a>
                 <a href="https://github.com/coinbase/agentkit/pull/944" target="_blank">AgentKit PR</a>
                 <a href="https://bankr.bot" target="_blank" class="btn btn-primary">Use via Bankr</a>
@@ -267,7 +268,7 @@
     <section class="hero">
         <div class="container">
             <h1>Batch Crypto Payments<br><span>Made Simple</span></h1>
-            <p>Send ETH or ERC-20 tokens to 200+ recipients in a single transaction on Base. Payroll, airdrops, bounties — one transaction.</p>
+            <p>Send ETH or ERC-20 tokens to 200+ recipients in a single transaction on Base. Payroll, airdrops, bounties – one transaction.</p>
             <div class="hero-buttons">
                 <a href="https://bankr.bot" target="_blank" class="btn btn-primary">Use via Bankr →</a>
                 <a href="https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC" target="_blank" class="btn btn-outline">View Contract</a>
@@ -330,7 +331,7 @@
                 <div class="feature-card">
                     <div class="feature-icon">💬</div>
                     <h3>Natural Language</h3>
-                    <p>Via Bankr: "Spray 10 USDC each to @alice @bob @charlie" — it just works.</p>
+                    <p>Via Bankr: "Spray 10 USDC each to @alice @bob @charlie" – it just works.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📋</div>
@@ -355,7 +356,7 @@
                 <div class="step">
                     <div class="step-num">1</div>
                     <h3>Input Recipients</h3>
-                    <p>Provide wallet addresses and amounts — via natural language, CSV, or programmatically through AgentKit.</p>
+                    <p>Provide wallet addresses and amounts – via natural language, CSV, or programmatically through AgentKit.</p>
                 </div>
                 <div class="step">
                     <div class="step-num">2</div>
@@ -430,6 +431,7 @@
             </div>
             <div class="footer-links">
                 <a href="/tao">Spraay TAO</a>
+                <a href="/plasma">Spraay Plasma</a>
                 <a href="https://twitter.com/lostpoet" target="_blank">Twitter</a>
                 <a href="https://warpcast.com/plag" target="_blank">Farcaster</a>
                 <a href="https://github.com/plagtech" target="_blank">GitHub</a>
