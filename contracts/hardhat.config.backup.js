@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
+
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
@@ -42,18 +43,6 @@ module.exports = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 137,
     },
-    // Plasma Mainnet
-    plasma: {
-      url: process.env.PLASMA_RPC_URL || "https://rpc.plasma.to",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 9745,
-    },
-    // Plasma Testnet
-    plasmaTestnet: {
-      url: process.env.PLASMA_TESTNET_RPC_URL || "https://testnet-rpc.plasma.to",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 9746,
-    },
   },
   etherscan: {
     apiKey: {
@@ -62,8 +51,6 @@ module.exports = {
       optimisticEthereum: process.env.OPTIMISM_API_KEY || "",
       arbitrumOne: process.env.ARBISCAN_API_KEY || "",
       polygon: process.env.POLYGONSCAN_API_KEY || "",
-      plasma: process.env.PLASMASCAN_API_KEY || "",
-      plasmaTestnet: process.env.PLASMASCAN_API_KEY || "",
     },
     customChains: [
       {
@@ -80,22 +67,6 @@ module.exports = {
         urls: {
           apiURL: "https://api-sepolia.basescan.org/api",
           browserURL: "https://sepolia.basescan.org"
-        }
-      },
-      {
-        network: "plasma",
-        chainId: 9745,
-        urls: {
-          apiURL: "https://plasmascan.to/api",
-          browserURL: "https://plasmascan.to"
-        }
-      },
-      {
-        network: "plasmaTestnet",
-        chainId: 9746,
-        urls: {
-          apiURL: "https://testnet.plasmascan.to/api",
-          browserURL: "https://testnet.plasmascan.to"
         }
       }
     ]
