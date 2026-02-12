@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
 import { parseEther, isAddress } from 'viem';
 
 const SPRAY_CONTRACT_ABI = [
@@ -15,7 +15,21 @@ const SPRAY_CONTRACT_ABI = [
   },
 ] as const;
 
-const SPRAY_CONTRACT_ADDRESS = '0x08fA5D1c16CD6E2a16FC0E4839f262429959E073';
+const CONTRACT_ADDRESSES: Record<number, `0x${string}`> = {
+  8453: '0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC',   // Base
+  9745: '0x08fA5D1c16CD6E2a16FC0E4839f262429959E073',   // Plasma
+  10: '0x08fA5D1c16CD6E2a16FC0E4839f262429959E073',     // Optimism (update when deployed)
+  42161: '0x08fA5D1c16CD6E2a16FC0E4839f262429959E073',  // Arbitrum (update when deployed)
+  137: '0x08fA5D1c16CD6E2a16FC0E4839f262429959E073',    // Polygon (update when deployed)
+};
+
+const CHAIN_CONFIG: Record<number, { name: string; symbol: string; explorer: string }> = {
+  8453: { name: 'Base', symbol: 'ETH', explorer: 'https://basescan.org/tx/' },
+  9745: { name: 'Plasma', symbol: 'XPL', explorer: 'https://plasmascan.to/tx/' },
+  10: { name: 'Optimism', symbol: 'ETH', explorer: 'https://optimistic.etherscan.io/tx/' },
+  42161: { name: 'Arbitrum', symbol: 'ETH', explorer: 'https://arbiscan.io/tx/' },
+  137: { name: 'Polygon', symbol: 'POL', explorer: 'https://polygonscan.com/tx/' },
+};
 
 interface Recipient {
   address: string;
@@ -25,8 +39,12 @@ interface Recipient {
 
 export default function SprayApp() {
   const { address, isConnected } = useAccount();
+  const chainId = useChainId();
   const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  const contractAddress = CONTRACT_ADDRESSES[chainId] || CONTRACT_ADDRESSES[8453];
+  const chainConfig = CHAIN_CONFIG[chainId] || CHAIN_CONFIG[8453];
 
   const [recipients, setRecipients] = useState<Recipient[]>([
     { id: '1', address: '', amount: '' }
@@ -65,7 +83,7 @@ export default function SprayApp() {
       const totalCost = totalAmount + fee;
 
       writeContract({
-        address: SPRAY_CONTRACT_ADDRESS,
+        address: contractAddress,
         abi: SPRAY_CONTRACT_ABI,
         functionName: 'sprayETH',
         args: [recipientsData],
@@ -81,10 +99,6 @@ export default function SprayApp() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FFF9E6' }}>
-      <div className="bg-yellow-500 text-black py-2 text-center text-sm font-medium">
-        ⚠️ TESTNET MODE - Base Sepolia - Using Test ETH Only
-      </div>
-
       <header className="bg-white border-b">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -97,13 +111,13 @@ export default function SprayApp() {
 
       <main className="container mx-auto px-6 py-12">
         <div className="max-w-5xl mx-auto">
-          <div style={{ 
-            borderRadius: '24px', 
-            padding: '60px', 
-            backgroundColor: '#ffffff', 
+          <div style={{
+            borderRadius: '24px',
+            padding: '60px',
+            backgroundColor: '#ffffff',
             boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)'
           }}>
-            
+
             <div className="text-center mb-12">
               <h2 className="text-5xl font-bold text-slate-900 mb-4">
                 Send Crypto to Multiple Recipients
@@ -111,6 +125,11 @@ export default function SprayApp() {
               <p className="text-xl text-slate-600">
                 Batch payments in three simple steps
               </p>
+              {isConnected && (
+                <p className="text-sm text-purple-600 mt-2 font-medium">
+                  Connected to {chainConfig.name} • Paying in {chainConfig.symbol}
+                </p>
+              )}
             </div>
 
             <div>
@@ -119,7 +138,7 @@ export default function SprayApp() {
                   <h3 className="text-3xl font-bold text-slate-900 mb-8">
                     Step 1: Add Recipients
                   </h3>
-                  
+
                   <div className="space-y-4 mb-6">
                     {recipients.map((recipient, idx) => (
                       <div key={recipient.id} className="flex gap-3 items-center">
@@ -167,7 +186,7 @@ export default function SprayApp() {
                   <h3 className="text-3xl font-bold text-slate-900 mb-8">
                     Step 2: Set Amounts
                   </h3>
-                  
+
                   <div className="space-y-4 mb-6">
                     {recipients.map((recipient, idx) => (
                       <div key={recipient.id} className="border-2 rounded-lg p-5">
@@ -183,7 +202,7 @@ export default function SprayApp() {
                             placeholder="0.01"
                             className="flex-1 px-4 py-4 text-lg border-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
                           />
-                          <span className="text-slate-600 font-bold text-lg">ETH</span>
+                          <span className="text-slate-600 font-bold text-lg">{chainConfig.symbol}</span>
                         </div>
                       </div>
                     ))}
@@ -212,7 +231,7 @@ export default function SprayApp() {
                   <h3 className="text-3xl font-bold text-slate-900 mb-8">
                     Step 3: Review & Confirm
                   </h3>
-                  
+
                   <div className="space-y-4 mb-6">
                     <div className="bg-slate-50 rounded-lg p-8">
                       <div className="grid grid-cols-2 gap-8">
@@ -222,15 +241,15 @@ export default function SprayApp() {
                         </div>
                         <div>
                           <div className="text-base text-slate-600 mb-2">Total Amount</div>
-                          <div className="text-4xl font-bold">{calculateTotal().toFixed(4)} ETH</div>
+                          <div className="text-4xl font-bold">{calculateTotal().toFixed(4)} {chainConfig.symbol}</div>
                         </div>
                         <div>
                           <div className="text-base text-slate-600 mb-2">Protocol Fee (0.3%)</div>
-                          <div className="text-2xl font-bold">{(calculateTotal() * 0.003).toFixed(6)} ETH</div>
+                          <div className="text-2xl font-bold">{(calculateTotal() * 0.003).toFixed(6)} {chainConfig.symbol}</div>
                         </div>
                         <div>
                           <div className="text-base text-slate-600 mb-2">Total Cost</div>
-                          <div className="text-3xl font-bold text-purple-600">{(calculateTotal() * 1.003).toFixed(4)} ETH</div>
+                          <div className="text-3xl font-bold text-purple-600">{(calculateTotal() * 1.003).toFixed(4)} {chainConfig.symbol}</div>
                         </div>
                       </div>
                     </div>
@@ -241,7 +260,7 @@ export default function SprayApp() {
                           <div className="text-slate-600">
                             {idx + 1}. {recipient.address.slice(0, 10)}...{recipient.address.slice(-8)}
                           </div>
-                          <div className="font-bold">{recipient.amount} ETH</div>
+                          <div className="font-bold">{recipient.amount} {chainConfig.symbol}</div>
                         </div>
                       ))}
                     </div>
@@ -259,10 +278,10 @@ export default function SprayApp() {
                       disabled={!isConnected || isPending || isConfirming}
                       className="flex-1 py-5 bg-purple-600 text-white rounded-lg font-bold text-xl hover:bg-purple-700 disabled:bg-slate-300 disabled:cursor-not-allowed"
                     >
-                      {!isConnected ? 'Connect Wallet First' : 
+                      {!isConnected ? 'Connect Wallet First' :
                        isPending ? 'Confirming...' :
                        isConfirming ? 'Processing...' :
-                       'Send Payment'}
+                       `Send ${chainConfig.symbol} Payment`}
                     </button>
                   </div>
 
@@ -271,12 +290,12 @@ export default function SprayApp() {
                       <div className="flex items-center gap-2 text-green-800 font-bold text-lg">
                         ✓ Payment Sent Successfully!
                       </div>
-                      <a 
-                        href={`https://sepolia.basescan.org/tx/${hash}`}
+                      
+                        href={`${chainConfig.explorer}${hash}`}
                         target="_blank"
                         className="text-base text-green-600 underline mt-2 block font-medium"
                       >
-                        View on BaseScan →
+                        View on {chainConfig.name} Explorer →
                       </a>
                     </div>
                   )}
@@ -285,7 +304,7 @@ export default function SprayApp() {
             </div>
 
             <div className="mt-10 text-center text-base text-slate-500">
-              Need help? This is testnet mode using Base Sepolia test ETH.
+              Supported chains: Base • Plasma • Optimism • Arbitrum • Polygon
             </div>
           </div>
         </div>
