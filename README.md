@@ -1,34 +1,42 @@
-# Spraay — Batch Crypto Payments on Base
+# Spraay — Multi-Chain Batch Crypto Payments
 
-Send ETH or ERC-20 tokens to **200+ recipients** in a single transaction.
+Send ETH or ERC-20 tokens to **200+ recipients** in a single transaction. Live on **Base**, **Unichain**, **Plasma**, and **Bittensor**.
 
-🌐 **[spraay.app](https://spraay.app)** · 📄 **[Contract on BaseScan](https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC)**
+🌐 **[spraay.app](https://spraay.app)** · 📄 **[BaseScan](https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC)** · 🦄 **[Uniscan](https://uniscan.xyz/address/0x08fA5D1c16CD6E2a16FC0E4839f262429959E073)**
 
 ---
 
 ## What is Spraay?
 
-Spraay is a batch payment protocol on **Base** that lets you send crypto to multiple recipients in one transaction. ~80% gas savings vs sending individually.
+Spraay is a multi-chain batch payment protocol that lets you send crypto to multiple recipients in one transaction. ~80% gas savings vs sending individually.
 
-**Contract:** `0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC`
 **Protocol Fee:** 0.3%
 **Max Recipients:** 200 per transaction
+
+## Deployments
+
+| Chain | Contract | Explorer |
+|-------|----------|----------|
+| **Base** | `0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC` | [BaseScan](https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC) |
+| **Unichain** | `0x08fA5D1c16CD6E2a16FC0E4839f262429959E073` | [Uniscan](https://uniscan.xyz/address/0x08fA5D1c16CD6E2a16FC0E4839f262429959E073) |
+| **Plasma** | See [Spraay Plasma](https://spraay.app/plasma) | [Explorer](https://spraay.app/plasma) |
+| **Bittensor** | Python CLI/API | [Spraay TAO](https://spraay.app/tao) |
 
 ## Features
 
 - ⚡ **Batch ETH sends** — equal or variable amounts
 - 🪙 **Batch ERC-20 sends** — USDC, DAI, or any token
 - 📋 **CSV import** — bulk upload addresses and amounts
-- 💬 **Natural language** — "Spray 10 USDC to @alice @bob @charlie" via Bankr
 - 🤖 **AI Agent ready** — integrated with Coinbase AgentKit
-- 🔐 **Secure** — OpenZeppelin ReentrancyGuard, Pausable, verified on BaseScan
+- 🔐 **Secure** — OpenZeppelin ReentrancyGuard, Pausable, verified on-chain
+- 🌐 **Multi-chain** — same interface across Base, Unichain, and Plasma
 
 ## Integrations
 
 | Platform | Status | Link |
 |----------|--------|------|
 | **Coinbase AgentKit** | PR Submitted | [PR #944](https://github.com/coinbase/agentkit/pull/944) |
-| **Bankr (OpenClaw)** | PR Submitted | [OpenClaw Skills](https://github.com/BankrBot/openclaw-skills) |
+| **Bankr (OpenClaw)** | Pending | [OpenClaw Skills](https://github.com/BankrBot/openclaw-skills) |
 
 ### Using Spraay with AgentKit
 
@@ -46,14 +54,6 @@ const agentKit = await AgentKit.from({
 // "Spray 100 USDC each to 0xAAA and 0xBBB"
 ```
 
-### Using Spraay with Bankr
-
-Via Bankr's natural language interface on X, Farcaster, or Telegram:
-
-```
-Spray 0.1 ETH each to 0xAAA, 0xBBB, 0xCCC
-```
-
 ## Smart Contract
 
 | Function | Description |
@@ -61,7 +61,7 @@ Spray 0.1 ETH each to 0xAAA, 0xBBB, 0xCCC
 | `sprayETH(recipients[], amounts[])` | Batch send ETH (payable) |
 | `sprayToken(token, recipients[], amounts[])` | Batch send ERC-20 tokens |
 
-Both functions accept variable amounts per recipient. Protocol fee (0.3%) is applied automatically.
+Both functions accept variable amounts per recipient. Protocol fee (0.3%) is applied automatically. Same contract interface on all EVM chains.
 
 ## Use Cases
 
@@ -73,7 +73,9 @@ Both functions accept variable amounts per recipient. Protocol fee (0.3%) is app
 ## Links
 
 - 🌐 Website: [spraay.app](https://spraay.app)
+- 🦄 Unichain: [spraay.app/unichain](https://spraay.app/unichain)
+- 🟢 Plasma: [spraay.app/plasma](https://spraay.app/plasma)
+- 🧠 Bittensor: [spraay.app/tao](https://spraay.app/tao)
 - 🐦 Twitter: [@lostpoet](https://twitter.com/lostpoet)
 - 💜 Farcaster: [@plag](https://warpcast.com/plag)
 - 💻 GitHub: [plagtech](https://github.com/plagtech)
-- 📄 Contract: [BaseScan](https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC)
