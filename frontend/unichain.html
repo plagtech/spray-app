@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spraay – Batch Crypto Payments on Unichain</title>
+    <meta name="description" content="Send crypto to 200+ recipients in a single transaction on Unichain. Batch ETH and ERC-20 payments on Uniswap's L2. ~80% gas savings.">
+    <meta property="og:title" content="Spraay – Batch Crypto Payments on Unichain">
+    <meta property="og:description" content="Send ETH or ERC-20 tokens to 200+ recipients in a single transaction on Unichain. ~80% gas savings.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://spraay.app/unichain">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:creator" content="@lostpoet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --crimson: #8B0000;
+            --crimson-deep: #5C0000;
+            --crimson-bright: #DC143C;
+            --crimson-glow: rgba(220, 20, 60, 0.15);
+            --uni-pink: #FC72FF;
+            --uni-pink-dim: rgba(252, 114, 255, 0.15);
+            --uni-pink-border: rgba(252, 114, 255, 0.35);
+            --bg: #060606;
+            --bg-card: #0e0e0e;
+            --bg-card-hover: #141414;
+            --text: #f0f0f0;
+            --text-dim: #888;
+            --text-muted: #555;
+            --border: rgba(139, 0, 0, 0.25);
+            --border-bright: rgba(220, 20, 60, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        code, .mono { font-family: 'Space Mono', monospace; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+        /* ── Nav ─────────────────────────────────────── */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            background: rgba(6,6,6,0.92); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo {
+            font-weight: 800; font-size: 1.4rem; letter-spacing: 0.08em;
+            background: linear-gradient(135deg, var(--crimson-bright), var(--crimson));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+        .nav-links { display: flex; gap: 1.2rem; align-items: center; }
+        .nav-links a {
+            color: var(--text-dim); text-decoration: none; font-size: 0.9rem;
+            font-weight: 500; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+        .nav-links a.active { color: var(--uni-pink); }
+        .btn {
+            display: inline-block; padding: 0.55rem 1.4rem; border-radius: 8px;
+            font-weight: 600; font-size: 0.9rem; text-decoration: none;
+            transition: all 0.25s ease;
+        }
+        .btn-primary {
+            background: var(--crimson); color: #fff;
+            border: 1px solid var(--crimson-bright);
+        }
+        .btn-primary:hover { background: var(--crimson-bright); transform: translateY(-1px); }
+        .btn-outline {
+            background: transparent; color: var(--crimson-bright);
+            border: 1px solid var(--border-bright);
+        }
+        .btn-outline:hover { background: var(--crimson-glow); }
+        .btn-uni {
+            background: rgba(252, 114, 255, 0.12); color: var(--uni-pink);
+            border: 1px solid var(--uni-pink-border);
+        }
+        .btn-uni:hover { background: rgba(252, 114, 255, 0.22); transform: translateY(-1px); }
+
+        /* ── Hero ──────────────────────────────────── */
+        .hero {
+            padding: 10rem 0 5rem; text-align: center;
+            background: radial-gradient(ellipse at 50% 0%, rgba(252, 114, 255, 0.08) 0%, transparent 60%);
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: var(--uni-pink-dim); border: 1px solid var(--uni-pink-border);
+            border-radius: 20px; padding: 0.4rem 1rem;
+            font-size: 0.82rem; font-weight: 600; color: var(--uni-pink);
+            margin-bottom: 1.5rem;
+        }
+        .hero-badge .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--uni-pink); 
+            box-shadow: 0 0 6px rgba(252, 114, 255, 0.6);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .hero h1 {
+            font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800;
+            line-height: 1.15; margin-bottom: 1.2rem;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--uni-pink), #ff8fe0);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero p { color: var(--text-dim); font-size: 1.15rem; max-width: 580px; margin: 0 auto 2rem; }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .hero-stats {
+            display: flex; gap: 3rem; justify-content: center; margin-top: 3.5rem;
+            flex-wrap: wrap;
+        }
+        .stat { text-align: center; }
+        .stat-value {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--uni-pink), #ff8fe0);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+        /* ── Chain Info ──────────────────────────── */
+        .chain-info {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+        .chain-info-inner {
+            display: flex; align-items: center; justify-content: center;
+            gap: 2rem; flex-wrap: wrap;
+        }
+        .chain-info-label {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--text-muted); font-weight: 600;
+        }
+        .chain-detail {
+            display: flex; align-items: center; gap: 0.6rem;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; padding: 0.6rem 1.2rem;
+            font-weight: 600; font-size: 0.9rem; color: var(--text);
+        }
+        .chain-detail .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5);
+        }
+        .chain-detail .tag {
+            font-size: 0.65rem; padding: 0.15rem 0.5rem;
+            border-radius: 4px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(34,197,94,0.15); color: #22c55e;
+        }
+
+        /* ── Why Unichain ────────────────────────── */
+        .why-section { padding: 5rem 0; }
+        .section-title {
+            font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem;
+        }
+        .section-subtitle { color: var(--text-dim); margin-bottom: 3rem; }
+        .feature-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+        .feature-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.8rem;
+            transition: all 0.25s ease;
+        }
+        .feature-card:hover {
+            border-color: var(--uni-pink-border);
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+        }
+        .feature-icon { font-size: 1.6rem; margin-bottom: 0.8rem; }
+        .feature-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .feature-card p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; }
+
+        /* ── How It Works ────────────────────────── */
+        .how-it-works { padding: 5rem 0; }
+        .steps { display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; }
+        .step {
+            flex: 1; min-width: 220px; max-width: 300px;
+            text-align: center; position: relative;
+        }
+        .step-num {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(252, 114, 255, 0.15); color: var(--uni-pink); font-weight: 700;
+            font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem; border: 2px solid var(--uni-pink-border);
+        }
+        .step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .step p { font-size: 0.85rem; color: var(--text-dim); }
+
+        /* ── Contract ────────────────────────────── */
+        .contract-section {
+            padding: 4rem 0; text-align: center;
+            border-top: 1px solid var(--border);
+        }
+        .contract-address {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem 1.5rem;
+            display: inline-block; margin-top: 1rem;
+        }
+        .contract-address code {
+            font-size: 0.85rem; color: var(--uni-pink);
+            word-break: break-all;
+        }
+        .contract-address a {
+            color: var(--uni-pink); text-decoration: none;
+        }
+        .contract-address a:hover { text-decoration: underline; }
+
+        /* ── Multi-Chain Banner ──────────────────── */
+        .multichain {
+            padding: 4rem 0; text-align: center;
+            border-top: 1px solid var(--border);
+        }
+        .multichain h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; }
+        .chain-grid {
+            display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap;
+        }
+        .chain-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem 2rem;
+            text-decoration: none; color: var(--text);
+            transition: all 0.25s ease; min-width: 180px;
+        }
+        .chain-card:hover {
+            border-color: var(--border-bright);
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+        }
+        .chain-card.current {
+            border-color: var(--uni-pink-border);
+            background: rgba(252, 114, 255, 0.05);
+        }
+        .chain-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .chain-card p { font-size: 0.78rem; color: var(--text-muted); }
+        .chain-card .chain-status {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; margin-top: 0.5rem;
+            color: #22c55e;
+        }
+        .chain-card .chain-status .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #22c55e; box-shadow: 0 0 4px rgba(34,197,94,0.5);
+        }
+
+        /* ── CTA ─────────────────────────────────── */
+        .cta {
+            padding: 5rem 0; text-align: center;
+            background: radial-gradient(ellipse at 50% 100%, rgba(252, 114, 255, 0.06) 0%, transparent 60%);
+        }
+        .cta h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.8rem; }
+        .cta p { color: var(--text-dim); margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+        /* ── Footer ──────────────────────────────── */
+        footer {
+            padding: 2.5rem 0; border-top: 1px solid var(--border);
+        }
+        .footer-inner {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .footer-links { display: flex; gap: 1.5rem; }
+        .footer-links a {
+            color: var(--text-muted); text-decoration: none; font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--text); }
+        .footer-copy { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* ── Responsive ──────────────────────────── */
+        @media (max-width: 640px) {
+            .hero { padding: 8rem 0 3rem; }
+            .hero-stats { gap: 2rem; }
+            .chain-info-inner { flex-direction: column; gap: 1rem; }
+            .nav-links a:not(.btn) { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav>
+        <div class="container nav-inner">
+            <a href="/" class="logo">SPRAAY</a>
+            <div class="nav-links">
+                <a href="/tao">Bittensor</a>
+                <a href="/plasma">Plasma</a>
+                <a href="/unichain" class="active">Unichain</a>
+                <a href="https://uniscan.xyz/address/0x08fA5D1c16CD6E2a16FC0E4839f262429959E073" target="_blank">Contract</a>
+                <a href="https://bankr.bot" target="_blank" class="btn btn-primary">Use via Bankr</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                Live on Unichain Mainnet
+            </div>
+            <h1>Batch Payments on<br><span>Unichain</span></h1>
+            <p>Send ETH or ERC-20 tokens to 200+ recipients in a single transaction on Uniswap's L2. Payroll, airdrops, bounties – one transaction.</p>
+            <div class="hero-buttons">
+                <a href="https://uniscan.xyz/address/0x08fA5D1c16CD6E2a16FC0E4839f262429959E073" target="_blank" class="btn btn-uni">View on Uniscan →</a>
+                <a href="https://bankr.bot" target="_blank" class="btn btn-outline">Use via Bankr</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-value">~80%</div>
+                    <div class="stat-label">Gas Savings</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">200+</div>
+                    <div class="stat-label">Recipients / Tx</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">0.3%</div>
+                    <div class="stat-label">Protocol Fee</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chain Info -->
+    <section class="chain-info">
+        <div class="container chain-info-inner">
+            <span class="chain-info-label">Deployment</span>
+            <div class="chain-detail">
+                <span class="dot"></span>
+                Unichain Mainnet
+                <span class="tag">Live</span>
+            </div>
+            <div class="chain-detail">
+                Chain ID: 130
+            </div>
+            <div class="chain-detail">
+                OP Stack L2
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Unichain -->
+    <section class="why-section">
+        <div class="container">
+            <h2 class="section-title">Why Spraay on Unichain?</h2>
+            <p class="section-subtitle">Uniswap's DeFi-native L2, purpose-built for fast, cheap transactions.</p>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>1-Second Block Times</h3>
+                    <p>Unichain's fast block times mean your batch payments confirm almost instantly.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💸</div>
+                    <h3>Ultra-Low Fees</h3>
+                    <p>OP Stack L2 gas costs combined with Spraay's batching means pennies per recipient.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🦄</div>
+                    <h3>DeFi Native</h3>
+                    <p>Built by the Uniswap team. Deep liquidity and native DeFi integrations from day one.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🪙</div>
+                    <h3>ERC-20 Tokens</h3>
+                    <p>Batch send any ERC-20 token on Unichain – USDC, WETH, UNI, or any custom token.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI Agent Ready</h3>
+                    <p>Same contract interface as Base. Compatible with Coinbase AgentKit and Bankr.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Verified & Secure</h3>
+                    <p>OpenZeppelin ReentrancyGuard & Pausable. Source verified on Uniscan.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title" style="text-align:center">How It Works</h2>
+            <p class="section-subtitle" style="text-align:center">Three steps. One transaction.</p>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <h3>Input Recipients</h3>
+                    <p>Provide wallet addresses and amounts – via CSV, programmatically, or through an AI agent.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <h3>Spraay Batches</h3>
+                    <p>The smart contract bundles all transfers into a single transaction on Unichain.</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <h3>Everyone Gets Paid</h3>
+                    <p>All recipients receive funds in ~1 second. Drastically cheaper than individual sends.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contract -->
+    <section class="contract-section">
+        <div class="container">
+            <h2 class="section-title">Verified on Unichain</h2>
+            <p style="color: var(--text-dim); margin-top: 0.5rem;">Source code publicly verified on Uniscan</p>
+            <div class="contract-address">
+                <a href="https://uniscan.xyz/address/0x08fA5D1c16CD6E2a16FC0E4839f262429959E073#code" target="_blank">
+                    <code>0x08fA5D1c16CD6E2a16FC0E4839f262429959E073</code>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Multi-Chain -->
+    <section class="multichain">
+        <div class="container">
+            <h2>Spraay is Multi-Chain</h2>
+            <div class="chain-grid">
+                <a href="/" class="chain-card">
+                    <h3>🔵 Base</h3>
+                    <p>Coinbase L2</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
+                </a>
+                <div class="chain-card current">
+                    <h3>🦄 Unichain</h3>
+                    <p>Uniswap L2</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
+                </div>
+                <a href="/plasma" class="chain-card">
+                    <h3>🟢 Plasma</h3>
+                    <p>Plasma Network</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
+                </a>
+                <a href="/tao" class="chain-card">
+                    <h3>🧠 Bittensor</h3>
+                    <p>TAO Subnet Ops</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Batch Send on Unichain?</h2>
+            <p>Deploy batch payments on Uniswap's L2 with the same trusted Spraay protocol.</p>
+            <div class="hero-buttons">
+                <a href="https://uniscan.xyz/address/0x08fA5D1c16CD6E2a16FC0E4839f262429959E073" target="_blank" class="btn btn-uni">View Contract →</a>
+                <a href="https://github.com/plagtech" target="_blank" class="btn btn-outline">GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-inner">
+            <div>
+                <a href="/" class="logo" style="font-size:1.1rem">SPRAAY</a>
+                <span class="footer-copy" style="margin-left:1rem">Batch crypto payments, multi-chain</span>
+            </div>
+            <div class="footer-links">
+                <a href="/">Base</a>
+                <a href="/unichain">Unichain</a>
+                <a href="/plasma">Plasma</a>
+                <a href="/tao">Spraay TAO</a>
+                <a href="https://twitter.com/lostpoet" target="_blank">Twitter</a>
+                <a href="https://warpcast.com/plag" target="_blank">Farcaster</a>
+                <a href="https://github.com/plagtech" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
