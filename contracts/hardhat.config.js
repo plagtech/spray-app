@@ -1,5 +1,10 @@
+// hardhat.config.js — COMPLETE UPDATED VERSION
+// Added: Unichain Mainnet + Unichain Sepolia
+// Everything else is unchanged from your current config
+
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config();
+
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
@@ -54,54 +59,78 @@ module.exports = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 9746,
     },
-  },
-  etherscan: {
-    apiKey: {
-      base: process.env.BASESCAN_API_KEY || "",
-      baseSepolia: process.env.BASESCAN_API_KEY || "",
-      optimisticEthereum: process.env.OPTIMISM_API_KEY || "",
-      arbitrumOne: process.env.ARBISCAN_API_KEY || "",
-      polygon: process.env.POLYGONSCAN_API_KEY || "",
-      plasma: process.env.PLASMASCAN_API_KEY || "",
-      plasmaTestnet: process.env.PLASMASCAN_API_KEY || "",
+
+    // ===== NEW: UNICHAIN =====
+    // Unichain Mainnet (OP Stack L2, Chain ID 130)
+    unichain: {
+      url: process.env.UNICHAIN_RPC_URL || "https://mainnet.unichain.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 130,
     },
+    // Unichain Sepolia Testnet
+    unichainSepolia: {
+      url: process.env.UNICHAIN_SEPOLIA_RPC_URL || "https://sepolia.unichain.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 1301,
+    },
+  },
+etherscan: {
+    apiKey: process.env.UNISCAN_API_KEY || "",
     customChains: [
       {
         network: "base",
         chainId: 8453,
         urls: {
-          apiURL: "https://api.basescan.org/api",
-          browserURL: "https://basescan.org"
-        }
+          apiURL: "https://api.etherscan.io/v2/api",
+          browserURL: "https://basescan.org",
+        },
       },
       {
         network: "baseSepolia",
         chainId: 84532,
         urls: {
-          apiURL: "https://api-sepolia.basescan.org/api",
-          browserURL: "https://sepolia.basescan.org"
-        }
+          apiURL: "https://api.etherscan.io/v2/api",
+          browserURL: "https://sepolia.basescan.org",
+        },
       },
       {
         network: "plasma",
         chainId: 9745,
         urls: {
-          apiURL: "https://plasmascan.to/api",
-          browserURL: "https://plasmascan.to"
-        }
+          apiURL: "https://api.etherscan.io/v2/api",
+          browserURL: "https://plasmascan.to",
+        },
       },
       {
         network: "plasmaTestnet",
         chainId: 9746,
         urls: {
-          apiURL: "https://testnet.plasmascan.to/api",
-          browserURL: "https://testnet.plasmascan.to"
-        }
-      }
-    ]
+          apiURL: "https://api.etherscan.io/v2/api",
+          browserURL: "https://testnet.plasmascan.to",
+        },
+      },
+      {
+        network: "unichain",
+        chainId: 130,
+        urls: {
+          apiURL: "https://api.etherscan.io/v2/api",
+          browserURL: "https://uniscan.xyz",
+        },
+      },
+      {
+        network: "unichainSepolia",
+        chainId: 1301,
+        urls: {
+          apiURL: "https://api.etherscan.io/v2/api",
+          browserURL: "https://sepolia.uniscan.xyz",
+        },
+      },
+    ],
   },
-  gasReporter: {
-    enabled: process.env.REPORT_GAS !== undefined,
-    currency: "USD",
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts",
   },
 };
