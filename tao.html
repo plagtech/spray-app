@@ -186,8 +186,48 @@
         }
         .network-badge.mainnet { background: var(--green-dim); color: var(--green); border: 1px solid rgba(40,200,64,0.3); }
         .network-badge.testnet { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(255,189,46,0.3); }
-        .wallet-info-tao { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--text-muted); }
+        .wallet-info-tao { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--text-muted); cursor: pointer; position: relative; }
+        .wallet-info-tao:hover { color: var(--text); }
         .wallet-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(40,200,64,0.5); }
+
+        /* Account Picker */
+        .account-picker-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+            z-index: 1000; display: none; align-items: center; justify-content: center;
+        }
+        .account-picker-overlay.show { display: flex; }
+        .account-picker {
+            background: var(--bg-card); border: 1px solid var(--border-accent);
+            border-radius: 14px; padding: 24px; max-width: 480px; width: 90%;
+            max-height: 70vh; overflow-y: auto;
+        }
+        .account-picker h3 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+        .account-picker .picker-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 16px; }
+        .account-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+            border: 1px solid var(--border); border-radius: 10px;
+            cursor: pointer; transition: all 0.2s; margin-bottom: 8px;
+        }
+        .account-item:hover { border-color: var(--accent); background: var(--accent-dim); }
+        .account-item.selected { border-color: var(--accent); background: var(--accent-dim); }
+        .account-item-icon {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--tao-purple), var(--accent));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 700; color: #fff; flex-shrink: 0;
+        }
+        .account-item-info { flex: 1; min-width: 0; }
+        .account-item-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 2px; }
+        .account-item-addr { font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .account-item-balance { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); flex-shrink: 0; text-align: right; }
+        .account-item-balance .loading-bal { color: var(--text-dim); font-style: italic; }
+
+        /* Balance display in summary */
+        .balance-row { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+        .balance-value { color: var(--accent) !important; }
+        .balance-warning { color: var(--red) !important; }
+        .balance-sufficient { color: var(--green) !important; }
 
         /* Network Toggle */
         .network-toggle {
@@ -641,9 +681,10 @@
                 <h3>🧠 Batch Send</h3>
                 <div style="display:flex;align-items:center;gap:0.6rem;">
                     <span class="network-badge mainnet" id="networkBadge">Finney</span>
-                    <div id="walletInfo" class="wallet-info-tao" style="display:none;">
+                    <div id="walletInfo" class="wallet-info-tao" style="display:none;" onclick="showAccountPicker()" title="Click to switch account">
                         <span class="wallet-dot"></span>
                         <span id="walletAddr" style="font-family:var(--font-mono);font-size:0.72rem;"></span>
+                        <span style="font-size:0.6rem;opacity:0.5;">▼</span>
                     </div>
                 </div>
             </div>
@@ -703,6 +744,10 @@
 
             <!-- Summary -->
             <div class="summary-card">
+                <div class="summary-row balance-row" id="balanceRow" style="display:none;border-top:none;padding-top:0;margin-top:0;margin-bottom:4px;">
+                    <span class="summary-label">Your Balance</span>
+                    <span class="summary-value balance-value" id="summaryBalance">—</span>
+                </div>
                 <div class="summary-row">
                     <span class="summary-label">Recipients</span>
                     <span class="summary-value" id="summaryRecipients">0</span>
@@ -718,6 +763,10 @@
                 <div class="summary-row summary-total">
                     <span class="summary-label">Total Cost</span>
                     <span class="summary-value" id="summaryTotal">0 TAO</span>
+                </div>
+                <div class="summary-row" id="balanceWarning" style="display:none;">
+                    <span class="summary-label" style="color:var(--red);">⚠ Insufficient balance</span>
+                    <span class="summary-value balance-warning" id="balanceShortfall"></span>
                 </div>
             </div>
 
@@ -861,6 +910,15 @@
         </div>
     </div>
 </footer>
+
+<!-- ACCOUNT PICKER -->
+<div class="account-picker-overlay" id="accountPicker">
+    <div class="account-picker">
+        <h3>Select Account</h3>
+        <p class="picker-subtitle">Choose which account to send TAO from.</p>
+        <div id="accountList"></div>
+    </div>
+</div>
 
 <!-- CONFIRMATION MODAL -->
 <div class="modal-overlay" id="confirmModal">
@@ -1062,6 +1120,9 @@ async function getApi() {
 }
 
 // ── Wallet Connection (Polkadot.js / Talisman / SubWallet) ──
+let allAccounts = [];  // Store all discovered accounts
+let walletBalance = null;  // Current balance in TAO (float)
+
 async function connectWallet() {
     if (isConnecting) return;
     if (!bundlesLoaded) {
@@ -1087,22 +1148,15 @@ async function connectWallet() {
             return;
         }
 
-        // Use first account (could add picker in future)
-        selectedAccount = accounts[0];
-        const shortAddr = selectedAccount.address.slice(0, 8) + '...' + selectedAccount.address.slice(-6);
-        const displayName = selectedAccount.meta.name || shortAddr;
+        allAccounts = accounts;
 
-        document.getElementById('walletAddr').textContent = displayName;
-        document.getElementById('walletInfo').style.display = 'flex';
-        document.getElementById('walletNote').style.display = 'none';
-        document.getElementById('extensionNotice').style.display = 'none';
-
-        const navBtn = document.getElementById('navConnectBtn');
-        navBtn.textContent = displayName;
-        navBtn.classList.add('connected');
-
-        showStatus(`Connected: ${displayName} (${shortAddr})`, 'info');
-        updateSummary();
+        // If only one account, auto-select it
+        if (accounts.length === 1) {
+            await selectAccount(accounts[0]);
+        } else {
+            // Show picker for multiple accounts
+            await showAccountPicker();
+        }
 
     } catch (err) {
         console.error('Wallet connection error:', err);
@@ -1110,6 +1164,110 @@ async function connectWallet() {
     } finally {
         isConnecting = false;
     }
+}
+
+async function showAccountPicker() {
+    if (allAccounts.length === 0) {
+        // Not connected yet — trigger full connect flow
+        await connectWallet();
+        return;
+    }
+
+    const listEl = document.getElementById('accountList');
+    listEl.innerHTML = '';
+
+    for (const account of allAccounts) {
+        const shortAddr = account.address.slice(0, 12) + '...' + account.address.slice(-8);
+        const name = account.meta.name || 'Unnamed Account';
+        const initials = name.slice(0, 2).toUpperCase();
+        const isSelected = selectedAccount && selectedAccount.address === account.address;
+
+        const item = document.createElement('div');
+        item.className = 'account-item' + (isSelected ? ' selected' : '');
+        item.innerHTML = `
+            <div class="account-item-icon">${initials}</div>
+            <div class="account-item-info">
+                <div class="account-item-name">${name}</div>
+                <div class="account-item-addr">${shortAddr}</div>
+            </div>
+            <div class="account-item-balance"><span class="loading-bal">loading...</span></div>
+        `;
+        item.addEventListener('click', () => {
+            selectAccount(account);
+            closeAccountPicker();
+        });
+        listEl.appendChild(item);
+
+        // Fetch balance async for each account
+        fetchAccountBalance(account.address).then(bal => {
+            const balEl = item.querySelector('.account-item-balance');
+            if (bal !== null) {
+                balEl.innerHTML = `${bal.toFixed(4)} <span style="color:var(--text-dim);font-size:0.65rem;">TAO</span>`;
+            } else {
+                balEl.innerHTML = '<span class="loading-bal">—</span>';
+            }
+        });
+    }
+
+    document.getElementById('accountPicker').classList.add('show');
+}
+
+function closeAccountPicker() {
+    document.getElementById('accountPicker').classList.remove('show');
+}
+
+// Close picker on overlay click or Escape
+document.getElementById('accountPicker').addEventListener('click', function(e) {
+    if (e.target === this) closeAccountPicker();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('accountPicker').classList.contains('show')) {
+        closeAccountPicker();
+    }
+});
+
+async function fetchAccountBalance(address) {
+    try {
+        const chainApi = await getApi();
+        const { data: { free } } = await chainApi.query.system.account(address);
+        // Convert from rao (BN) to TAO (float)
+        return parseInt(free.toString(), 10) / 1e9;
+    } catch (e) {
+        console.warn('Balance fetch failed for', address, e.message);
+        return null;
+    }
+}
+
+async function selectAccount(account) {
+    selectedAccount = account;
+    const shortAddr = account.address.slice(0, 8) + '...' + account.address.slice(-6);
+    const displayName = account.meta.name || shortAddr;
+
+    document.getElementById('walletAddr').textContent = displayName;
+    document.getElementById('walletInfo').style.display = 'flex';
+    document.getElementById('walletNote').style.display = 'none';
+    document.getElementById('extensionNotice').style.display = 'none';
+
+    const navBtn = document.getElementById('navConnectBtn');
+    navBtn.textContent = displayName;
+    navBtn.classList.add('connected');
+
+    showStatus(`Connected: ${displayName} (${shortAddr})`, 'info');
+
+    // Fetch and display balance
+    document.getElementById('balanceRow').style.display = 'flex';
+    document.getElementById('summaryBalance').textContent = 'Loading...';
+
+    const bal = await fetchAccountBalance(account.address);
+    walletBalance = bal;
+
+    if (bal !== null) {
+        document.getElementById('summaryBalance').textContent = bal.toFixed(4) + ' TAO';
+    } else {
+        document.getElementById('summaryBalance').textContent = 'Unable to fetch';
+    }
+
+    updateSummary();
 }
 
 // ── Equal Mode Toggle ───────────────────────
@@ -1231,11 +1389,31 @@ function updateSummary() {
     document.getElementById('summaryFee').textContent = fee.toFixed(6) + ' TAO';
     document.getElementById('summaryTotal').textContent = total.toFixed(6) + ' TAO';
 
+    // Balance check
+    const warningEl = document.getElementById('balanceWarning');
+    let insufficientBalance = false;
+    if (walletBalance !== null && total > 0) {
+        if (total > walletBalance) {
+            insufficientBalance = true;
+            const shortfall = (total - walletBalance).toFixed(6);
+            document.getElementById('balanceShortfall').textContent = '-' + shortfall + ' TAO';
+            warningEl.style.display = 'flex';
+        } else {
+            warningEl.style.display = 'none';
+        }
+    } else {
+        warningEl.style.display = 'none';
+    }
+
     const btn = document.getElementById('sprayBtn');
-    btn.disabled = count === 0 || totalAmount === 0;
-    btn.textContent = !selectedAccount
-        ? '🔗 Connect Wallet to Spray'
-        : '🚀 Spray ' + total.toFixed(4) + ' TAO';
+    btn.disabled = count === 0 || totalAmount === 0 || insufficientBalance;
+    if (insufficientBalance) {
+        btn.textContent = '⚠ Insufficient Balance';
+    } else if (!selectedAccount) {
+        btn.textContent = '🔗 Connect Wallet to Spray';
+    } else {
+        btn.textContent = '🚀 Spray ' + total.toFixed(4) + ' TAO';
+    }
 }
 
 // ── File Upload (CSV / JSON) ────────────────
@@ -1374,6 +1552,32 @@ async function executeSpray() {
         // 1. Connect to Subtensor
         const chainApi = await getApi();
 
+        // 1b. Pre-flight balance check
+        btn.textContent = '⏳ Checking balance...';
+        const freshBal = await fetchAccountBalance(selectedAccount.address);
+        walletBalance = freshBal;
+        document.getElementById('summaryBalance').textContent = (freshBal !== null ? freshBal.toFixed(4) + ' TAO' : 'Unable to fetch');
+
+        if (freshBal !== null) {
+            // Estimate total cost
+            let estTotal = 0;
+            if (isEqualMode) {
+                const perTao = parseFloat(document.getElementById('equalAmount').value) || 0;
+                estTotal = perTao * recipients.length;
+            } else {
+                for (const r of recipients) estTotal += parseFloat(r.amount) || 0;
+            }
+            estTotal += estTotal * (FEE_BPS / 10000); // add service fee
+            estTotal += 0.001; // rough network fee buffer
+
+            if (estTotal > freshBal) {
+                const shortfall = (estTotal - freshBal).toFixed(6);
+                showStatus(`Insufficient balance. You need ~${estTotal.toFixed(4)} TAO but only have ${freshBal.toFixed(4)} TAO (short by ${shortfall} TAO).`, 'error');
+                updateSummary();
+                return;
+            }
+        }
+
         // 2. Get signer from wallet extension
         const { web3FromSource } = polkadotExtensionDapp;
         const injector = await web3FromSource(selectedAccount.meta.source);
@@ -1444,11 +1648,11 @@ async function executeSpray() {
                             }
                             showStatus(errMsg, 'error');
                         } else {
-                            const blockHash = status.asFinalized.toString();
+                            const extrinsicHash = txHash.toHex();
                             const explorerBase = NETWORKS[currentNetwork].explorer;
                             showStatus(
                                 `✅ Sprayed TAO to ${recipients.length} recipients! ` +
-                                `<a href="${explorerBase}${blockHash}" target="_blank">View on TaoStats →</a>`,
+                                `<a href="${explorerBase}${extrinsicHash}" target="_blank">View on TaoStats →</a>`,
                                 'success'
                             );
                         }
