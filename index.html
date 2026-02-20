@@ -242,6 +242,17 @@
         .form-select option { background: var(--bg-card); color: var(--text); }
         .form-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; }
 
+        /* Token detected badge */
+        .token-detected {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-size: 0.78rem; color: var(--green); margin-top: 0.35rem;
+            animation: fadeIn 0.2s ease;
+        }
+        .token-detected .token-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5);
+        }
+
         /* ── Recipient Rows ──────────────────────── */
         .recipients-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.8rem; }
         .recipient-row {
@@ -667,7 +678,11 @@
                 <div id="tokenSection" class="token-section" style="display:none;">
                     <div class="form-group" style="margin-bottom:0.4rem;">
                         <label class="form-label">Token Contract Address</label>
-                        <input type="text" class="form-input" id="tokenAddress" placeholder="0x... paste ERC-20 token address" oninput="onTokenAddressChange()">
+                        <input type="text" class="form-input" id="tokenAddress" placeholder="0x... paste ERC-20 token address" oninput="debouncedTokenLookup()" onpaste="setTimeout(debouncedTokenLookup, 50)">
+                        <div id="tokenDetectedBadge" class="token-detected" style="display:none;">
+                            <span class="token-dot"></span>
+                            <span id="tokenDetectedName">Detected</span>
+                        </div>
                     </div>
                     <div class="token-quick-picks">
                         <button class="token-pick" onclick="pickToken('USDC')">USDC</button>
@@ -891,6 +906,7 @@
         "function allowance(address owner, address spender) view returns (uint256)",
         "function decimals() view returns (uint8)",
         "function symbol() view returns (string)",
+        "function name() view returns (string)",
         "function balanceOf(address account) view returns (uint256)"
     ];
 
@@ -908,14 +924,17 @@
     let ethPrice = 0;
     let rowCounter = 0;
 
+    // ── Token Symbol Detection ──────────────────
+    let tokenSymbolCache = {};   // { '0xabc...': 'DEGEN' }
+    let tokenLookupTimer = null; // debounce timer
+    let currentResolvedSymbol = 'TKN'; // tracks what's currently resolved
+
     // ── Initialize ──────────────────────────────
     window.addEventListener('DOMContentLoaded', () => {
-        // Start with 3 empty recipient rows
         addRecipientRow();
         addRecipientRow();
         addRecipientRow();
         fetchEthPrice();
-        // Refresh price every 60s
         setInterval(fetchEthPrice, 60000);
     });
 
@@ -941,7 +960,6 @@
                 }
             } catch { /* silent, try next */ }
         }
-        // All failed — keep existing price or show nothing, no console error
     }
 
     function toUsd(ethAmount) {
@@ -963,7 +981,6 @@
             signer = provider.getSigner();
             userAddress = accounts[0];
 
-            // Switch to Base if needed
             const chainId = await window.ethereum.request({ method: 'eth_chainId' });
             if (chainId !== BASE_CHAIN_ID) {
                 try {
@@ -989,7 +1006,6 @@
                 signer = provider.getSigner();
             }
 
-            // Update UI
             const shortAddr = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
             document.getElementById('walletAddr').textContent = shortAddr;
             document.getElementById('walletInfo').style.display = 'flex';
@@ -1034,10 +1050,13 @@
         });
         document.getElementById('tokenSection').style.display = mode === 'erc20' ? 'block' : 'none';
 
-        // Update suffix labels
-        const suffix = mode === 'eth' ? 'ETH' : (getSelectedTokenSymbol() || 'TKN');
-        document.querySelectorAll('.amt-suffix').forEach(el => el.textContent = suffix);
-        document.getElementById('equalSuffix').textContent = suffix;
+        const suffix = mode === 'eth' ? 'ETH' : currentResolvedSymbol;
+        setTokenSuffix(suffix);
+
+        // Hide detected badge when switching back to ETH
+        if (mode === 'eth') {
+            document.getElementById('tokenDetectedBadge').style.display = 'none';
+        }
 
         updateSummary();
     }
@@ -1056,23 +1075,104 @@
         document.getElementById('tokenAddress').value = token.address;
         document.querySelectorAll('.token-pick').forEach(el => el.classList.remove('active'));
         event.target.classList.add('active');
-        document.querySelectorAll('.amt-suffix').forEach(el => el.textContent = symbol);
-        document.getElementById('equalSuffix').textContent = symbol;
+
+        currentResolvedSymbol = symbol;
+        setTokenSuffix(symbol);
+        showTokenDetected(symbol);
         updateSummary();
     }
 
-    function onTokenAddressChange() {
+    // ── Dynamic Token Symbol Detection ──────────
+    function debouncedTokenLookup() {
+        clearTimeout(tokenLookupTimer);
+        tokenLookupTimer = setTimeout(onTokenAddressChange, 300);
+    }
+
+    async function onTokenAddressChange() {
         document.querySelectorAll('.token-pick').forEach(el => el.classList.remove('active'));
-        const sym = getSelectedTokenSymbol();
-        document.querySelectorAll('.amt-suffix').forEach(el => el.textContent = sym);
-        document.getElementById('equalSuffix').textContent = sym;
+        const addr = document.getElementById('tokenAddress').value.trim();
+
+        // Check hardcoded tokens first
+        const knownSym = getSelectedTokenSymbol();
+        if (knownSym !== 'TKN') {
+            currentResolvedSymbol = knownSym;
+            setTokenSuffix(knownSym);
+            showTokenDetected(knownSym);
+            // Highlight the matching quick-pick button
+            document.querySelectorAll('.token-pick').forEach(el => {
+                if (el.textContent === knownSym) el.classList.add('active');
+            });
+            return;
+        }
+
+        // If valid address, fetch symbol on-chain
+        if (/^0x[a-fA-F0-9]{40}$/.test(addr)) {
+            const addrLower = addr.toLowerCase();
+
+            // Check cache
+            if (tokenSymbolCache[addrLower]) {
+                currentResolvedSymbol = tokenSymbolCache[addrLower];
+                setTokenSuffix(currentResolvedSymbol);
+                showTokenDetected(currentResolvedSymbol);
+                return;
+            }
+
+            // Show loading state
+            setTokenSuffix('···');
+            hideTokenDetected();
+
+            try {
+                const readProvider = provider || new ethers.providers.JsonRpcProvider(BASE_RPC);
+                const tokenContract = new ethers.Contract(addr, ERC20_ABI, readProvider);
+                const symbol = await tokenContract.symbol();
+
+                if (symbol) {
+                    tokenSymbolCache[addrLower] = symbol;
+                    // Only update if the address hasn't changed while we were fetching
+                    if (document.getElementById('tokenAddress').value.trim().toLowerCase() === addrLower) {
+                        currentResolvedSymbol = symbol;
+                        setTokenSuffix(symbol);
+                        showTokenDetected(symbol);
+                    }
+                } else {
+                    currentResolvedSymbol = 'TKN';
+                    setTokenSuffix('TKN');
+                    hideTokenDetected();
+                }
+            } catch {
+                // Not a valid ERC-20 or RPC error
+                if (document.getElementById('tokenAddress').value.trim().toLowerCase() === addrLower) {
+                    currentResolvedSymbol = 'TKN';
+                    setTokenSuffix('TKN');
+                    hideTokenDetected();
+                }
+            }
+        } else {
+            currentResolvedSymbol = 'TKN';
+            setTokenSuffix('TKN');
+            hideTokenDetected();
+        }
+    }
+
+    function setTokenSuffix(symbol) {
+        document.querySelectorAll('.amt-suffix').forEach(el => el.textContent = symbol);
+        document.getElementById('equalSuffix').textContent = symbol;
+    }
+
+    function showTokenDetected(symbol) {
+        const badge = document.getElementById('tokenDetectedBadge');
+        document.getElementById('tokenDetectedName').textContent = symbol + ' detected';
+        badge.style.display = 'inline-flex';
+    }
+
+    function hideTokenDetected() {
+        document.getElementById('tokenDetectedBadge').style.display = 'none';
     }
 
     function toggleEqualMode() {
         isEqualMode = document.getElementById('equalToggle').checked;
         document.getElementById('equalAmountSection').style.display = isEqualMode ? 'block' : 'none';
 
-        // Show/hide individual amount fields
         document.querySelectorAll('.amount-wrap-individual').forEach(el => {
             el.style.display = isEqualMode ? 'none' : 'block';
         });
@@ -1091,7 +1191,7 @@
 
         rowCounter++;
         const id = rowCounter;
-        const suffix = currentMode === 'eth' ? 'ETH' : (getSelectedTokenSymbol() || 'TKN');
+        const suffix = currentMode === 'eth' ? 'ETH' : currentResolvedSymbol;
 
         const row = document.createElement('div');
         row.className = 'recipient-row';
@@ -1119,7 +1219,7 @@
 
     function removeRecipientRow(id) {
         const list = document.getElementById('recipientsList');
-        if (list.children.length <= 1) return; // Keep at least 1 row
+        if (list.children.length <= 1) return;
         const row = list.querySelector(`[data-id="${id}"]`);
         if (row) {
             row.style.animation = 'none';
@@ -1183,13 +1283,12 @@
         const count = recipients.length;
         document.getElementById('summaryRecipients').textContent = count;
 
-        const symbol = currentMode === 'eth' ? 'ETH' : getSelectedTokenSymbol();
+        const symbol = currentMode === 'eth' ? 'ETH' : currentResolvedSymbol;
         let totalAmount = 0;
 
         if (isEqualMode) {
             const perRecipient = parseFloat(document.getElementById('equalAmount').value) || 0;
             totalAmount = perRecipient * count;
-            // Update equal amount USD hint
             const eqUsd = document.getElementById('equalUsd');
             if (currentMode === 'eth' && ethPrice && perRecipient > 0) {
                 eqUsd.textContent = toUsd(perRecipient);
@@ -1197,7 +1296,6 @@
                 eqUsd.textContent = '';
             }
         } else {
-            // Update per-row USD hints
             document.querySelectorAll('.recipient-row').forEach(row => {
                 const amtInput = row.querySelector('.amt-input');
                 const usdHint = row.querySelector('[data-usd-row]');
@@ -1218,7 +1316,6 @@
         document.getElementById('summaryFee').textContent = fee.toFixed(6) + ' ' + symbol;
         document.getElementById('summaryTotal').textContent = total.toFixed(6) + ' ' + symbol;
 
-        // USD equivalents in summary
         if (currentMode === 'eth' && ethPrice) {
             document.getElementById('summaryAmountUsd').textContent = toUsd(totalAmount);
             document.getElementById('summaryFeeUsd').textContent = toUsd(fee);
@@ -1229,11 +1326,9 @@
             document.getElementById('summaryTotalUsd').textContent = '';
         }
 
-        // Enable/disable button
         const btn = document.getElementById('sprayBtn');
         btn.disabled = count === 0 || totalAmount === 0;
 
-        // Update button text based on wallet state
         if (!userAddress) {
             btn.textContent = '🔗 Connect Wallet to Spray';
         } else {
@@ -1251,7 +1346,6 @@
             const text = e.target.result;
             const lines = text.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.toLowerCase().startsWith('address'));
 
-            // Clear existing rows
             document.getElementById('recipientsList').innerHTML = '';
             rowCounter = 0;
 
@@ -1289,8 +1383,7 @@
             return;
         }
 
-        // Build confirmation modal
-        const symbol = currentMode === 'eth' ? 'ETH' : getSelectedTokenSymbol();
+        const symbol = currentMode === 'eth' ? 'ETH' : currentResolvedSymbol;
         let totalAmount = 0;
 
         if (isEqualMode) {
@@ -1303,7 +1396,6 @@
         const fee = totalAmount * 0.003;
         const total = totalAmount + fee;
 
-        // Populate modal
         document.getElementById('modalRecipients').textContent = recipients.length;
         document.getElementById('modalAmount').textContent = totalAmount.toFixed(6) + ' ' + symbol;
         document.getElementById('modalFee').textContent = fee.toFixed(6) + ' ' + symbol;
@@ -1319,7 +1411,6 @@
             document.getElementById('modalTotalUsd').textContent = '';
         }
 
-        // Build recipients preview list
         const previewEl = document.getElementById('modalRecipientsList');
         previewEl.innerHTML = '';
         recipients.forEach((r, i) => {
@@ -1330,7 +1421,6 @@
             previewEl.innerHTML += `<div class="modal-recip-item"><span class="addr">${shortAddr}</span><span>${amt} ${symbol}</span></div>`;
         });
 
-        // Show modal
         document.getElementById('confirmModal').classList.add('show');
     }
 
@@ -1338,12 +1428,10 @@
         document.getElementById('confirmModal').classList.remove('show');
     }
 
-    // Close modal on overlay click
     document.getElementById('confirmModal').addEventListener('click', function(e) {
         if (e.target === this) closeConfirmModal();
     });
 
-    // Close modal on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeConfirmModal();
     });
