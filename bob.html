@@ -920,13 +920,10 @@
             return;
         }
         try {
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            signer = provider.getSigner();
-            userAddress = accounts[0];
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
 
             const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-            if (chainId !== CHAIN_ID_HEX) {
+            if (chainId.toLowerCase() !== CHAIN_ID_HEX.toLowerCase()) {
                 try {
                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
@@ -946,9 +943,15 @@
                         });
                     } else { throw switchError; }
                 }
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                signer = provider.getSigner();
+                // Wait for chain switch to settle
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
+
+            // Always re-create provider/signer AFTER chain switch
+            provider = new ethers.providers.Web3Provider(window.ethereum, CHAIN_ID_DEC);
+            signer = provider.getSigner();
+            const accounts = await provider.listAccounts();
+            userAddress = accounts[0];
 
             const shortAddr = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
             document.getElementById('walletAddr').textContent = shortAddr;
