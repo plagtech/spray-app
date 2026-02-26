@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spraay – Batch Crypto Payments on Base</title>
-    <meta name="description" content="Send crypto to 200+ recipients in a single transaction. Batch ETH and ERC-20 payments on Base. Integrated with Coinbase AgentKit.">
-    <meta property="og:title" content="Spraay – Batch Crypto Payments on Base">
-    <meta property="og:description" content="Send ETH or ERC-20 tokens to 200+ recipients in a single transaction on Base. ~80% gas savings.">
+    <title>Spraay – Batch Crypto Payments on Ethereum</title>
+    <meta name="description" content="Send crypto to 200+ recipients in a single transaction on Ethereum. Batch ETH and ERC-20 payments on Ethereum mainnet. ~80% gas savings.">
+    <meta property="og:title" content="Spraay – Batch Crypto Payments on Ethereum">
+    <meta property="og:description" content="Send ETH or ERC-20 tokens to 200+ recipients in a single transaction on Ethereum. ~80% gas savings.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://spraay.app">
+    <meta property="og:url" content="https://spraay.app/ethereum">
     <meta property="og:image" content="https://spraay.app/spraay-og-square.png">
     <meta name="twitter:image" content="https://spraay.app/spraay-og-square.png">
     <meta name="twitter:card" content="summary">
@@ -22,6 +22,10 @@
             --crimson-deep: #5C0000;
             --crimson-bright: #DC143C;
             --crimson-glow: rgba(220, 20, 60, 0.15);
+            --eth-blue: #627EEA;
+            --eth-blue-dim: rgba(98, 126, 234, 0.15);
+            --eth-blue-border: rgba(98, 126, 234, 0.35);
+            --eth-blue-glow: rgba(98, 126, 234, 0.12);
             --bg: #060606;
             --bg-card: #0e0e0e;
             --bg-card-hover: #141414;
@@ -60,7 +64,7 @@
             font-weight: 800; font-size: 1.4rem; letter-spacing: 0.08em;
             background: linear-gradient(135deg, var(--crimson-bright), var(--crimson));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            cursor: pointer; text-decoration: none;
+            text-decoration: none;
         }
         .nav-links { display: flex; gap: 1.2rem; align-items: center; }
         .nav-links a {
@@ -68,6 +72,7 @@
             font-weight: 500; transition: color 0.2s;
         }
         .nav-links a:hover { color: var(--text); }
+        .nav-links a.active { color: var(--eth-blue); }
         .btn {
             display: inline-block; padding: 0.55rem 1.4rem; border-radius: 8px;
             font-weight: 600; font-size: 0.9rem; text-decoration: none;
@@ -79,20 +84,24 @@
             border: 1px solid var(--crimson-bright);
         }
         .btn-primary:hover { background: var(--crimson-bright); transform: translateY(-1px); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .btn-outline {
             background: transparent; color: var(--crimson-bright);
             border: 1px solid var(--border-bright);
         }
         .btn-outline:hover { background: var(--crimson-glow); }
+        .btn-eth {
+            background: var(--eth-blue-dim); color: var(--eth-blue);
+            border: 1px solid var(--eth-blue-border);
+        }
+        .btn-eth:hover { background: rgba(98, 126, 234, 0.22); transform: translateY(-1px); }
         .btn-connect {
-            background: linear-gradient(135deg, var(--crimson), var(--crimson-deep));
-            color: #fff; border: 1px solid var(--crimson-bright);
+            background: linear-gradient(135deg, #4a6ad4, #3a56b0);
+            color: #fff; border: 1px solid var(--eth-blue-border);
             padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 600;
             font-size: 0.85rem; cursor: pointer; font-family: 'Outfit', sans-serif;
             transition: all 0.25s ease;
         }
-        .btn-connect:hover { background: linear-gradient(135deg, var(--crimson-bright), var(--crimson)); }
+        .btn-connect:hover { background: linear-gradient(135deg, var(--eth-blue), #4a6ad4); }
         .btn-connected {
             background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);
             color: var(--green); cursor: pointer;
@@ -102,17 +111,31 @@
         /* ── Hero ──────────────────────────────────── */
         .hero {
             padding: 10rem 0 5rem; text-align: center;
-            background: radial-gradient(ellipse at 50% 0%, rgba(139,0,0,0.12) 0%, transparent 60%);
+            background: radial-gradient(ellipse at 50% 0%, rgba(98, 126, 234, 0.08) 0%, transparent 60%);
         }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: var(--eth-blue-dim); border: 1px solid var(--eth-blue-border);
+            border-radius: 20px; padding: 0.4rem 1rem;
+            font-size: 0.82rem; font-weight: 600; color: var(--eth-blue);
+            margin-bottom: 1.5rem;
+        }
+        .hero-badge .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--eth-blue);
+            box-shadow: 0 0 6px rgba(98, 126, 234, 0.6);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .hero h1 {
             font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800;
             line-height: 1.15; margin-bottom: 1.2rem;
         }
         .hero h1 span {
-            background: linear-gradient(135deg, var(--crimson-bright), #ff4d6d);
+            background: linear-gradient(135deg, var(--eth-blue), #8da2f0);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .hero p { color: var(--text-dim); font-size: 1.15rem; max-width: 560px; margin: 0 auto 2rem; }
+        .hero p { color: var(--text-dim); font-size: 1.15rem; max-width: 580px; margin: 0 auto 2rem; }
         .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
         .hero-stats {
             display: flex; gap: 3rem; justify-content: center; margin-top: 3.5rem;
@@ -121,62 +144,49 @@
         .stat { text-align: center; }
         .stat-value {
             font-size: 2rem; font-weight: 700;
-            background: linear-gradient(135deg, var(--crimson-bright), #ff6b81);
+            background: linear-gradient(135deg, var(--eth-blue), #8da2f0);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }
 
-        /* ── Integrations Banner ─────────────────── */
-        .integrations {
+        /* ── Chain Info ──────────────────────────── */
+        .chain-info {
             padding: 3rem 0;
             border-top: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
             background: var(--bg-card);
         }
-        .integrations-inner {
+        .chain-info-inner {
             display: flex; align-items: center; justify-content: center;
             gap: 2rem; flex-wrap: wrap;
         }
-        .integrations-label, .chains-label {
+        .chain-info-label {
             font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em;
             color: var(--text-muted); font-weight: 600;
         }
-        .integration-badge {
+        .chain-detail {
             display: flex; align-items: center; gap: 0.6rem;
             background: var(--bg); border: 1px solid var(--border);
             border-radius: 10px; padding: 0.6rem 1.2rem;
             font-weight: 600; font-size: 0.9rem; color: var(--text);
         }
-        .integration-badge .dot, .chain-badge .dot {
+        .chain-detail .dot {
             width: 8px; height: 8px; border-radius: 50%;
             background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5);
         }
-        .integration-badge.pending .dot {
-            background: #eab308; box-shadow: 0 0 6px rgba(234,179,8,0.5);
+        .chain-detail .tag {
+            font-size: 0.65rem; padding: 0.15rem 0.5rem;
+            border-radius: 4px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(34,197,94,0.15); color: #22c55e;
         }
-        .tag { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-        .tag-live { background: rgba(34,197,94,0.15); color: #22c55e; }
-        .tag-pending { background: rgba(234,179,8,0.15); color: #eab308; }
-
-        /* ── Chains Banner ───────────────────────── */
-        .chains { padding: 2.5rem 0; border-bottom: 1px solid var(--border); }
-        .chains-inner { display: flex; align-items: center; justify-content: center; gap: 1.2rem; flex-wrap: wrap; }
-        .chain-badge {
-            display: flex; align-items: center; gap: 0.6rem;
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 10px; padding: 0.6rem 1.2rem;
-            font-weight: 600; font-size: 0.9rem; color: var(--text);
-            text-decoration: none; transition: border-color 0.2s, background 0.2s;
-        }
-        .chain-badge:hover { border-color: var(--border-bright); background: var(--bg-card-hover); }
-        .chain-tag { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(34,197,94,0.15); color: #22c55e; }
 
         /* ═══════════════════════════════════════════
            APP SECTION
            ═══════════════════════════════════════════ */
         .app-section {
             padding: 5rem 0;
-            background: radial-gradient(ellipse at 50% 0%, rgba(139,0,0,0.08) 0%, transparent 50%);
+            background: radial-gradient(ellipse at 50% 0%, rgba(98, 126, 234, 0.06) 0%, transparent 50%);
             border-bottom: 1px solid var(--border);
         }
         .app-container { max-width: 720px; margin: 0 auto; }
@@ -190,7 +200,7 @@
         .app-card::before {
             content: '';
             position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--crimson-bright), transparent);
+            background: linear-gradient(90deg, transparent, var(--eth-blue), transparent);
         }
         .app-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -199,7 +209,11 @@
         .app-header h2 { font-size: 1.3rem; font-weight: 700; }
         .wallet-info { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-dim); }
         .wallet-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
-        .chain-indicator { font-size: 0.7rem; background: rgba(0,82,255,0.15); color: #4d9fff; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; }
+        .chain-indicator {
+            font-size: 0.7rem; background: var(--eth-blue-dim);
+            color: var(--eth-blue); padding: 0.15rem 0.5rem;
+            border-radius: 4px; font-weight: 700;
+        }
 
         /* Mode Toggle */
         .mode-toggle {
@@ -214,7 +228,10 @@
             color: var(--text-muted); background: transparent;
             border: none; font-family: 'Outfit', sans-serif;
         }
-        .mode-btn.active { background: var(--crimson); color: #fff; box-shadow: 0 2px 8px rgba(139,0,0,0.3); }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #4a6ad4, #3a56b0);
+            color: #fff; box-shadow: 0 2px 8px rgba(98,126,234,0.25);
+        }
         .mode-btn:hover:not(.active) { color: var(--text-dim); }
 
         /* Form Elements */
@@ -224,23 +241,15 @@
             color: var(--text-dim); margin-bottom: 0.4rem;
             text-transform: uppercase; letter-spacing: 0.06em;
         }
-        .form-input, .form-select {
+        .form-input {
             width: 100%; padding: 0.75rem 1rem;
             background: var(--bg); border: 1px solid var(--border);
             border-radius: 10px; color: var(--text);
             font-family: 'Outfit', sans-serif; font-size: 0.95rem;
             transition: border-color 0.2s; outline: none;
         }
-        .form-input:focus, .form-select:focus { border-color: var(--crimson-bright); }
+        .form-input:focus { border-color: var(--eth-blue-border); }
         .form-input::placeholder { color: var(--text-muted); }
-        .form-select {
-            cursor: pointer;
-            -webkit-appearance: none; -moz-appearance: none; appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat; background-position: right 1rem center;
-        }
-        .form-select option { background: var(--bg-card); color: var(--text); }
-        .form-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; }
 
         /* Token detected badge */
         .token-detected {
@@ -270,7 +279,7 @@
             outline: none; transition: border-color 0.2s;
             min-width: 0;
         }
-        .recipient-row .addr-input:focus { border-color: var(--crimson-bright); }
+        .recipient-row .addr-input:focus { border-color: var(--eth-blue-border); }
         .recipient-row .addr-input::placeholder { color: var(--text-muted); font-family: 'Space Mono', monospace; }
         .recipient-row .addr-input.invalid { border-color: var(--crimson-bright); background: rgba(220,20,60,0.05); }
         .recipient-row .addr-input.valid { border-color: rgba(34,197,94,0.4); }
@@ -286,7 +295,7 @@
             font-family: 'Space Mono', monospace; font-size: 0.82rem;
             outline: none; transition: border-color 0.2s;
         }
-        .amount-wrap .amt-input:focus { border-color: var(--crimson-bright); }
+        .amount-wrap .amt-input:focus { border-color: var(--eth-blue-border); }
         .amount-wrap .amt-input::placeholder { color: var(--text-muted); }
         .amount-wrap .amt-suffix {
             position: absolute; right: 0.8rem; font-size: 0.7rem;
@@ -305,12 +314,7 @@
             display: flex; align-items: center; justify-content: center;
             transition: all 0.2s; flex-shrink: 0;
         }
-        .remove-btn:hover { background: rgba(220,20,60,0.15); border-color: var(--crimson-bright); color: var(--crimson-bright); }
-        .remove-btn:disabled { opacity: 0.2; cursor: not-allowed; }
-
-        .recipient-row-num {
-            display: none; /* hidden but available for reference */
-        }
+        .remove-btn:hover { background: var(--eth-blue-glow); border-color: var(--eth-blue-border); color: var(--eth-blue); }
 
         /* Add Recipient Button */
         .add-recipient-btn {
@@ -320,14 +324,14 @@
             font-family: 'Outfit', sans-serif; font-weight: 600;
             transition: all 0.2s; margin-bottom: 1rem;
         }
-        .add-recipient-btn:hover { border-color: var(--border-bright); color: var(--crimson-bright); background: var(--crimson-glow); }
+        .add-recipient-btn:hover { border-color: var(--eth-blue-border); color: var(--eth-blue); background: var(--eth-blue-glow); }
         .recipient-count-badge {
             font-size: 0.72rem; color: var(--text-muted);
             text-align: center; margin-bottom: 0.8rem;
         }
         .recipient-count-badge strong { color: var(--text-dim); }
 
-        /* CSV Upload - compact, secondary */
+        /* CSV Upload */
         .csv-upload {
             border: 1px dashed var(--border);
             border-radius: 6px; padding: 0.5rem 0.8rem;
@@ -335,7 +339,7 @@
             transition: all 0.2s; margin-bottom: 1.2rem;
             display: inline-flex; align-items: center; gap: 0.5rem;
         }
-        .csv-upload:hover { border-color: var(--border-bright); background: var(--crimson-glow); }
+        .csv-upload:hover { border-color: var(--eth-blue-border); background: var(--eth-blue-glow); }
         .csv-upload-text { font-size: 0.75rem; color: var(--text-muted); }
         .csv-upload input[type="file"] { display: none; }
 
@@ -349,14 +353,14 @@
         }
         .modal-overlay.show { display: flex; }
         .modal {
-            background: var(--bg-card); border: 1px solid var(--border-bright);
+            background: var(--bg-card); border: 1px solid var(--eth-blue-border);
             border-radius: 16px; padding: 2rem; max-width: 520px; width: 100%;
             position: relative; animation: modalIn 0.2s ease;
         }
         @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .modal::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--crimson-bright), transparent);
+            background: linear-gradient(90deg, transparent, var(--eth-blue), transparent);
         }
         .modal h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; text-align: center; }
         .modal-summary {
@@ -367,19 +371,19 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 0.35rem 0; font-size: 0.88rem;
         }
-        .modal-row:not(:last-child) { border-bottom: 1px solid rgba(139,0,0,0.1); }
+        .modal-row:not(:last-child) { border-bottom: 1px solid rgba(98,126,234,0.08); }
         .modal-row .label { color: var(--text-dim); }
         .modal-row .value { font-weight: 600; font-family: 'Space Mono', monospace; }
         .modal-row .value .usd { color: var(--text-muted); font-size: 0.75rem; font-weight: 400; }
         .modal-row.total .label { color: var(--text); font-weight: 600; }
-        .modal-row.total .value { color: var(--crimson-bright); font-size: 1.05rem; }
+        .modal-row.total .value { color: var(--eth-blue); font-size: 1.05rem; }
         .modal-recipients-preview {
             max-height: 140px; overflow-y: auto; margin-bottom: 1rem;
             background: var(--bg); border: 1px solid var(--border);
             border-radius: 8px; padding: 0.6rem 0.8rem;
         }
         .modal-recipients-preview::-webkit-scrollbar { width: 4px; }
-        .modal-recipients-preview::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 4px; }
+        .modal-recipients-preview::-webkit-scrollbar-thumb { background: var(--eth-blue-border); border-radius: 4px; }
         .modal-recip-item {
             display: flex; justify-content: space-between;
             font-size: 0.75rem; padding: 0.2rem 0;
@@ -389,9 +393,9 @@
         .modal-buttons { display: flex; gap: 0.8rem; margin-top: 1rem; }
         .modal-buttons button { flex: 1; padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
         .modal-cancel { background: var(--bg); border: 1px solid var(--border); color: var(--text-dim); }
-        .modal-cancel:hover { border-color: var(--border-bright); color: var(--text); }
-        .modal-confirm { background: linear-gradient(135deg, var(--crimson), var(--crimson-deep)); border: 1px solid var(--crimson-bright); color: #fff; }
-        .modal-confirm:hover { background: linear-gradient(135deg, var(--crimson-bright), var(--crimson)); box-shadow: 0 4px 16px rgba(220,20,60,0.3); }
+        .modal-cancel:hover { border-color: var(--eth-blue-border); color: var(--text); }
+        .modal-confirm { background: linear-gradient(135deg, #4a6ad4, #3a56b0); border: 1px solid var(--eth-blue-border); color: #fff; }
+        .modal-confirm:hover { background: linear-gradient(135deg, var(--eth-blue), #4a6ad4); box-shadow: 0 4px 16px rgba(98,126,234,0.25); }
         .modal-warning { font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.6rem; }
 
         /* Equal Amount Toggle */
@@ -411,7 +415,7 @@
             width: 16px; height: 16px; border-radius: 50%;
             background: var(--text-dim); transition: all 0.2s;
         }
-        .equal-toggle input:checked + .toggle-track { background: var(--crimson); }
+        .equal-toggle input:checked + .toggle-track { background: linear-gradient(135deg, #4a6ad4, #3a56b0); }
         .equal-toggle input:checked + .toggle-track::after { left: 21px; background: #fff; }
         .toggle-label { font-size: 0.85rem; color: var(--text-dim); font-weight: 500; }
 
@@ -424,27 +428,27 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 0.4rem 0;
         }
-        .summary-row:not(:last-child) { border-bottom: 1px solid rgba(139,0,0,0.1); }
+        .summary-row:not(:last-child) { border-bottom: 1px solid rgba(98,126,234,0.08); }
         .summary-label { font-size: 0.85rem; color: var(--text-dim); }
         .summary-value { font-size: 0.85rem; font-weight: 600; font-family: 'Space Mono', monospace; }
         .summary-value .usd { color: var(--text-muted); font-size: 0.75rem; font-weight: 400; }
         .summary-total .summary-label { color: var(--text); font-weight: 600; }
-        .summary-total .summary-value { color: var(--crimson-bright); font-size: 1rem; }
+        .summary-total .summary-value { color: var(--eth-blue); font-size: 1rem; }
 
         /* Spray Button */
         .spray-btn {
             width: 100%; padding: 1rem; border-radius: 12px;
             font-size: 1.05rem; font-weight: 700; cursor: pointer;
-            background: linear-gradient(135deg, var(--crimson), var(--crimson-deep));
-            color: #fff; border: 1px solid var(--crimson-bright);
+            background: linear-gradient(135deg, #4a6ad4, #3a56b0);
+            color: #fff; border: 1px solid var(--eth-blue-border);
             font-family: 'Outfit', sans-serif;
             transition: all 0.3s ease;
             position: relative; overflow: hidden;
         }
         .spray-btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, var(--crimson-bright), var(--crimson));
+            background: linear-gradient(135deg, var(--eth-blue), #4a6ad4);
             transform: translateY(-1px);
-            box-shadow: 0 6px 24px rgba(220,20,60,0.3);
+            box-shadow: 0 6px 24px rgba(98,126,234,0.25);
         }
         .spray-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .spray-btn.loading { pointer-events: none; }
@@ -461,7 +465,7 @@
             text-align: center; margin-top: 0.6rem;
             font-size: 0.78rem; color: var(--text-muted);
         }
-        .wallet-note a { color: var(--crimson-bright); cursor: pointer; text-decoration: none; }
+        .wallet-note a { color: var(--eth-blue); cursor: pointer; text-decoration: none; }
         .wallet-note a:hover { text-decoration: underline; }
 
         /* Status Messages */
@@ -488,8 +492,8 @@
             cursor: pointer; transition: all 0.2s;
             font-family: 'Outfit', sans-serif;
         }
-        .token-pick:hover { border-color: var(--border-bright); color: var(--text); }
-        .token-pick.active { border-color: var(--crimson-bright); color: var(--crimson-bright); background: var(--crimson-glow); }
+        .token-pick:hover { border-color: var(--eth-blue-border); color: var(--text); }
+        .token-pick.active { border-color: var(--eth-blue); color: var(--eth-blue); background: var(--eth-blue-glow); }
 
         /* ETH Price Ticker */
         .eth-price-ticker {
@@ -500,16 +504,17 @@
         }
         .eth-price-ticker .price { color: var(--text-dim); font-family: 'Space Mono', monospace; }
 
-        /* ── Landing Page Sections (preserved) ── */
-        .features { padding: 5rem 0; }
+        /* ── Landing Page Sections ────────────── */
         .section-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
         .section-subtitle { color: var(--text-dim); margin-bottom: 3rem; }
+
+        .why-section { padding: 5rem 0; }
         .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
         .feature-card {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 12px; padding: 1.8rem; transition: all 0.25s ease;
         }
-        .feature-card:hover { border-color: var(--border-bright); background: var(--bg-card-hover); transform: translateY(-2px); }
+        .feature-card:hover { border-color: var(--eth-blue-border); background: var(--bg-card-hover); transform: translateY(-2px); }
         .feature-icon { font-size: 1.6rem; margin-bottom: 0.8rem; }
         .feature-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.4rem; }
         .feature-card p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; }
@@ -519,32 +524,48 @@
         .step { flex: 1; min-width: 220px; max-width: 300px; text-align: center; }
         .step-num {
             width: 48px; height: 48px; border-radius: 50%;
-            background: var(--crimson); color: #fff; font-weight: 700;
+            background: var(--eth-blue-dim); color: var(--eth-blue); font-weight: 700;
             font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 1rem; border: 2px solid var(--crimson-bright);
+            margin: 0 auto 1rem; border: 2px solid var(--eth-blue-border);
         }
         .step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
         .step p { font-size: 0.85rem; color: var(--text-dim); }
 
-        .use-cases { padding: 5rem 0; }
-        .use-case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }
-        .use-case { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; transition: border-color 0.2s; }
-        .use-case:hover { border-color: var(--border-bright); }
-        .use-case h3 { font-size: 1rem; margin-bottom: 0.3rem; }
-        .use-case p { font-size: 0.85rem; color: var(--text-dim); }
-
-        .contract-section { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); }
+        .contract-section { padding: 4rem 0; text-align: center; border-top: 1px solid var(--border); }
         .contract-address {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 10px; padding: 1rem 1.5rem; display: inline-block; margin-top: 1rem;
         }
-        .contract-address code { font-size: 0.85rem; color: var(--crimson-bright); word-break: break-all; }
-        .contract-address a { color: var(--crimson-bright); text-decoration: none; }
+        .contract-address code { font-size: 0.85rem; color: var(--eth-blue); word-break: break-all; }
+        .contract-address a { color: var(--eth-blue); text-decoration: none; }
         .contract-address a:hover { text-decoration: underline; }
+
+        .multichain { padding: 4rem 0; text-align: center; border-top: 1px solid var(--border); }
+        .multichain h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; }
+        .chain-grid { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; }
+        .chain-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.5rem 2rem;
+            text-decoration: none; color: var(--text);
+            transition: all 0.25s ease; min-width: 180px;
+        }
+        .chain-card:hover { border-color: var(--border-bright); background: var(--bg-card-hover); transform: translateY(-2px); }
+        .chain-card.current { border-color: var(--eth-blue-border); background: rgba(98, 126, 234, 0.05); }
+        .chain-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .chain-card p { font-size: 0.78rem; color: var(--text-muted); }
+        .chain-card .chain-status {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; margin-top: 0.5rem; color: #22c55e;
+        }
+        .chain-card .chain-status .dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #22c55e; box-shadow: 0 0 4px rgba(34,197,94,0.5);
+        }
 
         .cta {
             padding: 5rem 0; text-align: center;
-            background: radial-gradient(ellipse at 50% 100%, rgba(139,0,0,0.1) 0%, transparent 60%);
+            background: radial-gradient(ellipse at 50% 100%, rgba(98, 126, 234, 0.06) 0%, transparent 60%);
         }
         .cta h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.8rem; }
         .cta p { color: var(--text-dim); margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
@@ -560,7 +581,7 @@
         @media (max-width: 640px) {
             .hero { padding: 8rem 0 3rem; }
             .hero-stats { gap: 2rem; }
-            .integrations-inner { flex-direction: column; gap: 1rem; }
+            .chain-info-inner { flex-direction: column; gap: 1rem; }
             .nav-links a:not(.btn):not(.btn-connect):not(.btn-connected) { display: none; }
             .app-card { padding: 1.2rem; }
             .recipient-row { grid-template-columns: 1fr; }
@@ -576,16 +597,17 @@
     <!-- Nav -->
     <nav>
         <div class="container nav-inner">
-            <a href="#" class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">SPRAAY</a>
+            <a href="/" class="logo">SPRAAY</a>
             <div class="nav-links">
                 <a href="#app">Launch App</a>
+                <a href="/">Base</a>
                 <a href="/tao">Bittensor</a>
                 <a href="/plasma">Plasma</a>
                 <a href="/unichain">Unichain</a>
                 <a href="/arbitrum">Arbitrum</a>
                 <a href="/bob">BOB</a>
-                <a href="/ethereum">Ethereum</a>
-                <a href="https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC" target="_blank">Contract</a>
+                <a href="/ethereum" class="active">Ethereum</a>
+                <a href="https://etherscan.io/address/0x15E7aEDa45094DD2E9E746FcA1C726cAd7aE58b3" target="_blank">Contract</a>
                 <button id="navConnectBtn" class="btn-connect" onclick="connectWallet()">Connect Wallet</button>
             </div>
         </div>
@@ -594,11 +616,15 @@
     <!-- Hero -->
     <section class="hero">
         <div class="container">
-            <h1>Batch Crypto Payments<br><span>Made Simple</span></h1>
-            <p>Send ETH or ERC-20 tokens to 200+ recipients in a single transaction on Base. Payroll, airdrops, bounties – one transaction.</p>
+            <div class="hero-badge">
+                <span class="dot"></span>
+                Live on Ethereum Mainnet
+            </div>
+            <h1>Batch Payments on<br><span>Ethereum</span></h1>
+            <p>Send ETH or ERC-20 tokens to 200+ recipients in a single transaction on Ethereum mainnet. Payroll, airdrops, bounties – one transaction.</p>
             <div class="hero-buttons">
-                <a href="#app" class="btn btn-primary">Launch App →</a>
-                <a href="https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC" target="_blank" class="btn btn-outline">View on BaseScan</a>
+                <a href="#app" class="btn btn-eth">Launch App →</a>
+                <a href="https://etherscan.io/address/0x15E7aEDa45094DD2E9E746FcA1C726cAd7aE58b3" target="_blank" class="btn btn-outline">View on Etherscan</a>
             </div>
             <div class="hero-stats">
                 <div class="stat">
@@ -617,34 +643,21 @@
         </div>
     </section>
 
-    <!-- Integrations -->
-    <section class="integrations">
-        <div class="container integrations-inner">
-            <span class="integrations-label">Integrations</span>
-            <div class="integration-badge pending">
+    <!-- Chain Info -->
+    <section class="chain-info">
+        <div class="container chain-info-inner">
+            <span class="chain-info-label">Deployment</span>
+            <div class="chain-detail">
                 <span class="dot"></span>
-                Bankr (OpenClaw)
-                <span class="tag tag-pending">Pending</span>
+                Ethereum Mainnet
+                <span class="tag">Live</span>
             </div>
-            <div class="integration-badge">
-                <span class="dot"></span>
-                Coinbase AgentKit
-                <span class="tag tag-live">PR #944</span>
+            <div class="chain-detail">
+                Chain ID: 1
             </div>
-        </div>
-    </section>
-
-    <!-- Live On -->
-    <section class="chains">
-        <div class="container chains-inner">
-            <span class="chains-label">Live On</span>
-            <span class="chain-badge"><span class="dot"></span> 🔵 Base <span class="chain-tag">Live</span></span>
-            <a href="/unichain" class="chain-badge"><span class="dot"></span> 🦄 Unichain <span class="chain-tag">Live</span></a>
-            <a href="/arbitrum" class="chain-badge"><span class="dot"></span> ⬡ Arbitrum <span class="chain-tag">Live</span></a>
-            <a href="/plasma" class="chain-badge"><span class="dot"></span> 🟢 Plasma <span class="chain-tag">Live</span></a>
-            <a href="/tao" class="chain-badge"><span class="dot"></span> 🧠 Bittensor <span class="chain-tag">Live</span></a>
-            <a href="/bob" class="chain-badge"><span class="dot"></span> 🔶 BOB <span class="chain-tag">Live</span></a>
-            <a href="/ethereum" class="chain-badge"><span class="dot"></span> ⟠ Ethereum <span class="chain-tag">Live</span></a>
+            <div class="chain-detail">
+                Layer 1
+            </div>
         </div>
     </section>
 
@@ -655,18 +668,17 @@
         <div class="container app-container">
             <h2 class="section-title" style="text-align:center;">Spray Tokens</h2>
             <p class="section-subtitle" style="text-align:center;">
-                Batch send to multiple wallets in one transaction.
+                Batch send to multiple wallets on Ethereum in one transaction.
                 <span class="eth-price-ticker" id="ethPriceTicker">
                     ETH <span class="price" id="ethPriceDisplay">$---</span>
                 </span>
             </p>
 
             <div class="app-card">
-                <!-- App Header -->
                 <div class="app-header">
-                    <h2>🎯 Batch Send</h2>
+                    <h2>⟠ Batch Send</h2>
                     <div style="display:flex;align-items:center;gap:0.6rem;">
-                        <span class="chain-indicator">🔵 Base</span>
+                        <span class="chain-indicator">⟠ Ethereum</span>
                         <div id="walletInfo" class="wallet-info" style="display:none;">
                             <span class="wallet-dot"></span>
                             <span id="walletAddr" class="mono"></span>
@@ -692,8 +704,9 @@
                     </div>
                     <div class="token-quick-picks">
                         <button class="token-pick" onclick="pickToken('USDC')">USDC</button>
-                        <button class="token-pick" onclick="pickToken('DAI')">DAI</button>
+                        <button class="token-pick" onclick="pickToken('USDT')">USDT</button>
                         <button class="token-pick" onclick="pickToken('WETH')">WETH</button>
+                        <button class="token-pick" onclick="pickToken('DAI')">DAI</button>
                     </div>
                 </div>
 
@@ -714,18 +727,14 @@
                     </div>
                 </div>
 
-                <!-- Recipients Label -->
+                <!-- Recipients -->
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
                     <label class="form-label" style="margin-bottom:0;">Recipients</label>
                     <span class="recipient-count-badge"><strong id="recipientCount">0</strong> / 200</span>
                 </div>
 
-                <!-- Recipient Input Rows -->
-                <div class="recipients-list" id="recipientsList">
-                    <!-- Rows injected by JS -->
-                </div>
+                <div class="recipients-list" id="recipientsList"></div>
 
-                <!-- Add More + CSV -->
                 <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem;">
                     <button class="add-recipient-btn" onclick="addRecipientRow()" style="margin-bottom:0;">+ Add Recipient</button>
                     <div class="csv-upload" onclick="document.getElementById('csvFile').click()" style="margin-bottom:0;flex-shrink:0;">
@@ -754,7 +763,6 @@
                     </div>
                 </div>
 
-                <!-- Send Button -->
                 <button class="spray-btn" id="sprayBtn" onclick="handleSprayClick()" disabled>
                     🚀 Spray Tokens
                 </button>
@@ -762,24 +770,23 @@
                     <a onclick="connectWallet()">Connect wallet</a> to send — or explore the interface first
                 </div>
 
-                <!-- Status -->
                 <div class="status-msg" id="statusMsg"></div>
             </div>
         </div>
     </section>
 
-    <!-- Features -->
-    <section class="features">
+    <!-- Why Ethereum -->
+    <section class="why-section">
         <div class="container">
-            <h2 class="section-title">Built for Scale</h2>
-            <p class="section-subtitle">Everything you need for batch crypto payments on Base.</p>
+            <h2 class="section-title">Why Spraay on Ethereum?</h2>
+            <p class="section-subtitle">Ethereum is the most trusted, most liquid, and most widely adopted smart contract platform.</p>
             <div class="feature-grid">
-                <div class="feature-card"><div class="feature-icon">⚡</div><h3>Batch ETH Sends</h3><p>Send ETH to up to 200 wallets in a single transaction. Equal or variable amounts.</p></div>
-                <div class="feature-card"><div class="feature-icon">🪙</div><h3>ERC-20 Tokens</h3><p>Spray USDC, DAI, or any ERC-20 token. Automatic approval handling.</p></div>
-                <div class="feature-card"><div class="feature-icon">🤖</div><h3>AI Agent Ready</h3><p>Integrated with Coinbase AgentKit. Any AI agent can batch-send via Spraay.</p></div>
-                <div class="feature-card"><div class="feature-icon">💬</div><h3>Natural Language</h3><p>Bankr integration pending: "Spray 10 USDC each to @alice @bob @charlie" – coming soon.</p></div>
-                <div class="feature-card"><div class="feature-icon">📋</div><h3>CSV Import</h3><p>Upload a CSV of addresses and amounts for large-scale distributions.</p></div>
-                <div class="feature-card"><div class="feature-icon">🔐</div><h3>Secure</h3><p>OpenZeppelin ReentrancyGuard & Pausable. Verified on BaseScan.</p></div>
+                <div class="feature-card"><div class="feature-icon">🏛️</div><h3>Maximum Credibility</h3><p>Ethereum L1 is the gold standard. Your batch payments settle on the most secure blockchain.</p></div>
+                <div class="feature-card"><div class="feature-icon">💎</div><h3>Deep Liquidity</h3><p>Access the widest range of ERC-20 tokens — USDC, USDT, DAI, WETH, and thousands more.</p></div>
+                <div class="feature-card"><div class="feature-icon">⚡</div><h3>Low Gas Era</h3><p>Post-Dencun Ethereum gas is at historic lows. Batch payments are more affordable than ever.</p></div>
+                <div class="feature-card"><div class="feature-icon">🪙</div><h3>Any ERC-20 Token</h3><p>Batch send any ERC-20 token on Ethereum — automatic approval handling included.</p></div>
+                <div class="feature-card"><div class="feature-icon">🤖</div><h3>AI Agent Ready</h3><p>Same contract interface across all chains. Compatible with Coinbase AgentKit for AI-powered payments.</p></div>
+                <div class="feature-card"><div class="feature-icon">🔐</div><h3>Verified & Secure</h3><p>OpenZeppelin ReentrancyGuard & Pausable. Source verified on Etherscan.</p></div>
             </div>
         </div>
     </section>
@@ -790,23 +797,9 @@
             <h2 class="section-title" style="text-align:center">How It Works</h2>
             <p class="section-subtitle" style="text-align:center">Three steps. One transaction.</p>
             <div class="steps">
-                <div class="step"><div class="step-num">1</div><h3>Input Recipients</h3><p>Add wallet addresses and amounts — type them in, upload a CSV, or use AgentKit.</p></div>
-                <div class="step"><div class="step-num">2</div><h3>Spraay Batches</h3><p>The smart contract bundles all transfers into a single transaction on Base.</p></div>
-                <div class="step"><div class="step-num">3</div><h3>Everyone Gets Paid</h3><p>All recipients receive funds instantly. ~80% cheaper than sending one by one.</p></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Use Cases -->
-    <section class="use-cases">
-        <div class="container">
-            <h2 class="section-title">Perfect For</h2>
-            <p class="section-subtitle">Any scenario that involves paying multiple people.</p>
-            <div class="use-case-grid">
-                <div class="use-case"><h3>🎁 Airdrops</h3><p>Distribute tokens to your community efficiently.</p></div>
-                <div class="use-case"><h3>💰 Payroll</h3><p>Pay your entire team in one transaction.</p></div>
-                <div class="use-case"><h3>🏆 Bounties</h3><p>Reward contributors with variable amounts.</p></div>
-                <div class="use-case"><h3>🏛️ DAO Distributions</h3><p>Treasury payouts and governance token distributions.</p></div>
+                <div class="step"><div class="step-num">1</div><h3>Input Recipients</h3><p>Provide wallet addresses and amounts – via CSV, programmatically, or through an AI agent.</p></div>
+                <div class="step"><div class="step-num">2</div><h3>Spraay Batches</h3><p>The smart contract bundles all transfers into a single transaction on Ethereum.</p></div>
+                <div class="step"><div class="step-num">3</div><h3>Everyone Gets Paid</h3><p>All recipients receive funds on-chain. Drastically cheaper than individual sends.</p></div>
             </div>
         </div>
     </section>
@@ -814,10 +807,55 @@
     <!-- Contract -->
     <section class="contract-section">
         <div class="container">
-            <h2 class="section-title">Verified on Base</h2>
+            <h2 class="section-title">Verified on Etherscan</h2>
+            <p style="color: var(--text-dim); margin-top: 0.5rem;">Source code publicly verified on Etherscan</p>
             <div class="contract-address">
-                <a href="https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC" target="_blank">
-                    <code>0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC</code>
+                <a href="https://etherscan.io/address/0x15E7aEDa45094DD2E9E746FcA1C726cAd7aE58b3#code" target="_blank">
+                    <code>0x15E7aEDa45094DD2E9E746FcA1C726cAd7aE58b3</code>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Multi-Chain -->
+    <section class="multichain">
+        <div class="container">
+            <h2>Spraay is Multi-Chain</h2>
+            <div class="chain-grid">
+                <a href="/" class="chain-card">
+                    <h3>🔵 Base</h3>
+                    <p>Coinbase L2</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
+                </a>
+                <a href="/arbitrum" class="chain-card">
+                    <h3>⬡ Arbitrum</h3>
+                    <p>Ethereum L2</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
+                </a>
+                <div class="chain-card current">
+                    <h3>⟠ Ethereum</h3>
+                    <p>Layer 1</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
+                </div>
+                <a href="/unichain" class="chain-card">
+                    <h3>🦄 Unichain</h3>
+                    <p>Uniswap L2</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
+                </a>
+                <a href="/plasma" class="chain-card">
+                    <h3>🟢 Plasma</h3>
+                    <p>Plasma Network</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
+                </a>
+                <a href="/bob" class="chain-card">
+                    <h3>🔶 BOB</h3>
+                    <p>Bitcoin DeFi</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
+                </a>
+                <a href="/tao" class="chain-card">
+                    <h3>🧠 Bittensor</h3>
+                    <p>TAO Subnet Ops</p>
+                    <div class="chain-status"><span class="dot"></span> Live</div>
                 </a>
             </div>
         </div>
@@ -826,11 +864,11 @@
     <!-- CTA -->
     <section class="cta">
         <div class="container">
-            <h2>Ready to Batch Send?</h2>
-            <p>Connect your wallet above, or integrate Spraay into your AI agent with Coinbase AgentKit.</p>
+            <h2>Ready to Batch Send on Ethereum?</h2>
+            <p>Deploy batch payments on Ethereum mainnet with the same trusted Spraay protocol.</p>
             <div class="hero-buttons">
-                <a href="#app" class="btn btn-primary">Launch App →</a>
-                <a href="https://github.com/coinbase/agentkit/pull/944" target="_blank" class="btn btn-outline">View AgentKit PR</a>
+                <a href="#app" class="btn btn-eth">Launch App →</a>
+                <a href="https://github.com/plagtech" target="_blank" class="btn btn-outline">GitHub</a>
             </div>
         </div>
     </section>
@@ -839,19 +877,20 @@
     <footer>
         <div class="container footer-inner">
             <div>
-                <span class="logo" style="font-size:1.1rem">SPRAAY</span>
+                <a href="/" class="logo" style="font-size:1.1rem">SPRAAY</a>
                 <span class="footer-copy" style="margin-left:1rem">Batch crypto payments, multi-chain</span>
             </div>
             <div class="footer-links">
+                <a href="/">Base</a>
+                <a href="/unichain">Unichain</a>
+                <a href="/arbitrum">Arbitrum</a>
+                <a href="/ethereum" class="active">Ethereum</a>
+                <a href="/bob">BOB</a>
+                <a href="/plasma">Plasma</a>
                 <a href="/tao">Spraay TAO</a>
-                <a href="/plasma">Spraay Plasma</a>
-                <a href="/unichain">Spraay Unichain</a>
-                <a href="/bob">Spraay BOB</a>
-                <a href="/ethereum">Ethereum</a>
                 <a href="https://twitter.com/Spraay_app" target="_blank">Twitter</a>
                 <a href="https://warpcast.com/plag" target="_blank">Farcaster</a>
                 <a href="https://github.com/plagtech" target="_blank">GitHub</a>
-                <a href="https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC" target="_blank">BaseScan</a>
             </div>
         </div>
     </footer>
@@ -859,8 +898,8 @@
     <!-- Confirmation Modal -->
     <div class="modal-overlay" id="confirmModal">
         <div class="modal">
-            <h3>⚡ Confirm Spray</h3>
-            <p style="text-align:center;font-size:0.85rem;color:var(--text-dim);margin-bottom:1rem;">Review the details below before sending.</p>
+            <h3>⟠ Confirm Spray</h3>
+            <p style="text-align:center;font-size:0.85rem;color:var(--text-dim);margin-bottom:1rem;">Review the details below before sending on Ethereum.</p>
 
             <div id="modalRecipientsList" class="modal-recipients-preview"></div>
 
@@ -893,19 +932,22 @@
 
     <script>
     // ═══════════════════════════════════════════
-    // SPRAAY DAPP
+    // SPRAAY DAPP – ETHEREUM MAINNET
     // ═══════════════════════════════════════════
 
-    const SPRAY_CONTRACT = "0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC";
-    const BASE_CHAIN_ID = "0x2105";
-    const BASE_RPC = "https://mainnet.base.org";
+    const SPRAY_CONTRACT = "0x15E7aEDa45094DD2E9E746FcA1C726cAd7aE58b3";
+    const CHAIN_ID_HEX = "0x1";
+    const CHAIN_ID_DEC = 1;
+    const CHAIN_RPC = "https://ethereum-rpc.publicnode.com";
+    const CHAIN_NAME = "Ethereum Mainnet";
+    const EXPLORER_URL = "https://etherscan.io";
 
     const SPRAY_ABI = [
         "function sprayETH(tuple(address recipient, uint256 amount)[] recipients) payable",
         "function sprayToken(address token, tuple(address recipient, uint256 amount)[] recipients)",
-        "function sprayEqual(address token, address[] recipients, uint256 amountPerRecipient) payable",
+        "function sprayEqualETH(address[] recipients, uint256 amountPerRecipient) payable",
+        "function sprayEqualToken(address token, address[] recipients, uint256 amountPerRecipient)",
         "function calculateFee(uint256 amount) view returns (uint256)",
-        "function calculateTotalCost(uint256 totalAmount) view returns (uint256)",
         "function feeBps() view returns (uint256)"
     ];
 
@@ -918,10 +960,12 @@
         "function balanceOf(address account) view returns (uint256)"
     ];
 
+    // Common Ethereum mainnet tokens
     const COMMON_TOKENS = {
-        'USDC': { address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', decimals: 6 },
-        'DAI':  { address: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', decimals: 18 },
-        'WETH': { address: '0x4200000000000000000000000000000000000006', decimals: 18 },
+        'USDC': { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6 },
+        'USDT': { address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals: 6 },
+        'WETH': { address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', decimals: 18 },
+        'DAI':  { address: '0x6B175474E89094C44Da98b954EedeAC495271d0F', decimals: 18 },
     };
 
     let provider = null;
@@ -933,9 +977,9 @@
     let rowCounter = 0;
 
     // ── Token Symbol Detection ──────────────────
-    let tokenSymbolCache = {};   // { '0xabc...': 'DEGEN' }
-    let tokenLookupTimer = null; // debounce timer
-    let currentResolvedSymbol = 'TKN'; // tracks what's currently resolved
+    let tokenSymbolCache = {};
+    let tokenLookupTimer = null;
+    let currentResolvedSymbol = 'TKN';
 
     // ── Initialize ──────────────────────────────
     window.addEventListener('DOMContentLoaded', () => {
@@ -946,14 +990,13 @@
         setInterval(fetchEthPrice, 60000);
     });
 
-    // ── Fetch ETH Price (with fallbacks) ────────
+    // ── Fetch ETH Price ─────────────────────────
     async function fetchEthPrice() {
         const apis = [
             { url: 'https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD', parse: d => d.USD },
             { url: 'https://api.coinbase.com/v2/prices/ETH-USD/spot', parse: d => parseFloat(d.data.amount) },
             { url: 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd', parse: d => d.ethereum.usd },
         ];
-
         for (const api of apis) {
             try {
                 const resp = await fetch(api.url);
@@ -966,7 +1009,7 @@
                     updateSummary();
                     return;
                 }
-            } catch { /* silent, try next */ }
+            } catch { /* try next */ }
         }
     }
 
@@ -990,22 +1033,22 @@
             userAddress = accounts[0];
 
             const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-            if (chainId !== BASE_CHAIN_ID) {
+            if (chainId !== CHAIN_ID_HEX) {
                 try {
                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: BASE_CHAIN_ID }],
+                        params: [{ chainId: CHAIN_ID_HEX }],
                     });
                 } catch (switchError) {
                     if (switchError.code === 4902) {
                         await window.ethereum.request({
                             method: 'wallet_addEthereumChain',
                             params: [{
-                                chainId: BASE_CHAIN_ID,
-                                chainName: 'Base',
+                                chainId: CHAIN_ID_HEX,
+                                chainName: CHAIN_NAME,
                                 nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-                                rpcUrls: [BASE_RPC],
-                                blockExplorerUrls: ['https://basescan.org'],
+                                rpcUrls: [CHAIN_RPC],
+                                blockExplorerUrls: [EXPLORER_URL],
                             }],
                         });
                     } else { throw switchError; }
@@ -1024,7 +1067,6 @@
             navBtn.classList.add('btn-connected');
 
             updateSummary();
-
         } catch (err) {
             console.error(err);
             showStatus('Failed to connect: ' + (err.message || err), 'error');
@@ -1057,15 +1099,9 @@
             btn.classList.toggle('active', btn.dataset.mode === mode);
         });
         document.getElementById('tokenSection').style.display = mode === 'erc20' ? 'block' : 'none';
-
         const suffix = mode === 'eth' ? 'ETH' : currentResolvedSymbol;
         setTokenSuffix(suffix);
-
-        // Hide detected badge when switching back to ETH
-        if (mode === 'eth') {
-            document.getElementById('tokenDetectedBadge').style.display = 'none';
-        }
-
+        if (mode === 'eth') document.getElementById('tokenDetectedBadge').style.display = 'none';
         updateSummary();
     }
 
@@ -1083,7 +1119,6 @@
         document.getElementById('tokenAddress').value = token.address;
         document.querySelectorAll('.token-pick').forEach(el => el.classList.remove('active'));
         event.target.classList.add('active');
-
         currentResolvedSymbol = symbol;
         setTokenSuffix(symbol);
         showTokenDetected(symbol);
@@ -1100,24 +1135,19 @@
         document.querySelectorAll('.token-pick').forEach(el => el.classList.remove('active'));
         const addr = document.getElementById('tokenAddress').value.trim();
 
-        // Check hardcoded tokens first
         const knownSym = getSelectedTokenSymbol();
         if (knownSym !== 'TKN') {
             currentResolvedSymbol = knownSym;
             setTokenSuffix(knownSym);
             showTokenDetected(knownSym);
-            // Highlight the matching quick-pick button
             document.querySelectorAll('.token-pick').forEach(el => {
                 if (el.textContent === knownSym) el.classList.add('active');
             });
             return;
         }
 
-        // If valid address, fetch symbol on-chain
         if (/^0x[a-fA-F0-9]{40}$/.test(addr)) {
             const addrLower = addr.toLowerCase();
-
-            // Check cache
             if (tokenSymbolCache[addrLower]) {
                 currentResolvedSymbol = tokenSymbolCache[addrLower];
                 setTokenSuffix(currentResolvedSymbol);
@@ -1125,18 +1155,15 @@
                 return;
             }
 
-            // Show loading state
             setTokenSuffix('···');
             hideTokenDetected();
 
             try {
-                const readProvider = provider || new ethers.providers.JsonRpcProvider(BASE_RPC);
+                const readProvider = provider || new ethers.providers.JsonRpcProvider(CHAIN_RPC);
                 const tokenContract = new ethers.Contract(addr, ERC20_ABI, readProvider);
                 const symbol = await tokenContract.symbol();
-
                 if (symbol) {
                     tokenSymbolCache[addrLower] = symbol;
-                    // Only update if the address hasn't changed while we were fetching
                     if (document.getElementById('tokenAddress').value.trim().toLowerCase() === addrLower) {
                         currentResolvedSymbol = symbol;
                         setTokenSuffix(symbol);
@@ -1148,7 +1175,6 @@
                     hideTokenDetected();
                 }
             } catch {
-                // Not a valid ERC-20 or RPC error
                 if (document.getElementById('tokenAddress').value.trim().toLowerCase() === addrLower) {
                     currentResolvedSymbol = 'TKN';
                     setTokenSuffix('TKN');
@@ -1180,27 +1206,22 @@
     function toggleEqualMode() {
         isEqualMode = document.getElementById('equalToggle').checked;
         document.getElementById('equalAmountSection').style.display = isEqualMode ? 'block' : 'none';
-
         document.querySelectorAll('.amount-wrap-individual').forEach(el => {
             el.style.display = isEqualMode ? 'none' : 'block';
         });
-
         updateSummary();
     }
 
     // ── Recipient Rows ──────────────────────────
     function addRecipientRow(address, amount) {
         const list = document.getElementById('recipientsList');
-        const count = list.children.length;
-        if (count >= 200) {
+        if (list.children.length >= 200) {
             showStatus('Maximum 200 recipients per transaction.', 'error');
             return;
         }
-
         rowCounter++;
         const id = rowCounter;
         const suffix = currentMode === 'eth' ? 'ETH' : currentResolvedSymbol;
-
         const row = document.createElement('div');
         row.className = 'recipient-row';
         row.dataset.id = id;
@@ -1219,7 +1240,6 @@
             </div>
             <button class="remove-btn" onclick="removeRecipientRow(${id})" title="Remove">×</button>
         `;
-
         list.appendChild(row);
         updateRecipientCount();
         updateSummary();
@@ -1234,54 +1254,34 @@
             row.style.opacity = '0';
             row.style.transform = 'translateX(20px)';
             row.style.transition = 'all 0.15s ease';
-            setTimeout(() => {
-                row.remove();
-                updateRecipientCount();
-                updateSummary();
-            }, 150);
+            setTimeout(() => { row.remove(); updateRecipientCount(); updateSummary(); }, 150);
         }
     }
 
     function updateRecipientCount() {
-        const count = document.getElementById('recipientsList').children.length;
-        document.getElementById('recipientCount').textContent = count;
+        document.getElementById('recipientCount').textContent = document.getElementById('recipientsList').children.length;
     }
 
     function validateAddr(input) {
         const val = input.value.trim();
-        if (!val) {
-            input.classList.remove('valid', 'invalid');
-        } else if (/^0x[a-fA-F0-9]{40}$/.test(val)) {
-            input.classList.add('valid');
-            input.classList.remove('invalid');
-        } else {
-            input.classList.add('invalid');
-            input.classList.remove('valid');
-        }
+        if (!val) { input.classList.remove('valid', 'invalid'); }
+        else if (/^0x[a-fA-F0-9]{40}$/.test(val)) { input.classList.add('valid'); input.classList.remove('invalid'); }
+        else { input.classList.add('invalid'); input.classList.remove('valid'); }
     }
 
-    // ── Parse Recipients from Rows ──────────────
     function getRecipients() {
         const rows = document.querySelectorAll('.recipient-row');
         const recipients = [];
-
         rows.forEach(row => {
-            const addrInput = row.querySelector('.addr-input');
-            const amtInput = row.querySelector('.amt-input');
-            const addr = addrInput ? addrInput.value.trim() : '';
-
+            const addr = (row.querySelector('.addr-input')?.value || '').trim();
             if (/^0x[a-fA-F0-9]{40}$/.test(addr)) {
-                if (isEqualMode) {
-                    recipients.push({ address: addr });
-                } else {
-                    const amt = amtInput ? amtInput.value.trim() : '0';
-                    if (parseFloat(amt) > 0) {
-                        recipients.push({ address: addr, amount: amt });
-                    }
+                if (isEqualMode) { recipients.push({ address: addr }); }
+                else {
+                    const amt = (row.querySelector('.amt-input')?.value || '0').trim();
+                    if (parseFloat(amt) > 0) recipients.push({ address: addr, amount: amt });
                 }
             }
         });
-
         return recipients;
     }
 
@@ -1290,7 +1290,6 @@
         const recipients = getRecipients();
         const count = recipients.length;
         document.getElementById('summaryRecipients').textContent = count;
-
         const symbol = currentMode === 'eth' ? 'ETH' : currentResolvedSymbol;
         let totalAmount = 0;
 
@@ -1298,22 +1297,14 @@
             const perRecipient = parseFloat(document.getElementById('equalAmount').value) || 0;
             totalAmount = perRecipient * count;
             const eqUsd = document.getElementById('equalUsd');
-            if (currentMode === 'eth' && ethPrice && perRecipient > 0) {
-                eqUsd.textContent = toUsd(perRecipient);
-            } else {
-                eqUsd.textContent = '';
-            }
+            eqUsd.textContent = (currentMode === 'eth' && ethPrice && perRecipient > 0) ? toUsd(perRecipient) : '';
         } else {
             document.querySelectorAll('.recipient-row').forEach(row => {
                 const amtInput = row.querySelector('.amt-input');
                 const usdHint = row.querySelector('[data-usd-row]');
                 const amt = amtInput ? parseFloat(amtInput.value) || 0 : 0;
                 totalAmount += amt;
-                if (usdHint && currentMode === 'eth' && ethPrice && amt > 0) {
-                    usdHint.textContent = toUsd(amt);
-                } else if (usdHint) {
-                    usdHint.textContent = '';
-                }
+                if (usdHint) usdHint.textContent = (currentMode === 'eth' && ethPrice && amt > 0) ? toUsd(amt) : '';
             });
         }
 
@@ -1336,35 +1327,24 @@
 
         const btn = document.getElementById('sprayBtn');
         btn.disabled = count === 0 || totalAmount === 0;
-
-        if (!userAddress) {
-            btn.textContent = '🔗 Connect Wallet to Spray';
-        } else {
-            btn.textContent = '🚀 Spray ' + total.toFixed(4) + ' ' + symbol;
-        }
+        btn.textContent = !userAddress ? '🔗 Connect Wallet to Spray' : '🚀 Spray ' + total.toFixed(4) + ' ' + symbol;
     }
 
     // ── CSV Handler ─────────────────────────────
     function handleCSV(event) {
         const file = event.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (e) => {
-            const text = e.target.result;
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.toLowerCase().startsWith('address'));
-
+            const lines = e.target.result.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.toLowerCase().startsWith('address'));
             document.getElementById('recipientsList').innerHTML = '';
             rowCounter = 0;
-
             let loaded = 0;
             for (const line of lines) {
                 if (loaded >= 200) break;
                 const parts = line.split(/[,\s]+/).filter(Boolean);
                 if (parts.length >= 1 && /^0x[a-fA-F0-9]{40}$/.test(parts[0])) {
-                    const addr = parts[0];
-                    const amt = parts.length >= 2 ? parts[1] : '';
-                    addRecipientRow(addr, amt);
+                    addRecipientRow(parts[0], parts[1] || '');
                     loaded++;
                 }
             }
@@ -1374,33 +1354,21 @@
         event.target.value = '';
     }
 
-    // ── Handle Spray Click — Show Confirmation ──
+    // ── Confirmation Modal ──────────────────────
     async function handleSprayClick() {
-        if (!userAddress) {
-            await connectWallet();
-            if (!userAddress) return;
-        }
+        if (!userAddress) { await connectWallet(); if (!userAddress) return; }
 
         const recipients = getRecipients();
-        if (recipients.length === 0) {
-            showStatus('Add at least one valid recipient with an amount.', 'error');
-            return;
-        }
-        if (recipients.length > 200) {
-            showStatus('Maximum 200 recipients per transaction.', 'error');
-            return;
-        }
+        if (recipients.length === 0) { showStatus('Add at least one valid recipient with an amount.', 'error'); return; }
+        if (recipients.length > 200) { showStatus('Maximum 200 recipients per transaction.', 'error'); return; }
 
         const symbol = currentMode === 'eth' ? 'ETH' : currentResolvedSymbol;
         let totalAmount = 0;
-
         if (isEqualMode) {
-            const perRecipient = parseFloat(document.getElementById('equalAmount').value) || 0;
-            totalAmount = perRecipient * recipients.length;
+            totalAmount = (parseFloat(document.getElementById('equalAmount').value) || 0) * recipients.length;
         } else {
             for (const r of recipients) totalAmount += parseFloat(r.amount) || 0;
         }
-
         const fee = totalAmount * 0.003;
         const total = totalAmount + fee;
 
@@ -1421,7 +1389,7 @@
 
         const previewEl = document.getElementById('modalRecipientsList');
         previewEl.innerHTML = '';
-        recipients.forEach((r, i) => {
+        recipients.forEach(r => {
             const shortAddr = r.address.slice(0, 8) + '...' + r.address.slice(-6);
             const amt = isEqualMode
                 ? (parseFloat(document.getElementById('equalAmount').value) || 0).toFixed(6)
@@ -1432,34 +1400,16 @@
         document.getElementById('confirmModal').classList.add('show');
     }
 
-    function closeConfirmModal() {
-        document.getElementById('confirmModal').classList.remove('show');
-    }
-
-    document.getElementById('confirmModal').addEventListener('click', function(e) {
-        if (e.target === this) closeConfirmModal();
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeConfirmModal();
-    });
-
-    async function confirmAndSend() {
-        closeConfirmModal();
-        await executeSpray();
-    }
+    function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('show'); }
+    document.getElementById('confirmModal').addEventListener('click', function(e) { if (e.target === this) closeConfirmModal(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeConfirmModal(); });
+    async function confirmAndSend() { closeConfirmModal(); await executeSpray(); }
 
     // ── Execute Spray ───────────────────────────
     async function executeSpray() {
         const recipients = getRecipients();
-        if (recipients.length === 0) {
-            showStatus('Add at least one valid recipient with an amount.', 'error');
-            return;
-        }
-        if (recipients.length > 200) {
-            showStatus('Maximum 200 recipients per transaction.', 'error');
-            return;
-        }
+        if (recipients.length === 0) { showStatus('Add at least one valid recipient with an amount.', 'error'); return; }
+        if (recipients.length > 200) { showStatus('Maximum 200 recipients per transaction.', 'error'); return; }
 
         const btn = document.getElementById('sprayBtn');
         btn.disabled = true;
@@ -1468,11 +1418,8 @@
 
         try {
             const contract = new ethers.Contract(SPRAY_CONTRACT, SPRAY_ABI, signer);
-            if (currentMode === 'eth') {
-                await sprayETH(contract, recipients);
-            } else {
-                await sprayERC20(contract, recipients);
-            }
+            if (currentMode === 'eth') await sprayETH(contract, recipients);
+            else await sprayERC20(contract, recipients);
         } catch (err) {
             console.error(err);
             let msg = err.reason || err.message || 'Transaction failed';
@@ -1493,33 +1440,28 @@
             const totalAmount = amountPerRecipient.mul(addresses.length);
             const fee = totalAmount.mul(30).div(10000);
             const totalCost = totalAmount.add(fee);
-
             showStatus('Confirm the transaction in your wallet...', 'info');
-            const tx = await contract.sprayEqual(ethers.constants.AddressZero, addresses, amountPerRecipient, { value: totalCost });
+            const tx = await contract.sprayEqualETH(addresses, amountPerRecipient, { value: totalCost });
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
             const receipt = await tx.wait();
-            showStatus(`Sprayed ETH to ${addresses.length} recipients! <a href="https://basescan.org/tx/${receipt.transactionHash}" target="_blank">View on BaseScan →</a>`, 'success');
+            showStatus(`Sprayed ETH to ${addresses.length} recipients! <a href="${EXPLORER_URL}/tx/${receipt.transactionHash}" target="_blank">View on Etherscan →</a>`, 'success');
         } else {
             const tuples = recipients.map(r => ({ recipient: r.address, amount: ethers.utils.parseEther(r.amount) }));
             let totalAmount = ethers.BigNumber.from(0);
             for (const r of tuples) totalAmount = totalAmount.add(r.amount);
             const fee = totalAmount.mul(30).div(10000);
             const totalCost = totalAmount.add(fee);
-
             showStatus('Confirm the transaction in your wallet...', 'info');
             const tx = await contract.sprayETH(tuples, { value: totalCost });
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
             const receipt = await tx.wait();
-            showStatus(`Sprayed ETH to ${tuples.length} recipients! <a href="https://basescan.org/tx/${receipt.transactionHash}" target="_blank">View on BaseScan →</a>`, 'success');
+            showStatus(`Sprayed ETH to ${tuples.length} recipients! <a href="${EXPLORER_URL}/tx/${receipt.transactionHash}" target="_blank">View on Etherscan →</a>`, 'success');
         }
     }
 
     async function sprayERC20(contract, recipients) {
         const tokenAddr = document.getElementById('tokenAddress').value.trim();
-        if (!/^0x[a-fA-F0-9]{40}$/.test(tokenAddr)) {
-            showStatus('Please enter a valid ERC-20 token address.', 'error');
-            return;
-        }
+        if (!/^0x[a-fA-F0-9]{40}$/.test(tokenAddr)) { showStatus('Please enter a valid ERC-20 token address.', 'error'); return; }
 
         const tokenContract = new ethers.Contract(tokenAddr, ERC20_ABI, signer);
         let decimals;
@@ -1538,12 +1480,11 @@
                 const appTx = await tokenContract.approve(SPRAY_CONTRACT, totalNeeded);
                 await appTx.wait();
             }
-
             showStatus('Confirm the spray transaction in your wallet...', 'info');
-            const tx = await contract.sprayEqual(tokenAddr, addresses, amountPerRecipient);
+            const tx = await contract.sprayEqualToken(tokenAddr, addresses, amountPerRecipient);
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
             const receipt = await tx.wait();
-            showStatus(`Sprayed tokens to ${addresses.length} recipients! <a href="https://basescan.org/tx/${receipt.transactionHash}" target="_blank">View on BaseScan →</a>`, 'success');
+            showStatus(`Sprayed tokens to ${addresses.length} recipients! <a href="${EXPLORER_URL}/tx/${receipt.transactionHash}" target="_blank">View on Etherscan →</a>`, 'success');
         } else {
             const tuples = recipients.map(r => ({ recipient: r.address, amount: ethers.utils.parseUnits(r.amount, decimals) }));
             let totalAmount = ethers.BigNumber.from(0);
@@ -1557,12 +1498,11 @@
                 const appTx = await tokenContract.approve(SPRAY_CONTRACT, totalNeeded);
                 await appTx.wait();
             }
-
             showStatus('Confirm the spray transaction in your wallet...', 'info');
             const tx = await contract.sprayToken(tokenAddr, tuples);
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
             const receipt = await tx.wait();
-            showStatus(`Sprayed tokens to ${tuples.length} recipients! <a href="https://basescan.org/tx/${receipt.transactionHash}" target="_blank">View on BaseScan →</a>`, 'success');
+            showStatus(`Sprayed tokens to ${tuples.length} recipients! <a href="${EXPLORER_URL}/tx/${receipt.transactionHash}" target="_blank">View on Etherscan →</a>`, 'success');
         }
     }
 
