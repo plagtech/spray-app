@@ -68,6 +68,62 @@
             font-weight: 500; transition: color 0.2s;
         }
         .nav-links a:hover { color: var(--text); }
+
+        /* ── Chain Dropdown ───────────────────────── */
+        .chain-dropdown {
+            position: relative;
+        }
+        .chain-dropdown-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0.45rem 0.9rem;
+            color: var(--text); font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; font-family: 'Outfit', sans-serif;
+            transition: all 0.2s;
+        }
+        .chain-dropdown-btn:hover { border-color: var(--border-bright); background: var(--bg-card-hover); }
+        .chain-dropdown-btn .chain-icon { font-size: 1rem; }
+        .chain-dropdown-btn .chevron {
+            font-size: 0.6rem; color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+        .chain-dropdown.open .chain-dropdown-btn { border-color: var(--border-bright); }
+        .chain-dropdown.open .chevron { transform: rotate(180deg); }
+
+        .chain-dropdown-menu {
+            position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+            background: var(--bg-card); border: 1px solid var(--border-bright);
+            border-radius: 12px; padding: 0.4rem;
+            min-width: 200px;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.15s, visibility 0.15s, transform 0.15s;
+            transform: translateX(-50%) translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            z-index: 200;
+        }
+        .chain-dropdown.open .chain-dropdown-menu {
+            opacity: 1; visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+        .chain-dropdown-menu a {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.55rem 0.8rem; border-radius: 8px;
+            color: var(--text-dim); text-decoration: none;
+            font-size: 0.85rem; font-weight: 500;
+            transition: all 0.15s;
+        }
+        .chain-dropdown-menu a:hover { background: var(--crimson-glow); color: var(--text); }
+        .chain-dropdown-menu a.current {
+            background: var(--crimson-glow); color: var(--crimson-bright);
+            font-weight: 600;
+        }
+        .chain-dropdown-menu .chain-item-icon { font-size: 1rem; width: 20px; text-align: center; }
+        .chain-dropdown-menu .chain-item-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 4px rgba(34,197,94,0.5);
+            margin-left: auto; flex-shrink: 0;
+        }
+
         .btn {
             display: inline-block; padding: 0.55rem 1.4rem; border-radius: 8px;
             font-weight: 600; font-size: 0.9rem; text-decoration: none;
@@ -308,9 +364,7 @@
         .remove-btn:hover { background: rgba(220,20,60,0.15); border-color: var(--crimson-bright); color: var(--crimson-bright); }
         .remove-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 
-        .recipient-row-num {
-            display: none; /* hidden but available for reference */
-        }
+        .recipient-row-num { display: none; }
 
         /* Add Recipient Button */
         .add-recipient-btn {
@@ -327,7 +381,7 @@
         }
         .recipient-count-badge strong { color: var(--text-dim); }
 
-        /* CSV Upload - compact, secondary */
+        /* CSV Upload */
         .csv-upload {
             border: 1px dashed var(--border);
             border-radius: 6px; padding: 0.5rem 0.8rem;
@@ -456,7 +510,6 @@
         }
         @keyframes shimmer { 100% { left: 100%; } }
 
-        /* Wallet required note */
         .wallet-note {
             text-align: center; margin-top: 0.6rem;
             font-size: 0.78rem; color: var(--text-muted);
@@ -500,7 +553,7 @@
         }
         .eth-price-ticker .price { color: var(--text-dim); font-family: 'Space Mono', monospace; }
 
-        /* ── Landing Page Sections (preserved) ── */
+        /* ── Landing Page Sections ────────────── */
         .features { padding: 5rem 0; }
         .section-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
         .section-subtitle { color: var(--text-dim); margin-bottom: 3rem; }
@@ -562,6 +615,7 @@
             .hero-stats { gap: 2rem; }
             .integrations-inner { flex-direction: column; gap: 1rem; }
             .nav-links a:not(.btn):not(.btn-connect):not(.btn-connected) { display: none; }
+            .chain-dropdown { display: flex; }
             .app-card { padding: 1.2rem; }
             .recipient-row { grid-template-columns: 1fr; }
             .amount-wrap { min-width: 100%; }
@@ -578,13 +632,56 @@
         <div class="container nav-inner">
             <a href="#" class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">SPRAAY</a>
             <div class="nav-links">
-                <a href="#app">Launch App</a>
-                <a href="/tao">Bittensor</a>
-                <a href="/plasma">Plasma</a>
-                <a href="/unichain">Unichain</a>
-                <a href="/arbitrum">Arbitrum</a>
-                <a href="/bob">BOB</a>
-                <a href="/ethereum">Ethereum</a>
+                <!-- Chain Dropdown -->
+                <div class="chain-dropdown" id="chainDropdown">
+                    <button class="chain-dropdown-btn" onclick="toggleChainDropdown(event)">
+                        <span class="chain-icon">🔵</span>
+                        <span>Base</span>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="chain-dropdown-menu">
+                        <a href="/" class="current">
+                            <span class="chain-item-icon">🔵</span> Base
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/ethereum">
+                            <span class="chain-item-icon">⟠</span> Ethereum
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/arbitrum">
+                            <span class="chain-item-icon">⬡</span> Arbitrum
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/polygon">
+                            <span class="chain-item-icon">🟣</span> Polygon
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/bnb">
+                            <span class="chain-item-icon">🟡</span> BNB Chain
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/avalanche">
+                            <span class="chain-item-icon">🔺</span> Avalanche
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/unichain">
+                            <span class="chain-item-icon">🦄</span> Unichain
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/plasma">
+                            <span class="chain-item-icon">🟢</span> Plasma
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/bob">
+                            <span class="chain-item-icon">🔶</span> BOB
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/tao">
+                            <span class="chain-item-icon">🧠</span> Bittensor
+                            <span class="chain-item-dot"></span>
+                        </a>
+                    </div>
+                </div>
                 <a href="https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC" target="_blank">Contract</a>
                 <button id="navConnectBtn" class="btn-connect" onclick="connectWallet()">Connect Wallet</button>
             </div>
@@ -639,12 +736,15 @@
         <div class="container chains-inner">
             <span class="chains-label">Live On</span>
             <span class="chain-badge"><span class="dot"></span> 🔵 Base <span class="chain-tag">Live</span></span>
-            <a href="/unichain" class="chain-badge"><span class="dot"></span> 🦄 Unichain <span class="chain-tag">Live</span></a>
-            <a href="/arbitrum" class="chain-badge"><span class="dot"></span> ⬡ Arbitrum <span class="chain-tag">Live</span></a>
-            <a href="/plasma" class="chain-badge"><span class="dot"></span> 🟢 Plasma <span class="chain-tag">Live</span></a>
-            <a href="/tao" class="chain-badge"><span class="dot"></span> 🧠 Bittensor <span class="chain-tag">Live</span></a>
-            <a href="/bob" class="chain-badge"><span class="dot"></span> 🔶 BOB <span class="chain-tag">Live</span></a>
             <a href="/ethereum" class="chain-badge"><span class="dot"></span> ⟠ Ethereum <span class="chain-tag">Live</span></a>
+            <a href="/arbitrum" class="chain-badge"><span class="dot"></span> ⬡ Arbitrum <span class="chain-tag">Live</span></a>
+            <a href="/polygon" class="chain-badge"><span class="dot"></span> 🟣 Polygon <span class="chain-tag">Live</span></a>
+            <a href="/bnb" class="chain-badge"><span class="dot"></span> 🟡 BNB Chain <span class="chain-tag">Live</span></a>
+            <a href="/avalanche" class="chain-badge"><span class="dot"></span> 🔺 Avalanche <span class="chain-tag">Live</span></a>
+            <a href="/unichain" class="chain-badge"><span class="dot"></span> 🦄 Unichain <span class="chain-tag">Live</span></a>
+            <a href="/plasma" class="chain-badge"><span class="dot"></span> 🟢 Plasma <span class="chain-tag">Live</span></a>
+            <a href="/bob" class="chain-badge"><span class="dot"></span> 🔶 BOB <span class="chain-tag">Live</span></a>
+            <a href="/tao" class="chain-badge"><span class="dot"></span> 🧠 Bittensor <span class="chain-tag">Live</span></a>
         </div>
     </section>
 
@@ -662,7 +762,6 @@
             </p>
 
             <div class="app-card">
-                <!-- App Header -->
                 <div class="app-header">
                     <h2>🎯 Batch Send</h2>
                     <div style="display:flex;align-items:center;gap:0.6rem;">
@@ -674,13 +773,11 @@
                     </div>
                 </div>
 
-                <!-- Mode Toggle -->
                 <div class="mode-toggle">
                     <button class="mode-btn active" data-mode="eth" onclick="switchMode('eth')">ETH</button>
                     <button class="mode-btn" data-mode="erc20" onclick="switchMode('erc20')">ERC-20 Token</button>
                 </div>
 
-                <!-- Token Address (hidden for ETH mode) -->
                 <div id="tokenSection" class="token-section" style="display:none;">
                     <div class="form-group" style="margin-bottom:0.4rem;">
                         <label class="form-label">Token Contract Address</label>
@@ -697,14 +794,12 @@
                     </div>
                 </div>
 
-                <!-- Equal Amount Toggle -->
                 <label class="equal-toggle">
                     <input type="checkbox" id="equalToggle" onchange="toggleEqualMode()">
                     <span class="toggle-track"></span>
                     <span class="toggle-label">Send equal amount to all</span>
                 </label>
 
-                <!-- Equal Amount Input -->
                 <div id="equalAmountSection" class="form-group" style="display:none;">
                     <label class="form-label">Amount Per Recipient</label>
                     <div class="amount-wrap" style="max-width:200px;">
@@ -714,18 +809,13 @@
                     </div>
                 </div>
 
-                <!-- Recipients Label -->
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
                     <label class="form-label" style="margin-bottom:0;">Recipients</label>
                     <span class="recipient-count-badge"><strong id="recipientCount">0</strong> / 200</span>
                 </div>
 
-                <!-- Recipient Input Rows -->
-                <div class="recipients-list" id="recipientsList">
-                    <!-- Rows injected by JS -->
-                </div>
+                <div class="recipients-list" id="recipientsList"></div>
 
-                <!-- Add More + CSV -->
                 <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem;">
                     <button class="add-recipient-btn" onclick="addRecipientRow()" style="margin-bottom:0;">+ Add Recipient</button>
                     <div class="csv-upload" onclick="document.getElementById('csvFile').click()" style="margin-bottom:0;flex-shrink:0;">
@@ -734,7 +824,6 @@
                     </div>
                 </div>
 
-                <!-- Summary -->
                 <div class="summary-card">
                     <div class="summary-row">
                         <span class="summary-label">Recipients</span>
@@ -754,7 +843,6 @@
                     </div>
                 </div>
 
-                <!-- Send Button -->
                 <button class="spray-btn" id="sprayBtn" onclick="handleSprayClick()" disabled>
                     🚀 Spray Tokens
                 </button>
@@ -762,7 +850,6 @@
                     <a onclick="connectWallet()">Connect wallet</a> to send — or explore the interface first
                 </div>
 
-                <!-- Status -->
                 <div class="status-msg" id="statusMsg"></div>
             </div>
         </div>
@@ -843,15 +930,19 @@
                 <span class="footer-copy" style="margin-left:1rem">Batch crypto payments, multi-chain</span>
             </div>
             <div class="footer-links">
-                <a href="/tao">Spraay TAO</a>
-                <a href="/plasma">Spraay Plasma</a>
-                <a href="/unichain">Spraay Unichain</a>
-                <a href="/bob">Spraay BOB</a>
+                <a href="/">Base</a>
                 <a href="/ethereum">Ethereum</a>
+                <a href="/arbitrum">Arbitrum</a>
+                <a href="/polygon">Polygon</a>
+                <a href="/bnb">BNB Chain</a>
+                <a href="/avalanche">Avalanche</a>
+                <a href="/unichain">Unichain</a>
+                <a href="/plasma">Plasma</a>
+                <a href="/bob">BOB</a>
+                <a href="/tao">Bittensor</a>
                 <a href="https://twitter.com/Spraay_app" target="_blank">Twitter</a>
                 <a href="https://warpcast.com/plag" target="_blank">Farcaster</a>
                 <a href="https://github.com/plagtech" target="_blank">GitHub</a>
-                <a href="https://basescan.org/address/0x1646452F98E36A3c9Cfc3eDD8868221E207B5eEC" target="_blank">BaseScan</a>
             </div>
         </div>
     </footer>
@@ -931,11 +1022,19 @@
     let isEqualMode = false;
     let ethPrice = 0;
     let rowCounter = 0;
+    let tokenSymbolCache = {};
+    let tokenLookupTimer = null;
+    let currentResolvedSymbol = 'TKN';
 
-    // ── Token Symbol Detection ──────────────────
-    let tokenSymbolCache = {};   // { '0xabc...': 'DEGEN' }
-    let tokenLookupTimer = null; // debounce timer
-    let currentResolvedSymbol = 'TKN'; // tracks what's currently resolved
+    // ── Chain Dropdown ──────────────────────────
+    function toggleChainDropdown(e) {
+        e.stopPropagation();
+        document.getElementById('chainDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', (e) => {
+        const dd = document.getElementById('chainDropdown');
+        if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+    });
 
     // ── Initialize ──────────────────────────────
     window.addEventListener('DOMContentLoaded', () => {
@@ -946,14 +1045,13 @@
         setInterval(fetchEthPrice, 60000);
     });
 
-    // ── Fetch ETH Price (with fallbacks) ────────
+    // ── Fetch ETH Price ─────────────────────────
     async function fetchEthPrice() {
         const apis = [
             { url: 'https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD', parse: d => d.USD },
             { url: 'https://api.coinbase.com/v2/prices/ETH-USD/spot', parse: d => parseFloat(d.data.amount) },
             { url: 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd', parse: d => d.ethereum.usd },
         ];
-
         for (const api of apis) {
             try {
                 const resp = await fetch(api.url);
@@ -966,7 +1064,7 @@
                     updateSummary();
                     return;
                 }
-            } catch { /* silent, try next */ }
+            } catch { /* silent */ }
         }
     }
 
@@ -1024,7 +1122,6 @@
             navBtn.classList.add('btn-connected');
 
             updateSummary();
-
         } catch (err) {
             console.error(err);
             showStatus('Failed to connect: ' + (err.message || err), 'error');
@@ -1057,15 +1154,9 @@
             btn.classList.toggle('active', btn.dataset.mode === mode);
         });
         document.getElementById('tokenSection').style.display = mode === 'erc20' ? 'block' : 'none';
-
         const suffix = mode === 'eth' ? 'ETH' : currentResolvedSymbol;
         setTokenSuffix(suffix);
-
-        // Hide detected badge when switching back to ETH
-        if (mode === 'eth') {
-            document.getElementById('tokenDetectedBadge').style.display = 'none';
-        }
-
+        if (mode === 'eth') document.getElementById('tokenDetectedBadge').style.display = 'none';
         updateSummary();
     }
 
@@ -1083,14 +1174,12 @@
         document.getElementById('tokenAddress').value = token.address;
         document.querySelectorAll('.token-pick').forEach(el => el.classList.remove('active'));
         event.target.classList.add('active');
-
         currentResolvedSymbol = symbol;
         setTokenSuffix(symbol);
         showTokenDetected(symbol);
         updateSummary();
     }
 
-    // ── Dynamic Token Symbol Detection ──────────
     function debouncedTokenLookup() {
         clearTimeout(tokenLookupTimer);
         tokenLookupTimer = setTimeout(onTokenAddressChange, 300);
@@ -1099,67 +1188,44 @@
     async function onTokenAddressChange() {
         document.querySelectorAll('.token-pick').forEach(el => el.classList.remove('active'));
         const addr = document.getElementById('tokenAddress').value.trim();
-
-        // Check hardcoded tokens first
         const knownSym = getSelectedTokenSymbol();
         if (knownSym !== 'TKN') {
             currentResolvedSymbol = knownSym;
             setTokenSuffix(knownSym);
             showTokenDetected(knownSym);
-            // Highlight the matching quick-pick button
             document.querySelectorAll('.token-pick').forEach(el => {
                 if (el.textContent === knownSym) el.classList.add('active');
             });
             return;
         }
-
-        // If valid address, fetch symbol on-chain
         if (/^0x[a-fA-F0-9]{40}$/.test(addr)) {
             const addrLower = addr.toLowerCase();
-
-            // Check cache
             if (tokenSymbolCache[addrLower]) {
                 currentResolvedSymbol = tokenSymbolCache[addrLower];
                 setTokenSuffix(currentResolvedSymbol);
                 showTokenDetected(currentResolvedSymbol);
                 return;
             }
-
-            // Show loading state
             setTokenSuffix('···');
             hideTokenDetected();
-
             try {
                 const readProvider = provider || new ethers.providers.JsonRpcProvider(BASE_RPC);
                 const tokenContract = new ethers.Contract(addr, ERC20_ABI, readProvider);
                 const symbol = await tokenContract.symbol();
-
                 if (symbol) {
                     tokenSymbolCache[addrLower] = symbol;
-                    // Only update if the address hasn't changed while we were fetching
                     if (document.getElementById('tokenAddress').value.trim().toLowerCase() === addrLower) {
                         currentResolvedSymbol = symbol;
                         setTokenSuffix(symbol);
                         showTokenDetected(symbol);
                     }
-                } else {
-                    currentResolvedSymbol = 'TKN';
-                    setTokenSuffix('TKN');
-                    hideTokenDetected();
-                }
+                } else { currentResolvedSymbol = 'TKN'; setTokenSuffix('TKN'); hideTokenDetected(); }
             } catch {
-                // Not a valid ERC-20 or RPC error
                 if (document.getElementById('tokenAddress').value.trim().toLowerCase() === addrLower) {
-                    currentResolvedSymbol = 'TKN';
-                    setTokenSuffix('TKN');
-                    hideTokenDetected();
+                    currentResolvedSymbol = 'TKN'; setTokenSuffix('TKN'); hideTokenDetected();
                 }
             }
-        } else {
-            currentResolvedSymbol = 'TKN';
-            setTokenSuffix('TKN');
-            hideTokenDetected();
-        }
+        } else { currentResolvedSymbol = 'TKN'; setTokenSuffix('TKN'); hideTokenDetected(); }
     }
 
     function setTokenSuffix(symbol) {
@@ -1180,27 +1246,19 @@
     function toggleEqualMode() {
         isEqualMode = document.getElementById('equalToggle').checked;
         document.getElementById('equalAmountSection').style.display = isEqualMode ? 'block' : 'none';
-
         document.querySelectorAll('.amount-wrap-individual').forEach(el => {
             el.style.display = isEqualMode ? 'none' : 'block';
         });
-
         updateSummary();
     }
 
     // ── Recipient Rows ──────────────────────────
     function addRecipientRow(address, amount) {
         const list = document.getElementById('recipientsList');
-        const count = list.children.length;
-        if (count >= 200) {
-            showStatus('Maximum 200 recipients per transaction.', 'error');
-            return;
-        }
-
+        if (list.children.length >= 200) { showStatus('Maximum 200 recipients per transaction.', 'error'); return; }
         rowCounter++;
         const id = rowCounter;
         const suffix = currentMode === 'eth' ? 'ETH' : currentResolvedSymbol;
-
         const row = document.createElement('div');
         row.className = 'recipient-row';
         row.dataset.id = id;
@@ -1219,7 +1277,6 @@
             </div>
             <button class="remove-btn" onclick="removeRecipientRow(${id})" title="Remove">×</button>
         `;
-
         list.appendChild(row);
         updateRecipientCount();
         updateSummary();
@@ -1230,67 +1287,43 @@
         if (list.children.length <= 1) return;
         const row = list.querySelector(`[data-id="${id}"]`);
         if (row) {
-            row.style.animation = 'none';
-            row.style.opacity = '0';
-            row.style.transform = 'translateX(20px)';
-            row.style.transition = 'all 0.15s ease';
-            setTimeout(() => {
-                row.remove();
-                updateRecipientCount();
-                updateSummary();
-            }, 150);
+            row.style.animation = 'none'; row.style.opacity = '0';
+            row.style.transform = 'translateX(20px)'; row.style.transition = 'all 0.15s ease';
+            setTimeout(() => { row.remove(); updateRecipientCount(); updateSummary(); }, 150);
         }
     }
 
     function updateRecipientCount() {
-        const count = document.getElementById('recipientsList').children.length;
-        document.getElementById('recipientCount').textContent = count;
+        document.getElementById('recipientCount').textContent = document.getElementById('recipientsList').children.length;
     }
 
     function validateAddr(input) {
         const val = input.value.trim();
-        if (!val) {
-            input.classList.remove('valid', 'invalid');
-        } else if (/^0x[a-fA-F0-9]{40}$/.test(val)) {
-            input.classList.add('valid');
-            input.classList.remove('invalid');
-        } else {
-            input.classList.add('invalid');
-            input.classList.remove('valid');
-        }
+        if (!val) { input.classList.remove('valid', 'invalid'); }
+        else if (/^0x[a-fA-F0-9]{40}$/.test(val)) { input.classList.add('valid'); input.classList.remove('invalid'); }
+        else { input.classList.add('invalid'); input.classList.remove('valid'); }
     }
 
-    // ── Parse Recipients from Rows ──────────────
     function getRecipients() {
         const rows = document.querySelectorAll('.recipient-row');
         const recipients = [];
-
         rows.forEach(row => {
-            const addrInput = row.querySelector('.addr-input');
-            const amtInput = row.querySelector('.amt-input');
-            const addr = addrInput ? addrInput.value.trim() : '';
-
+            const addr = (row.querySelector('.addr-input')?.value || '').trim();
             if (/^0x[a-fA-F0-9]{40}$/.test(addr)) {
-                if (isEqualMode) {
-                    recipients.push({ address: addr });
-                } else {
-                    const amt = amtInput ? amtInput.value.trim() : '0';
-                    if (parseFloat(amt) > 0) {
-                        recipients.push({ address: addr, amount: amt });
-                    }
+                if (isEqualMode) { recipients.push({ address: addr }); }
+                else {
+                    const amt = (row.querySelector('.amt-input')?.value || '0').trim();
+                    if (parseFloat(amt) > 0) recipients.push({ address: addr, amount: amt });
                 }
             }
         });
-
         return recipients;
     }
 
-    // ── Update Summary ──────────────────────────
     function updateSummary() {
         const recipients = getRecipients();
         const count = recipients.length;
         document.getElementById('summaryRecipients').textContent = count;
-
         const symbol = currentMode === 'eth' ? 'ETH' : currentResolvedSymbol;
         let totalAmount = 0;
 
@@ -1298,22 +1331,14 @@
             const perRecipient = parseFloat(document.getElementById('equalAmount').value) || 0;
             totalAmount = perRecipient * count;
             const eqUsd = document.getElementById('equalUsd');
-            if (currentMode === 'eth' && ethPrice && perRecipient > 0) {
-                eqUsd.textContent = toUsd(perRecipient);
-            } else {
-                eqUsd.textContent = '';
-            }
+            eqUsd.textContent = (currentMode === 'eth' && ethPrice && perRecipient > 0) ? toUsd(perRecipient) : '';
         } else {
             document.querySelectorAll('.recipient-row').forEach(row => {
                 const amtInput = row.querySelector('.amt-input');
                 const usdHint = row.querySelector('[data-usd-row]');
                 const amt = amtInput ? parseFloat(amtInput.value) || 0 : 0;
                 totalAmount += amt;
-                if (usdHint && currentMode === 'eth' && ethPrice && amt > 0) {
-                    usdHint.textContent = toUsd(amt);
-                } else if (usdHint) {
-                    usdHint.textContent = '';
-                }
+                if (usdHint) usdHint.textContent = (currentMode === 'eth' && ethPrice && amt > 0) ? toUsd(amt) : '';
             });
         }
 
@@ -1336,35 +1361,23 @@
 
         const btn = document.getElementById('sprayBtn');
         btn.disabled = count === 0 || totalAmount === 0;
-
-        if (!userAddress) {
-            btn.textContent = '🔗 Connect Wallet to Spray';
-        } else {
-            btn.textContent = '🚀 Spray ' + total.toFixed(4) + ' ' + symbol;
-        }
+        btn.textContent = !userAddress ? '🔗 Connect Wallet to Spray' : '🚀 Spray ' + total.toFixed(4) + ' ' + symbol;
     }
 
-    // ── CSV Handler ─────────────────────────────
     function handleCSV(event) {
         const file = event.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (e) => {
-            const text = e.target.result;
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.toLowerCase().startsWith('address'));
-
+            const lines = e.target.result.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.toLowerCase().startsWith('address'));
             document.getElementById('recipientsList').innerHTML = '';
             rowCounter = 0;
-
             let loaded = 0;
             for (const line of lines) {
                 if (loaded >= 200) break;
                 const parts = line.split(/[,\s]+/).filter(Boolean);
                 if (parts.length >= 1 && /^0x[a-fA-F0-9]{40}$/.test(parts[0])) {
-                    const addr = parts[0];
-                    const amt = parts.length >= 2 ? parts[1] : '';
-                    addRecipientRow(addr, amt);
+                    addRecipientRow(parts[0], parts[1] || '');
                     loaded++;
                 }
             }
@@ -1374,33 +1387,16 @@
         event.target.value = '';
     }
 
-    // ── Handle Spray Click — Show Confirmation ──
     async function handleSprayClick() {
-        if (!userAddress) {
-            await connectWallet();
-            if (!userAddress) return;
-        }
-
+        if (!userAddress) { await connectWallet(); if (!userAddress) return; }
         const recipients = getRecipients();
-        if (recipients.length === 0) {
-            showStatus('Add at least one valid recipient with an amount.', 'error');
-            return;
-        }
-        if (recipients.length > 200) {
-            showStatus('Maximum 200 recipients per transaction.', 'error');
-            return;
-        }
+        if (recipients.length === 0) { showStatus('Add at least one valid recipient with an amount.', 'error'); return; }
+        if (recipients.length > 200) { showStatus('Maximum 200 recipients per transaction.', 'error'); return; }
 
         const symbol = currentMode === 'eth' ? 'ETH' : currentResolvedSymbol;
         let totalAmount = 0;
-
-        if (isEqualMode) {
-            const perRecipient = parseFloat(document.getElementById('equalAmount').value) || 0;
-            totalAmount = perRecipient * recipients.length;
-        } else {
-            for (const r of recipients) totalAmount += parseFloat(r.amount) || 0;
-        }
-
+        if (isEqualMode) { totalAmount = (parseFloat(document.getElementById('equalAmount').value) || 0) * recipients.length; }
+        else { for (const r of recipients) totalAmount += parseFloat(r.amount) || 0; }
         const fee = totalAmount * 0.003;
         const total = totalAmount + fee;
 
@@ -1421,7 +1417,7 @@
 
         const previewEl = document.getElementById('modalRecipientsList');
         previewEl.innerHTML = '';
-        recipients.forEach((r, i) => {
+        recipients.forEach(r => {
             const shortAddr = r.address.slice(0, 8) + '...' + r.address.slice(-6);
             const amt = isEqualMode
                 ? (parseFloat(document.getElementById('equalAmount').value) || 0).toFixed(6)
@@ -1432,47 +1428,23 @@
         document.getElementById('confirmModal').classList.add('show');
     }
 
-    function closeConfirmModal() {
-        document.getElementById('confirmModal').classList.remove('show');
-    }
+    function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('show'); }
+    document.getElementById('confirmModal').addEventListener('click', function(e) { if (e.target === this) closeConfirmModal(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeConfirmModal(); });
+    async function confirmAndSend() { closeConfirmModal(); await executeSpray(); }
 
-    document.getElementById('confirmModal').addEventListener('click', function(e) {
-        if (e.target === this) closeConfirmModal();
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeConfirmModal();
-    });
-
-    async function confirmAndSend() {
-        closeConfirmModal();
-        await executeSpray();
-    }
-
-    // ── Execute Spray ───────────────────────────
     async function executeSpray() {
         const recipients = getRecipients();
-        if (recipients.length === 0) {
-            showStatus('Add at least one valid recipient with an amount.', 'error');
-            return;
-        }
-        if (recipients.length > 200) {
-            showStatus('Maximum 200 recipients per transaction.', 'error');
-            return;
-        }
+        if (recipients.length === 0) { showStatus('Add at least one valid recipient with an amount.', 'error'); return; }
+        if (recipients.length > 200) { showStatus('Maximum 200 recipients per transaction.', 'error'); return; }
 
         const btn = document.getElementById('sprayBtn');
-        btn.disabled = true;
-        btn.classList.add('loading');
-        btn.textContent = '⏳ Preparing Transaction...';
+        btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳ Preparing Transaction...';
 
         try {
             const contract = new ethers.Contract(SPRAY_CONTRACT, SPRAY_ABI, signer);
-            if (currentMode === 'eth') {
-                await sprayETH(contract, recipients);
-            } else {
-                await sprayERC20(contract, recipients);
-            }
+            if (currentMode === 'eth') await sprayETH(contract, recipients);
+            else await sprayERC20(contract, recipients);
         } catch (err) {
             console.error(err);
             let msg = err.reason || err.message || 'Transaction failed';
@@ -1480,10 +1452,7 @@
             else if (msg.includes('insufficient funds')) msg = 'Insufficient ETH balance for this transaction.';
             else if (msg.length > 200) msg = msg.slice(0, 200) + '...';
             showStatus(msg, 'error');
-        } finally {
-            btn.classList.remove('loading');
-            updateSummary();
-        }
+        } finally { btn.classList.remove('loading'); updateSummary(); }
     }
 
     async function sprayETH(contract, recipients) {
@@ -1493,7 +1462,6 @@
             const totalAmount = amountPerRecipient.mul(addresses.length);
             const fee = totalAmount.mul(30).div(10000);
             const totalCost = totalAmount.add(fee);
-
             showStatus('Confirm the transaction in your wallet...', 'info');
             const tx = await contract.sprayEqual(ethers.constants.AddressZero, addresses, amountPerRecipient, { value: totalCost });
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
@@ -1505,7 +1473,6 @@
             for (const r of tuples) totalAmount = totalAmount.add(r.amount);
             const fee = totalAmount.mul(30).div(10000);
             const totalCost = totalAmount.add(fee);
-
             showStatus('Confirm the transaction in your wallet...', 'info');
             const tx = await contract.sprayETH(tuples, { value: totalCost });
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
@@ -1516,10 +1483,7 @@
 
     async function sprayERC20(contract, recipients) {
         const tokenAddr = document.getElementById('tokenAddress').value.trim();
-        if (!/^0x[a-fA-F0-9]{40}$/.test(tokenAddr)) {
-            showStatus('Please enter a valid ERC-20 token address.', 'error');
-            return;
-        }
+        if (!/^0x[a-fA-F0-9]{40}$/.test(tokenAddr)) { showStatus('Please enter a valid ERC-20 token address.', 'error'); return; }
 
         const tokenContract = new ethers.Contract(tokenAddr, ERC20_ABI, signer);
         let decimals;
@@ -1531,14 +1495,12 @@
             const totalAmount = amountPerRecipient.mul(addresses.length);
             const fee = totalAmount.mul(30).div(10000);
             const totalNeeded = totalAmount.add(fee);
-
             const allowance = await tokenContract.allowance(userAddress, SPRAY_CONTRACT);
             if (allowance.lt(totalNeeded)) {
                 showStatus('Approving token spend... Confirm in your wallet.', 'info');
                 const appTx = await tokenContract.approve(SPRAY_CONTRACT, totalNeeded);
                 await appTx.wait();
             }
-
             showStatus('Confirm the spray transaction in your wallet...', 'info');
             const tx = await contract.sprayEqual(tokenAddr, addresses, amountPerRecipient);
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
@@ -1550,14 +1512,12 @@
             for (const r of tuples) totalAmount = totalAmount.add(r.amount);
             const fee = totalAmount.mul(30).div(10000);
             const totalNeeded = totalAmount.add(fee);
-
             const allowance = await tokenContract.allowance(userAddress, SPRAY_CONTRACT);
             if (allowance.lt(totalNeeded)) {
                 showStatus('Approving token spend... Confirm in your wallet.', 'info');
                 const appTx = await tokenContract.approve(SPRAY_CONTRACT, totalNeeded);
                 await appTx.wait();
             }
-
             showStatus('Confirm the spray transaction in your wallet...', 'info');
             const tx = await contract.sprayToken(tokenAddr, tuples);
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
