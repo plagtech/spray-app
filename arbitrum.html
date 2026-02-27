@@ -72,7 +72,155 @@
             font-weight: 500; transition: color 0.2s;
         }
         .nav-links a:hover { color: var(--text); }
-        .nav-links a.active { color: var(--arb-blue); }
+/* ── Chain Dropdown (Desktop) ────────────── */
+        .chain-dropdown { position: relative; }
+        .chain-dropdown-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--bg-card); border: 1px solid var(--arb-blue-border);
+            border-radius: 8px; padding: 0.45rem 0.9rem;
+            color: var(--text); font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; font-family: 'Outfit', sans-serif;
+            transition: all 0.2s;
+        }
+        .chain-dropdown-btn:hover { border-color: var(--arb-blue); background: var(--bg-card-hover); }
+        .chain-dropdown-btn .chain-icon { font-size: 1rem; }
+        .chain-dropdown-btn .chevron {
+            font-size: 0.6rem; color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+        .chain-dropdown.open .chain-dropdown-btn { border-color: var(--arb-blue); }
+        .chain-dropdown.open .chevron { transform: rotate(180deg); }
+        .chain-dropdown-menu {
+            position: absolute; top: calc(100% + 6px); right: 0;
+            background: var(--bg-card); border: 1px solid var(--arb-blue-border);
+            border-radius: 12px; padding: 0.4rem;
+            min-width: 200px;
+            display: none;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            z-index: 200;
+        }
+        .chain-dropdown.open .chain-dropdown-menu { display: block; }
+        .chain-dropdown-menu a {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.55rem 0.8rem; border-radius: 8px;
+            color: var(--text-dim); text-decoration: none;
+            font-size: 0.85rem; font-weight: 500;
+            transition: all 0.15s;
+        }
+        .chain-dropdown-menu a:hover { background: var(--arb-blue-glow); color: var(--text); }
+        .chain-dropdown-menu a.current {
+            background: var(--arb-blue-glow); color: var(--arb-blue);
+            font-weight: 600;
+        }
+        .chain-dropdown-menu .chain-item-icon { font-size: 1rem; width: 20px; text-align: center; }
+        .chain-dropdown-menu .chain-item-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 4px rgba(34,197,94,0.5);
+            margin-left: auto; flex-shrink: 0;
+        }
+
+        /* ── Hamburger Button (Mobile only) ──────── */
+        .hamburger-btn {
+            display: none;
+            width: 40px; height: 40px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; cursor: pointer;
+            align-items: center; justify-content: center;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hamburger-btn span {
+            display: block; width: 18px; height: 2px;
+            background: var(--text); border-radius: 1px;
+            position: relative; transition: background 0.2s;
+        }
+        .hamburger-btn span::before,
+        .hamburger-btn span::after {
+            content: ''; position: absolute; left: 0;
+            width: 18px; height: 2px; background: var(--text);
+            border-radius: 1px; transition: transform 0.2s;
+        }
+        .hamburger-btn span::before { top: -6px; }
+        .hamburger-btn span::after { top: 6px; }
+
+        /* ── Mobile Slide Panel ──────────────────── */
+        .mobile-panel-overlay {
+            display: none; position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 999;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-panel-overlay.open { display: block; }
+        .mobile-panel {
+            position: fixed; top: 0; right: 0; bottom: 0;
+            width: 280px; max-width: 80vw;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            display: flex; flex-direction: column;
+        }
+        .mobile-panel.open { transform: translateX(0); }
+        .mobile-panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.2rem 1.2rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .mobile-panel-header .panel-title {
+            font-weight: 700; font-size: 1rem; color: var(--text);
+        }
+        .mobile-panel-close {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-dim); font-size: 1.2rem;
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-panel-close:active { background: var(--arb-blue-glow); }
+        .mobile-panel-section {
+            padding: 0.8rem 0.6rem;
+        }
+        .mobile-panel-section-label {
+            font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-muted);
+            font-weight: 600; padding: 0.4rem 0.6rem;
+        }
+        .mobile-panel a {
+            display: flex; align-items: center; gap: 0.7rem;
+            padding: 0.85rem 0.8rem;
+            border-radius: 10px; color: var(--text-dim);
+            text-decoration: none; font-size: 0.95rem;
+            font-weight: 500; min-height: 48px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-panel a:active { background: var(--arb-blue-glow); }
+        .mobile-panel a.current {
+            background: var(--arb-blue-glow); color: var(--arb-blue);
+            font-weight: 600;
+        }
+        .mobile-panel .mp-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+        .mobile-panel .mp-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 4px rgba(34,197,94,0.5);
+            margin-left: auto; flex-shrink: 0;
+        }
+        .mobile-panel-divider {
+            height: 1px; background: var(--border); margin: 0.4rem 0.6rem;
+        }
+        .mobile-panel-footer {
+            margin-top: auto; padding: 1rem 1.2rem;
+            border-top: 1px solid var(--border);
+        }
+        .mobile-panel-footer a {
+            min-height: 40px; font-size: 0.85rem; color: var(--text-muted);
+            padding: 0.5rem 0.8rem;
+        }
+
         .btn {
             display: inline-block; padding: 0.55rem 1.4rem; border-radius: 8px;
             font-weight: 600; font-size: 0.9rem; text-decoration: none;
@@ -583,6 +731,8 @@
             .hero-stats { gap: 2rem; }
             .chain-info-inner { flex-direction: column; gap: 1rem; }
             .nav-links a:not(.btn):not(.btn-connect):not(.btn-connected) { display: none; }
+            .chain-dropdown { display: none; }
+            .hamburger-btn { display: flex; }
             .app-card { padding: 1.2rem; }
             .recipient-row { grid-template-columns: 1fr; }
             .amount-wrap { min-width: 100%; }
@@ -599,18 +749,89 @@
         <div class="container nav-inner">
             <a href="/" class="logo">SPRAAY</a>
             <div class="nav-links">
-                <a href="#app">Launch App</a>
-                <a href="/">Base</a>
-                <a href="/tao">Bittensor</a>
-                <a href="/plasma">Plasma</a>
-                <a href="/unichain">Unichain</a>
-                <a href="/arbitrum" class="active">Arbitrum</a>
-                <a href="/bob">BOB</a>
+                <div class="chain-dropdown" id="chainDropdown">
+                    <button class="chain-dropdown-btn" onclick="toggleChainDropdown(event)">
+                        <span class="chain-icon">⬡</span>
+                        <span>Arbitrum</span>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="chain-dropdown-menu">
+                        <a href="/">
+                            <span class="chain-item-icon">🔵</span> Base
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/ethereum">
+                            <span class="chain-item-icon">⟠</span> Ethereum
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/arbitrum" class="current">
+                            <span class="chain-item-icon">⬡</span> Arbitrum
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/polygon">
+                            <span class="chain-item-icon">🟣</span> Polygon
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/bnb">
+                            <span class="chain-item-icon">🟡</span> BNB Chain
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/avalanche">
+                            <span class="chain-item-icon">🔺</span> Avalanche
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/unichain">
+                            <span class="chain-item-icon">🦄</span> Unichain
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/plasma">
+                            <span class="chain-item-icon">🟢</span> Plasma
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/bob">
+                            <span class="chain-item-icon">🔶</span> BOB
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/tao">
+                            <span class="chain-item-icon">🧠</span> Bittensor
+                            <span class="chain-item-dot"></span>
+                        </a>
+                    </div>
+                </div>
                 <a href="https://arbiscan.io/address/0x5be43aA67804aD84fcb890d0AE5F257fb1674302" target="_blank">Contract</a>
                 <button id="navConnectBtn" class="btn-connect" onclick="connectWallet()">Connect Wallet</button>
+                <button class="hamburger-btn" onclick="openMobilePanel()" aria-label="Menu"><span></span></button>
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Slide Panel -->
+    <div class="mobile-panel-overlay" id="mobilePanelOverlay" onclick="closeMobilePanel()"></div>
+    <div class="mobile-panel" id="mobilePanel">
+        <div class="mobile-panel-header">
+            <span class="panel-title">Switch Chain</span>
+            <button class="mobile-panel-close" onclick="closeMobilePanel()">✕</button>
+        </div>
+        <div class="mobile-panel-section">
+            <div class="mobile-panel-section-label">Networks</div>
+            <a href="/"><span class="mp-icon">🔵</span> Base <span class="mp-dot"></span></a>
+            <a href="/ethereum"><span class="mp-icon">⟠</span> Ethereum <span class="mp-dot"></span></a>
+            <a href="/arbitrum" class="current"><span class="mp-icon">⬡</span> Arbitrum <span class="mp-dot"></span></a>
+            <a href="/polygon"><span class="mp-icon">🟣</span> Polygon <span class="mp-dot"></span></a>
+            <a href="/bnb"><span class="mp-icon">🟡</span> BNB Chain <span class="mp-dot"></span></a>
+            <a href="/avalanche"><span class="mp-icon">🔺</span> Avalanche <span class="mp-dot"></span></a>
+            <a href="/unichain"><span class="mp-icon">🦄</span> Unichain <span class="mp-dot"></span></a>
+            <a href="/plasma"><span class="mp-icon">🟢</span> Plasma <span class="mp-dot"></span></a>
+            <a href="/bob"><span class="mp-icon">🔶</span> BOB <span class="mp-dot"></span></a>
+            <a href="/tao"><span class="mp-icon">🧠</span> Bittensor <span class="mp-dot"></span></a>
+        </div>
+        <div class="mobile-panel-divider"></div>
+        <div class="mobile-panel-footer">
+            <a href="https://arbiscan.io/address/0x5be43aA67804aD84fcb890d0AE5F257fb1674302" target="_blank"><span class="mp-icon">📄</span> Contract</a>
+            <a href="https://twitter.com/Spraay_app" target="_blank"><span class="mp-icon">🐦</span> Twitter</a>
+            <a href="https://github.com/plagtech" target="_blank"><span class="mp-icon">💻</span> GitHub</a>
+        </div>
+    </div>
 
     <!-- Hero -->
     <section class="hero">
@@ -971,6 +1192,38 @@
     let tokenSymbolCache = {};
     let tokenLookupTimer = null;
     let currentResolvedSymbol = 'TKN';
+
+
+    // ── Chain Dropdown (Desktop) ──────────────
+    let dropdownJustToggled = false;
+    function toggleChainDropdown(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        const dd = document.getElementById('chainDropdown');
+        dd.classList.toggle('open');
+        dropdownJustToggled = true;
+        setTimeout(() => { dropdownJustToggled = false; }, 100);
+    }
+    document.addEventListener('click', function(e) {
+        if (dropdownJustToggled) return;
+        const dd = document.getElementById('chainDropdown');
+        if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+    });
+
+    // ── Mobile Slide Panel ──────────────────────
+    function openMobilePanel() {
+        document.getElementById('mobilePanelOverlay').classList.add('open');
+        requestAnimationFrame(() => {
+            document.getElementById('mobilePanel').classList.add('open');
+        });
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobilePanel() {
+        document.getElementById('mobilePanel').classList.remove('open');
+        document.getElementById('mobilePanelOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
 
     // ── Initialize ──────────────────────────────
     window.addEventListener('DOMContentLoaded', () => {
