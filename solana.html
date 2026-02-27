@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spraay – Batch Payments on Solana</title>
+    <meta name="description" content="Send SOL or USDC to multiple recipients in optimized batch transactions on Solana. Powered by Spraay.">
+    <meta property="og:title" content="Spraay – Batch Payments on Solana">
+    <meta property="og:description" content="Send SOL or SPL tokens to multiple recipients in optimized batch transactions on Solana.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://spraay.app/solana">
+    <meta property="og:image" content="https://spraay.app/spraay-og-square.png">
+    <meta name="twitter:image" content="https://spraay.app/spraay-og-square.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:creator" content="@Spraay_app">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --crimson: #8B0000;
+            --crimson-deep: #5C0000;
+            --crimson-bright: #DC143C;
+            --crimson-glow: rgba(220, 20, 60, 0.15);
+            --sol-purple: #9945FF;
+            --sol-green: #14F195;
+            --sol-purple-dim: rgba(153, 69, 255, 0.15);
+            --sol-purple-border: rgba(153, 69, 255, 0.35);
+            --sol-purple-glow: rgba(153, 69, 255, 0.12);
+            --bg: #060606;
+            --bg-card: #0e0e0e;
+            --bg-card-hover: #141414;
+            --text: #f0f0f0;
+            --text-dim: #888;
+            --text-muted: #555;
+            --border: rgba(139, 0, 0, 0.25);
+            --border-bright: rgba(220, 20, 60, 0.4);
+            --green: #22c55e;
+            --yellow: #eab308;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+        code, .mono { font-family: 'Space Mono', monospace; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        html { scroll-behavior: smooth; }
+
+        /* ── Nav ─────────────────────────────────────── */
+        nav { position: fixed; top: 0; width: 100%; z-index: 100; background: rgba(6,6,6,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 1rem 0; }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 800; font-size: 1.4rem; letter-spacing: 0.08em; background: linear-gradient(135deg, var(--crimson-bright), var(--crimson)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .nav-links { display: flex; gap: 1.2rem; align-items: center; }
+        .nav-links a { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--text); }
+
+        /* ── Chain Dropdown (Desktop) ────────────── */
+        .chain-dropdown { position: relative; }
+        .chain-dropdown-btn { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card); border: 1px solid var(--sol-purple-border); border-radius: 8px; padding: 0.45rem 0.9rem; color: var(--text); font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
+        .chain-dropdown-btn:hover { border-color: var(--sol-purple); background: var(--bg-card-hover); }
+        .chain-dropdown-btn .chain-icon { font-size: 1rem; }
+        .chain-dropdown-btn .chevron { font-size: 0.6rem; color: var(--text-muted); transition: transform 0.2s; }
+        .chain-dropdown.open .chain-dropdown-btn { border-color: var(--sol-purple); }
+        .chain-dropdown.open .chevron { transform: rotate(180deg); }
+        .chain-dropdown-menu { position: absolute; top: calc(100% + 6px); right: 0; background: var(--bg-card); border: 1px solid var(--sol-purple-border); border-radius: 12px; padding: 0.4rem; min-width: 200px; display: none; box-shadow: 0 12px 40px rgba(0,0,0,0.5); z-index: 200; }
+        .chain-dropdown.open .chain-dropdown-menu { display: block; }
+        .chain-dropdown-menu a { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.8rem; border-radius: 8px; color: var(--text-dim); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
+        .chain-dropdown-menu a:hover { background: var(--sol-purple-glow); color: var(--text); }
+        .chain-dropdown-menu a.current { background: var(--sol-purple-glow); color: var(--sol-purple); font-weight: 600; }
+        .chain-dropdown-menu .chain-item-icon { font-size: 1rem; width: 20px; text-align: center; }
+        .chain-dropdown-menu .chain-item-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 4px rgba(34,197,94,0.5); margin-left: auto; flex-shrink: 0; }
+
+        /* ── Hamburger Button (Mobile only) ──────── */
+        .hamburger-btn { display: none; width: 40px; height: 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; align-items: center; justify-content: center; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+        .hamburger-btn span { display: block; width: 18px; height: 2px; background: var(--text); border-radius: 1px; position: relative; transition: background 0.2s; }
+        .hamburger-btn span::before, .hamburger-btn span::after { content: ''; position: absolute; left: 0; width: 18px; height: 2px; background: var(--text); border-radius: 1px; transition: transform 0.2s; }
+        .hamburger-btn span::before { top: -6px; }
+        .hamburger-btn span::after { top: 6px; }
+
+        /* ── Mobile Slide Panel ──────────────────── */
+        .mobile-panel-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 999; -webkit-tap-highlight-color: transparent; }
+        .mobile-panel-overlay.open { display: block; }
+        .mobile-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 280px; max-width: 80vw; background: var(--bg-card); border-left: 1px solid var(--border); z-index: 1000; transform: translateX(100%); transition: transform 0.25s ease; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; }
+        .mobile-panel.open { transform: translateX(0); }
+        .mobile-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.2rem 0.8rem; border-bottom: 1px solid var(--border); }
+        .mobile-panel-header .panel-title { font-weight: 700; font-size: 1rem; color: var(--text); }
+        .mobile-panel-close { width: 36px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid var(--border); color: var(--text-dim); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
+        .mobile-panel-close:active { background: var(--sol-purple-glow); }
+        .mobile-panel-section { padding: 0.8rem 0.6rem; }
+        .mobile-panel-section-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; padding: 0.4rem 0.6rem; }
+        .mobile-panel a { display: flex; align-items: center; gap: 0.7rem; padding: 0.85rem 0.8rem; border-radius: 10px; color: var(--text-dim); text-decoration: none; font-size: 0.95rem; font-weight: 500; min-height: 48px; -webkit-tap-highlight-color: transparent; }
+        .mobile-panel a:active { background: var(--sol-purple-glow); }
+        .mobile-panel a.current { background: var(--sol-purple-glow); color: var(--sol-purple); font-weight: 600; }
+        .mobile-panel .mp-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+        .mobile-panel .mp-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 4px rgba(34,197,94,0.5); margin-left: auto; flex-shrink: 0; }
+        .mobile-panel-divider { height: 1px; background: var(--border); margin: 0.4rem 0.6rem; }
+        .mobile-panel-footer { margin-top: auto; padding: 1rem 1.2rem; border-top: 1px solid var(--border); }
+        .mobile-panel-footer a { min-height: 40px; font-size: 0.85rem; color: var(--text-muted); padding: 0.5rem 0.8rem; }
+
+        .btn { display: inline-block; padding: 0.55rem 1.4rem; border-radius: 8px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.25s ease; cursor: pointer; border: none; font-family: 'Outfit', sans-serif; }
+        .btn-sol { background: var(--sol-purple-dim); color: var(--sol-purple); border: 1px solid var(--sol-purple-border); }
+        .btn-sol:hover { background: rgba(153, 69, 255, 0.22); transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: var(--crimson-bright); border: 1px solid var(--border-bright); }
+        .btn-outline:hover { background: var(--crimson-glow); }
+        .btn-connect { background: linear-gradient(135deg, #7B2FD4, #5A1DA8); color: #fff; border: 1px solid var(--sol-purple-border); padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.25s ease; }
+        .btn-connect:hover { background: linear-gradient(135deg, var(--sol-purple), #7B2FD4); }
+        .btn-connected { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--green); cursor: pointer; padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; font-family: 'Outfit', sans-serif; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-connected:hover { background: rgba(34,197,94,0.15); }
+        .wallet-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+
+        /* ── Hero ──────────────────────────────────── */
+        .hero { padding: 10rem 0 5rem; text-align: center; background: radial-gradient(ellipse at 50% 0%, rgba(153, 69, 255, 0.08) 0%, transparent 60%); }
+        .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--sol-purple-dim); border: 1px solid var(--sol-purple-border); border-radius: 20px; padding: 0.4rem 1rem; font-size: 0.82rem; font-weight: 600; color: var(--sol-purple); margin-bottom: 1.5rem; }
+        .hero-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sol-purple); box-shadow: 0 0 6px rgba(153,69,255,0.6); animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .hero h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800; line-height: 1.15; margin-bottom: 1.2rem; }
+        .hero h1 span { background: linear-gradient(135deg, var(--sol-purple), #c58aff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero p { color: var(--text-dim); font-size: 1.15rem; max-width: 580px; margin: 0 auto 2rem; }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .hero-stats { display: flex; gap: 3rem; justify-content: center; margin-top: 3.5rem; flex-wrap: wrap; }
+        .stat { text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, var(--sol-purple), #c58aff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+        /* ── Chain Info ──────────────────────────── */
+        .chain-info { padding: 3rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--bg-card); }
+        .chain-info-inner { display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+        .chain-info-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); font-weight: 600; }
+        .chain-detail { display: flex; align-items: center; gap: 0.6rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 1.2rem; font-weight: 600; font-size: 0.9rem; color: var(--text); }
+        .chain-detail .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+        .chain-detail .tag { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(34,197,94,0.15); color: #22c55e; }
+
+        /* ── App Section ──────────────────────────── */
+        .app-section { padding: 5rem 0; background: radial-gradient(ellipse at 50% 0%, rgba(153,69,255,0.06) 0%, transparent 50%); border-bottom: 1px solid var(--border); }
+        .app-container { max-width: 720px; margin: 0 auto; }
+        .app-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; position: relative; }
+        .app-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--sol-purple), transparent); }
+        .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .app-header h2 { font-size: 1.3rem; font-weight: 700; }
+        .wallet-info { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-dim); }
+
+        /* Mode Toggle */
+        .mode-toggle { display: flex; gap: 0; margin-bottom: 1.5rem; background: var(--bg); border-radius: 10px; padding: 3px; border: 1px solid var(--border); }
+        .mode-btn { flex: 1; padding: 0.6rem 1rem; text-align: center; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.2s; color: var(--text-muted); background: transparent; border: none; font-family: 'Outfit', sans-serif; }
+        .mode-btn.active { background: var(--sol-purple); color: #fff; box-shadow: 0 2px 8px rgba(153,69,255,0.3); }
+        .mode-btn:hover:not(.active) { color: var(--text-dim); }
+
+        .balance-display { text-align: center; padding: 0.6rem; margin-bottom: 1.2rem; font-size: 0.82rem; color: var(--text-dim); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+        .balance-display strong { color: var(--text); font-family: 'Space Mono', monospace; }
+
+        /* Recipient Rows */
+        .form-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-dim); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em; }
+        .recipients-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.8rem; }
+        .recipient-row { display: grid; grid-template-columns: 1fr auto auto; gap: 0.6rem; align-items: center; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        .recipient-row .addr-input { padding: 0.65rem 0.8rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 0.78rem; outline: none; transition: border-color 0.2s; min-width: 0; }
+        .recipient-row .addr-input:focus { border-color: var(--sol-purple); }
+        .recipient-row .addr-input::placeholder { color: var(--text-muted); font-family: 'Space Mono', monospace; }
+        .amount-wrap { position: relative; display: flex; align-items: center; min-width: 140px; }
+        .amount-wrap .amt-input { width: 100%; padding: 0.65rem 0.8rem; padding-right: 3rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 0.82rem; outline: none; transition: border-color 0.2s; }
+        .amount-wrap .amt-input:focus { border-color: var(--sol-purple); }
+        .amount-wrap .amt-input::placeholder { color: var(--text-muted); }
+        .amount-wrap .amt-suffix { position: absolute; right: 0.8rem; font-size: 0.7rem; color: var(--text-muted); font-weight: 600; pointer-events: none; }
+        .remove-btn { width: 32px; height: 32px; border-radius: 8px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+        .remove-btn:hover { background: rgba(220,20,60,0.15); border-color: var(--crimson-bright); color: var(--crimson-bright); }
+        .add-recipient-btn { width: 100%; padding: 0.6rem; border-radius: 8px; background: transparent; border: 1px dashed var(--border); color: var(--text-dim); cursor: pointer; font-size: 0.85rem; font-family: 'Outfit', sans-serif; font-weight: 600; transition: all 0.2s; margin-bottom: 0.8rem; }
+        .add-recipient-btn:hover { border-color: var(--sol-purple-border); color: var(--sol-purple); background: var(--sol-purple-glow); }
+        .recipient-count-badge { font-size: 0.72rem; color: var(--text-muted); text-align: center; margin-bottom: 0.8rem; }
+        .recipient-count-badge strong { color: var(--text-dim); }
+        .csv-upload { border: 1px dashed var(--border); border-radius: 6px; padding: 0.5rem 0.8rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 1.2rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .csv-upload:hover { border-color: var(--sol-purple-border); background: var(--sol-purple-glow); }
+        .csv-upload-text { font-size: 0.75rem; color: var(--text-muted); }
+        .csv-upload input[type="file"] { display: none; }
+
+        /* Summary */
+        .summary-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; margin: 1.2rem 0; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; }
+        .summary-row:not(:last-child) { border-bottom: 1px solid rgba(153,69,255,0.1); }
+        .summary-label { font-size: 0.85rem; color: var(--text-dim); }
+        .summary-value { font-size: 0.85rem; font-weight: 600; font-family: 'Space Mono', monospace; }
+        .summary-total .summary-label { color: var(--text); font-weight: 600; }
+        .summary-total .summary-value { color: var(--sol-purple); font-size: 1rem; }
+
+        /* Spray Button */
+        .spray-btn { width: 100%; padding: 1rem; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #7B2FD4, #5A1DA8); color: #fff; border: 1px solid var(--sol-purple-border); font-family: 'Outfit', sans-serif; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .spray-btn:hover:not(:disabled) { background: linear-gradient(135deg, var(--sol-purple), #7B2FD4); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(153,69,255,0.3); }
+        .spray-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .spray-btn.loading { pointer-events: none; }
+        .spray-btn.loading::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 100% { left: 100%; } }
+
+        /* Status Messages */
+        .status-msg { padding: 0.8rem 1rem; border-radius: 10px; font-size: 0.85rem; margin-top: 1rem; display: none; }
+        .status-msg.show { display: block; }
+        .status-msg.success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--green); }
+        .status-msg.error { background: rgba(220,20,60,0.1); border: 1px solid rgba(220,20,60,0.3); color: var(--crimson-bright); }
+        .status-msg.info { background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: var(--yellow); }
+        .status-msg a { color: inherit; text-decoration: underline; }
+
+        /* Footer */
+        footer { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+        .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--text); }
+        .footer-copy { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* ── Responsive ──────────────────────────── */
+        @media (max-width: 640px) {
+            .hero { padding: 8rem 0 3rem; }
+            .hero-stats { gap: 2rem; }
+            .chain-info-inner { flex-direction: column; gap: 1rem; }
+            .nav-links a:not(.btn):not(.btn-connect):not(.btn-connected) { display: none; }
+            .chain-dropdown { display: none; }
+            .hamburger-btn { display: flex; }
+            .app-card { padding: 1.2rem; }
+            .recipient-row { grid-template-columns: 1fr; }
+            .amount-wrap { min-width: 100%; }
+        }
+        @media (min-width: 641px) {
+            .recipient-row { grid-template-columns: 1fr 160px 32px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav>
+        <div class="container nav-inner">
+            <a href="/" class="logo">SPRAAY</a>
+            <div class="nav-links">
+                <div class="chain-dropdown" id="chainDropdown">
+                    <button class="chain-dropdown-btn" onclick="toggleChainDropdown(event)">
+                        <span class="chain-icon">◎</span>
+                        <span>Solana</span>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="chain-dropdown-menu">
+                        <a href="/"><span class="chain-item-icon">🔵</span> Base <span class="chain-item-dot"></span></a>
+                        <a href="/ethereum"><span class="chain-item-icon">⟠</span> Ethereum <span class="chain-item-dot"></span></a>
+                        <a href="/arbitrum"><span class="chain-item-icon">⬡</span> Arbitrum <span class="chain-item-dot"></span></a>
+                        <a href="/polygon"><span class="chain-item-icon">🟣</span> Polygon <span class="chain-item-dot"></span></a>
+                        <a href="/bnb"><span class="chain-item-icon">🟡</span> BNB Chain <span class="chain-item-dot"></span></a>
+                        <a href="/avalanche"><span class="chain-item-icon">🔺</span> Avalanche <span class="chain-item-dot"></span></a>
+                        <a href="/unichain"><span class="chain-item-icon">🦄</span> Unichain <span class="chain-item-dot"></span></a>
+                        <a href="/plasma"><span class="chain-item-icon">🟢</span> Plasma <span class="chain-item-dot"></span></a>
+                        <a href="/bob"><span class="chain-item-icon">🔶</span> BOB <span class="chain-item-dot"></span></a>
+                        <a href="/tao"><span class="chain-item-icon">🧠</span> Bittensor <span class="chain-item-dot"></span></a>
+                        <a href="/solana" class="current"><span class="chain-item-icon">◎</span> Solana <span class="chain-item-dot"></span></a>
+                    </div>
+                </div>
+                <a href="https://github.com/plagtech/spraay-solana" target="_blank">GitHub</a>
+                <button id="navConnectBtn" class="btn-connect" onclick="connectWallet()">Connect Phantom</button>
+                <button class="hamburger-btn" onclick="openMobilePanel()" aria-label="Menu"><span></span></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Slide Panel -->
+    <div class="mobile-panel-overlay" id="mobilePanelOverlay" onclick="closeMobilePanel()"></div>
+    <div class="mobile-panel" id="mobilePanel">
+        <div class="mobile-panel-header">
+            <span class="panel-title">Switch Chain</span>
+            <button class="mobile-panel-close" onclick="closeMobilePanel()">✕</button>
+        </div>
+        <div class="mobile-panel-section">
+            <div class="mobile-panel-section-label">Networks</div>
+            <a href="/"><span class="mp-icon">🔵</span> Base <span class="mp-dot"></span></a>
+            <a href="/ethereum"><span class="mp-icon">⟠</span> Ethereum <span class="mp-dot"></span></a>
+            <a href="/arbitrum"><span class="mp-icon">⬡</span> Arbitrum <span class="mp-dot"></span></a>
+            <a href="/polygon"><span class="mp-icon">🟣</span> Polygon <span class="mp-dot"></span></a>
+            <a href="/bnb"><span class="mp-icon">🟡</span> BNB Chain <span class="mp-dot"></span></a>
+            <a href="/avalanche"><span class="mp-icon">🔺</span> Avalanche <span class="mp-dot"></span></a>
+            <a href="/unichain"><span class="mp-icon">🦄</span> Unichain <span class="mp-dot"></span></a>
+            <a href="/plasma"><span class="mp-icon">🟢</span> Plasma <span class="mp-dot"></span></a>
+            <a href="/bob"><span class="mp-icon">🔶</span> BOB <span class="mp-dot"></span></a>
+            <a href="/tao"><span class="mp-icon">🧠</span> Bittensor <span class="mp-dot"></span></a>
+            <a href="/solana" class="current"><span class="mp-icon">◎</span> Solana <span class="mp-dot"></span></a>
+        </div>
+        <div class="mobile-panel-divider"></div>
+        <div class="mobile-panel-footer">
+            <a href="https://github.com/plagtech/spraay-solana" target="_blank"><span class="mp-icon">💻</span> GitHub</a>
+            <a href="https://twitter.com/Spraay_app" target="_blank"><span class="mp-icon">🐦</span> Twitter</a>
+            <a href="https://gateway.spraay.app" target="_blank"><span class="mp-icon">🔗</span> x402 Gateway</a>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge"><span class="dot"></span> Live on Solana Devnet</div>
+            <h1>Batch Payments on<br><span>Solana</span></h1>
+            <p>Send SOL or USDC to multiple recipients in optimized batch transactions. Auto-chunked. ~$0.001 per transaction.</p>
+            <div class="hero-buttons">
+                <a href="#app" class="btn btn-sol">Launch App →</a>
+                <a href="https://github.com/plagtech/spraay-solana" target="_blank" class="btn btn-outline">View on GitHub</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat"><div class="stat-value">~14</div><div class="stat-label">Recipients / Tx</div></div>
+                <div class="stat"><div class="stat-value">~$0.001</div><div class="stat-label">Per Transaction</div></div>
+                <div class="stat"><div class="stat-value">0.3%</div><div class="stat-label">Protocol Fee</div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chain Info -->
+    <section class="chain-info">
+        <div class="container chain-info-inner">
+            <span class="chain-info-label">Deployment</span>
+            <div class="chain-detail"><span class="dot"></span> Solana Devnet <span class="tag">Live</span></div>
+            <div class="chain-detail">TypeScript SDK</div>
+            <div class="chain-detail">Phantom Wallet</div>
+        </div>
+    </section>
+
+    <!-- App Section -->
+    <section class="app-section" id="app">
+        <div class="container app-container">
+            <h2 class="section-title" style="text-align:center; font-size:1.8rem; font-weight:700; margin-bottom:0.5rem;">Spray Tokens</h2>
+            <p style="text-align:center; color:var(--text-dim); margin-bottom:3rem;">Batch send SOL or USDC to multiple wallets on Solana.</p>
+
+            <div class="app-card">
+                <div class="app-header">
+                    <h2>◎ Batch Send</h2>
+                    <div style="display:flex;align-items:center;gap:0.6rem;">
+                        <div class="wallet-info" id="walletInfo">Not connected</div>
+                        <span style="font-size:0.7rem;background:var(--sol-purple-dim);color:var(--sol-purple);padding:0.15rem 0.5rem;border-radius:4px;font-weight:700;">SOLANA</span>
+                    </div>
+                </div>
+
+                <!-- Token Toggle -->
+                <div class="mode-toggle">
+                    <button class="mode-btn active" id="btnSOL" onclick="selectToken('SOL')">◎ SOL</button>
+                    <button class="mode-btn" id="btnUSDC" onclick="selectToken('USDC')">$ USDC</button>
+                </div>
+
+                <div class="balance-display" id="balanceDisplay">Connect wallet to see balance</div>
+
+                <label class="form-label">Recipients</label>
+                <div class="recipients-list" id="recipientList"></div>
+                <button class="add-recipient-btn" onclick="addRecipient()">+ Add Recipient</button>
+                <div class="recipient-count-badge"><strong id="recipientCount">0</strong> recipients · auto-chunked into optimal transactions</div>
+                <label class="csv-upload" onclick="document.getElementById('csvInput').click()">📄 <span class="csv-upload-text">Upload CSV (address, amount per line)</span><input type="file" id="csvInput" accept=".csv,.txt" onchange="handleCSV(event)"></label>
+
+                <div class="summary-card">
+                    <div class="summary-row"><span class="summary-label">Recipients</span><span class="summary-value" id="sumRecipients">0</span></div>
+                    <div class="summary-row"><span class="summary-label">Total Amount</span><span class="summary-value" id="sumAmount">0</span></div>
+                    <div class="summary-row"><span class="summary-label">Spraay Fee (0.3%)</span><span class="summary-value" id="sumFee">0</span></div>
+                    <div class="summary-row"><span class="summary-label">Est. Transactions</span><span class="summary-value" id="sumTxs">0</span></div>
+                    <div class="summary-row summary-total"><span class="summary-label">Total Cost</span><span class="summary-value" id="sumTotal">0</span></div>
+                </div>
+
+                <button class="spray-btn" id="sprayBtn" onclick="executeBatch()" disabled>Connect Phantom to Spray</button>
+                <div class="status-msg" id="statusMsg"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-inner">
+            <div class="footer-links">
+                <a href="https://spraay.app">spraay.app</a>
+                <a href="https://gateway.spraay.app">x402 Gateway</a>
+                <a href="https://github.com/plagtech/spraay-solana" target="_blank">GitHub</a>
+                <a href="https://twitter.com/Spraay_app" target="_blank">Twitter</a>
+            </div>
+            <span class="footer-copy">💧 Spraay — Batch payments across 11 chains</span>
+        </div>
+    </footer>
+
+    <script src="https://bundle.run/buffer@6.0.3"></script>
+    <script>if(typeof window.Buffer==='undefined' && typeof buffer!=='undefined'){window.Buffer=buffer.Buffer;}</script>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.8/lib/index.iife.min.js"></script>
+    <script>if(typeof solanaWeb3==='undefined'){document.body.innerHTML='<div style="color:#ff4466;text-align:center;padding:4rem;font-family:monospace;"><h2>Failed to load Solana Web3.js</h2><p>Try refreshing the page or check your internet connection.</p></div>';}</script>
+    <script>
+    // ========================================================================
+    // Nav JS
+    // ========================================================================
+    function toggleChainDropdown(e) {
+        e.stopPropagation();
+        document.getElementById('chainDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', function() {
+        document.getElementById('chainDropdown').classList.remove('open');
+    });
+    function openMobilePanel() {
+        document.getElementById('mobilePanel').classList.add('open');
+        document.getElementById('mobilePanelOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobilePanel() {
+        document.getElementById('mobilePanel').classList.remove('open');
+        document.getElementById('mobilePanelOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    // ========================================================================
+    // State
+    // ========================================================================
+    let connected = false, walletPublicKey = null, selectedToken = 'SOL', solBalance = 0, usdcBalance = 0;
+    const RPC_URL = 'https://api.devnet.solana.com';
+    const USDC_MINT = '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU';
+    const USDC_DECIMALS = 6;
+    const SPRAAY_TREASURY = 'bJ37kGB2i121dSCLunANqh3Qt2RRK14WWH2HGHRTJ4T';
+    const FEE_PERCENT = 0.3;
+    const MAX_PER_TX = 14;
+    const connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+    const SPL_TOKEN_PROGRAM = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+    const ASSOCIATED_TOKEN_PROGRAM = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+
+    // ========================================================================
+    // Wallet
+    // ========================================================================
+    function getPhantom() { return window.phantom?.solana || null; }
+    async function connectWallet() {
+        if (connected) { disconnectWallet(); return; }
+        const provider = getPhantom();
+        if (!provider) { window.open('https://phantom.app/', '_blank'); return; }
+        try {
+            const resp = await provider.connect();
+            walletPublicKey = resp.publicKey; connected = true;
+            const short = walletPublicKey.toBase58().slice(0,4)+'...'+walletPublicKey.toBase58().slice(-4);
+            document.getElementById('navConnectBtn').outerHTML = '<button class="btn-connected" id="navConnectBtn" onclick="connectWallet()"><span class="wallet-dot"></span>'+short+'</button>';
+            document.getElementById('walletInfo').innerHTML = '<span class="wallet-dot"></span> '+short;
+            await refreshBalances(); updateSummary();
+        } catch(err) { showStatus('Failed to connect: '+err.message,'error'); }
+    }
+    function disconnectWallet() {
+        const p = getPhantom(); if(p) p.disconnect();
+        connected = false; walletPublicKey = null;
+        document.getElementById('navConnectBtn').outerHTML = '<button class="btn-connect" id="navConnectBtn" onclick="connectWallet()">Connect Phantom</button>';
+        document.getElementById('walletInfo').innerHTML = 'Not connected';
+        document.getElementById('balanceDisplay').textContent = 'Connect wallet to see balance';
+        updateSummary();
+    }
+    async function refreshBalances() {
+        if(!walletPublicKey) return;
+        try { solBalance = (await connection.getBalance(walletPublicKey))/solanaWeb3.LAMPORTS_PER_SOL; } catch { solBalance=0; }
+        try {
+            const mint = new solanaWeb3.PublicKey(USDC_MINT);
+            const ata = await getATA(mint, walletPublicKey);
+            const info = await connection.getAccountInfo(ata);
+            if(info) { usdcBalance = Number(info.data.readBigUInt64LE(64))/Math.pow(10,USDC_DECIMALS); } else { usdcBalance=0; }
+        } catch { usdcBalance=0; }
+        document.getElementById('balanceDisplay').innerHTML = 'Balance: <strong>'+solBalance.toFixed(4)+' SOL</strong> · <strong>'+usdcBalance.toFixed(2)+' USDC</strong>';
+    }
+
+    // ATA helpers
+    async function getATA(mint,owner) { const [addr]=await solanaWeb3.PublicKey.findProgramAddress([owner.toBuffer(),SPL_TOKEN_PROGRAM.toBuffer(),mint.toBuffer()],ASSOCIATED_TOKEN_PROGRAM); return addr; }
+    function createATAIx(payer,ata,owner,mint) { return new solanaWeb3.TransactionInstruction({keys:[{pubkey:payer,isSigner:true,isWritable:true},{pubkey:ata,isSigner:false,isWritable:true},{pubkey:owner,isSigner:false,isWritable:false},{pubkey:mint,isSigner:false,isWritable:false},{pubkey:solanaWeb3.SystemProgram.programId,isSigner:false,isWritable:false},{pubkey:SPL_TOKEN_PROGRAM,isSigner:false,isWritable:false}],programId:ASSOCIATED_TOKEN_PROGRAM,data:Buffer.alloc(0)}); }
+    function createSPLTransfer(source,dest,authority,amount) { const data=Buffer.alloc(9); data.writeUInt8(3,0); data.writeBigUInt64LE(BigInt(amount),1); return new solanaWeb3.TransactionInstruction({keys:[{pubkey:source,isSigner:false,isWritable:true},{pubkey:dest,isSigner:false,isWritable:true},{pubkey:authority,isSigner:true,isWritable:false}],programId:SPL_TOKEN_PROGRAM,data}); }
+
+    // Token selection
+    function selectToken(t) { selectedToken=t; document.getElementById('btnSOL').className=t==='SOL'?'mode-btn active':'mode-btn'; document.getElementById('btnUSDC').className=t==='USDC'?'mode-btn active':'mode-btn'; document.querySelectorAll('.amt-suffix').forEach(el=>el.textContent=t); updateSummary(); }
+
+    // Recipients
+    function addRecipient(addr='',amt='') { const list=document.getElementById('recipientList'); const row=document.createElement('div'); row.className='recipient-row'; row.innerHTML='<input type="text" class="addr-input" placeholder="Solana wallet address" value="'+addr+'" oninput="updateSummary()"><div class="amount-wrap"><input type="text" class="amt-input" placeholder="0.00" value="'+amt+'" oninput="updateSummary()"><span class="amt-suffix">'+selectedToken+'</span></div><button class="remove-btn" onclick="this.parentElement.remove();updateSummary();">×</button>'; list.appendChild(row); updateSummary(); }
+    function getRecipients() { const rows=document.querySelectorAll('#recipientList .recipient-row'); const out=[]; rows.forEach(row=>{ const addr=row.querySelector('.addr-input').value.trim(); const amt=parseFloat(row.querySelector('.amt-input').value)||0; if(addr&&amt>0) out.push({address:addr,amount:amt}); }); return out; }
+    function handleCSV(event) { const file=event.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=function(e){ const lines=e.target.result.split('\n').filter(l=>l.trim()); document.getElementById('recipientList').innerHTML=''; lines.forEach(line=>{ const parts=line.split(',').map(s=>s.trim()); if(parts.length>=2) addRecipient(parts[0],parts[1]); }); }; reader.readAsText(file); event.target.value=''; }
+
+    // Summary
+    function updateSummary() {
+        const r=getRecipients(), total=r.reduce((s,x)=>s+x.amount,0), fee=total*(FEE_PERCENT/100), txs=r.length>0?Math.ceil(r.length/MAX_PER_TX):0, sym=selectedToken;
+        document.getElementById('recipientCount').textContent=r.length;
+        document.getElementById('sumRecipients').textContent=r.length;
+        document.getElementById('sumAmount').textContent=total.toFixed(total<1?6:4)+' '+sym;
+        document.getElementById('sumFee').textContent=fee.toFixed(fee<0.01?6:4)+' '+sym;
+        document.getElementById('sumTxs').textContent=txs;
+        document.getElementById('sumTotal').textContent=(total+fee).toFixed(4)+' '+sym;
+        const btn=document.getElementById('sprayBtn');
+        if(!connected){btn.textContent='Connect Phantom to Spray';btn.disabled=true;}
+        else if(r.length===0){btn.textContent='Add recipients to spray';btn.disabled=true;}
+        else{btn.textContent='💧 Spray '+total.toFixed(total<1?4:2)+' '+sym+' to '+r.length+' recipients';btn.disabled=false;}
+    }
+
+    // Execute
+    async function executeBatch() {
+        if(!connected||!walletPublicKey) return;
+        const recipients=getRecipients(); if(recipients.length===0) return;
+        const btn=document.getElementById('sprayBtn');
+        btn.disabled=true; btn.classList.add('loading'); btn.textContent='⏳ Preparing...';
+        try {
+            const sigs=selectedToken==='SOL'?await batchSOL(recipients):await batchUSDC(recipients);
+            const total=recipients.reduce((s,r)=>s+r.amount,0);
+            const links=sigs.map((s,i)=>'<a href="https://explorer.solana.com/tx/'+s+'?cluster=devnet" target="_blank">Tx '+(i+1)+'</a>').join(' · ');
+            showStatus('💧 Sprayed '+total+' '+selectedToken+' to '+recipients.length+' recipients in '+sigs.length+' tx! '+links,'success');
+            await refreshBalances();
+        } catch(err) { let msg=err.message||'Transaction failed'; if(msg.includes('User rejected')) msg='Transaction rejected by user.'; showStatus(msg,'error'); }
+        btn.classList.remove('loading'); updateSummary();
+    }
+    async function batchSOL(recipients) {
+        const totalAmt=recipients.reduce((s,r)=>s+r.amount,0), feeAmt=totalAmt*(FEE_PERCENT/100), ixs=[];
+        for(const r of recipients) ixs.push(solanaWeb3.SystemProgram.transfer({fromPubkey:walletPublicKey,toPubkey:new solanaWeb3.PublicKey(r.address),lamports:Math.floor(r.amount*solanaWeb3.LAMPORTS_PER_SOL)}));
+        if(feeAmt>0) ixs.push(solanaWeb3.SystemProgram.transfer({fromPubkey:walletPublicKey,toPubkey:new solanaWeb3.PublicKey(SPRAAY_TREASURY),lamports:Math.floor(feeAmt*solanaWeb3.LAMPORTS_PER_SOL)}));
+        return await sendChunked(ixs);
+    }
+    async function batchUSDC(recipients) {
+        const mint=new solanaWeb3.PublicKey(USDC_MINT), totalAmt=recipients.reduce((s,r)=>s+r.amount,0), feeAmt=totalAmt*(FEE_PERCENT/100), mul=Math.pow(10,USDC_DECIMALS);
+        const senderAta=await getATA(mint,walletPublicKey), ixs=[];
+        for(const r of recipients){ const pk=new solanaWeb3.PublicKey(r.address), ata=await getATA(mint,pk), info=await connection.getAccountInfo(ata); if(!info) ixs.push(createATAIx(walletPublicKey,ata,pk,mint)); ixs.push(createSPLTransfer(senderAta,ata,walletPublicKey,Math.floor(r.amount*mul))); }
+        if(feeAmt>0){ const tPk=new solanaWeb3.PublicKey(SPRAAY_TREASURY), tAta=await getATA(mint,tPk), tInfo=await connection.getAccountInfo(tAta); if(!tInfo) ixs.push(createATAIx(walletPublicKey,tAta,tPk,mint)); ixs.push(createSPLTransfer(senderAta,tAta,walletPublicKey,Math.floor(feeAmt*mul))); }
+        return await sendChunked(ixs);
+    }
+    async function sendChunked(ixs) {
+        const chunks=[]; for(let i=0;i<ixs.length;i+=MAX_PER_TX) chunks.push(ixs.slice(i,i+MAX_PER_TX));
+        const sigs=[], provider=getPhantom();
+        for(let i=0;i<chunks.length;i++){
+            showStatus('Sending transaction '+(i+1)+' of '+chunks.length+'...','info');
+            const tx=new solanaWeb3.Transaction(); chunks[i].forEach(ix=>tx.add(ix));
+            const {blockhash,lastValidBlockHeight}=await connection.getLatestBlockhash('confirmed');
+            tx.recentBlockhash=blockhash; tx.feePayer=walletPublicKey;
+            const signed=await provider.signTransaction(tx);
+            const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:'confirmed'});
+            await connection.confirmTransaction({signature:sig,blockhash,lastValidBlockHeight},'confirmed');
+            sigs.push(sig);
+            if(i<chunks.length-1) await new Promise(r=>setTimeout(r,300));
+        }
+        return sigs;
+    }
+
+    function showStatus(msg,type) { const el=document.getElementById('statusMsg'); el.innerHTML=msg; el.className='status-msg show '+type; }
+
+    // Init
+    addRecipient(); addRecipient(); addRecipient();
+    window.addEventListener('load',async()=>{ const p=getPhantom(); if(p){ try{ const resp=await p.connect({onlyIfTrusted:true}); walletPublicKey=resp.publicKey; connected=true; const short=walletPublicKey.toBase58().slice(0,4)+'...'+walletPublicKey.toBase58().slice(-4); document.getElementById('navConnectBtn').outerHTML='<button class="btn-connected" id="navConnectBtn" onclick="connectWallet()"><span class="wallet-dot"></span>'+short+'</button>'; document.getElementById('walletInfo').innerHTML='<span class="wallet-dot"></span> '+short; await refreshBalances(); updateSummary(); }catch{} } });
+    </script>
+</body>
+</html>
