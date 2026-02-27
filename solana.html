@@ -137,8 +137,42 @@
         .app-header h2 { font-size: 1.3rem; font-weight: 700; }
         .wallet-info { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-dim); }
 
-        /* Mode Toggle */
-        .mode-toggle { display: flex; gap: 0; margin-bottom: 1.5rem; background: var(--bg); border-radius: 10px; padding: 3px; border: 1px solid var(--border); }
+        /* Token Picker */
+        .token-picker-wrap { position: relative; margin-bottom: 1rem; }
+        .token-picker-btn { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.75rem 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.95rem; cursor: pointer; transition: border-color 0.2s; text-align: left; }
+        .token-picker-btn:hover { border-color: var(--sol-purple-border); }
+        .token-picker-btn.open { border-color: var(--sol-purple); border-radius: 10px 10px 0 0; }
+        .tp-icon { font-size: 1.2rem; width: 28px; text-align: center; }
+        .tp-name { font-weight: 700; font-size: 1rem; }
+        .tp-bal { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 0.82rem; color: var(--text-dim); }
+        .tp-chevron { font-size: 0.6rem; color: var(--text-muted); transition: transform 0.2s; margin-left: 0.4rem; }
+        .token-picker-btn.open .tp-chevron { transform: rotate(180deg); }
+        .token-dropdown { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--sol-purple-border); border-top: none; border-radius: 0 0 12px 12px; max-height: 360px; overflow-y: auto; z-index: 50; box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+        .token-dropdown.open { display: block; }
+        .token-dropdown::-webkit-scrollbar { width: 4px; }
+        .token-dropdown::-webkit-scrollbar-thumb { background: var(--sol-purple-border); border-radius: 4px; }
+        .td-search-wrap { padding: 0.5rem; position: sticky; top: 0; background: var(--bg-card); z-index: 1; }
+        .td-search { width: 100%; padding: 0.6rem 0.8rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 0.78rem; outline: none; transition: border-color 0.2s; }
+        .td-search:focus { border-color: var(--sol-purple); }
+        .td-search::placeholder { color: var(--text-muted); }
+        .td-section-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; padding: 0.5rem 0.8rem 0.2rem; }
+        .td-list { padding: 0 0.3rem; }
+        .td-custom { padding: 0 0.3rem 0.3rem; }
+        .td-item { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.6rem 0.6rem; border-radius: 8px; background: transparent; border: none; color: var(--text); font-family: 'Outfit', sans-serif; cursor: pointer; transition: background 0.15s; text-align: left; font-size: 0.9rem; }
+        .td-item:hover { background: var(--sol-purple-glow); }
+        .td-item.active { background: var(--sol-purple-glow); border-left: 2px solid var(--sol-purple); }
+        .td-item-icon { font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0; }
+        .td-item-info { display: flex; flex-direction: column; min-width: 0; }
+        .td-item-name { font-weight: 600; font-size: 0.88rem; }
+        .td-item-sub { font-size: 0.68rem; color: var(--text-muted); font-family: 'Space Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .td-item-bal { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--text-dim); flex-shrink: 0; }
+        .td-item-tag { font-size: 0.58rem; padding: 0.1rem 0.35rem; border-radius: 3px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; margin-left: 0.3rem; flex-shrink: 0; }
+        .td-item-tag.meme { background: rgba(234,179,8,0.15); color: #eab308; }
+        .td-item-tag.defi { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .td-item-tag.stable { background: rgba(34,197,94,0.15); color: #22c55e; }
+
+        /* Mode Toggle - kept for potential future use */
+        .mode-toggle { display: none; }
         .mode-btn { flex: 1; padding: 0.6rem 1rem; text-align: center; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.2s; color: var(--text-muted); background: transparent; border: none; font-family: 'Outfit', sans-serif; }
         .mode-btn.active { background: var(--sol-purple); color: #fff; box-shadow: 0 2px 8px rgba(153,69,255,0.3); }
         .mode-btn:hover:not(.active) { color: var(--text-dim); }
@@ -194,6 +228,33 @@
         .status-msg.error { background: rgba(220,20,60,0.1); border: 1px solid rgba(220,20,60,0.3); color: var(--crimson-bright); }
         .status-msg.info { background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: var(--yellow); }
         .status-msg a { color: inherit; text-decoration: underline; }
+
+        /* Confirmation Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: var(--bg-card); border: 1px solid var(--sol-purple-border); border-radius: 16px; padding: 2rem; max-width: 520px; width: 100%; position: relative; animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--sol-purple), transparent); }
+        .modal h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; text-align: center; }
+        .modal-summary { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+        .modal-row { display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0; font-size: 0.88rem; }
+        .modal-row:not(:last-child) { border-bottom: 1px solid rgba(153,69,255,0.1); }
+        .modal-row .label { color: var(--text-dim); }
+        .modal-row .value { font-weight: 600; font-family: 'Space Mono', monospace; }
+        .modal-row.total .label { color: var(--text); font-weight: 600; }
+        .modal-row.total .value { color: var(--sol-purple); font-size: 1.05rem; }
+        .modal-recipients-preview { max-height: 140px; overflow-y: auto; margin-bottom: 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.8rem; }
+        .modal-recipients-preview::-webkit-scrollbar { width: 4px; }
+        .modal-recipients-preview::-webkit-scrollbar-thumb { background: var(--sol-purple-border); border-radius: 4px; }
+        .modal-recip-item { display: flex; justify-content: space-between; font-size: 0.75rem; padding: 0.2rem 0; font-family: 'Space Mono', monospace; color: var(--text-dim); }
+        .modal-recip-item .addr { color: var(--text); }
+        .modal-buttons { display: flex; gap: 0.8rem; margin-top: 1rem; }
+        .modal-buttons button { flex: 1; padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
+        .modal-cancel { background: var(--bg); border: 1px solid var(--border); color: var(--text-dim); }
+        .modal-cancel:hover { border-color: var(--sol-purple-border); color: var(--text); }
+        .modal-confirm { background: linear-gradient(135deg, #7B2FD4, #5A1DA8); border: 1px solid var(--sol-purple-border); color: #fff; }
+        .modal-confirm:hover { background: linear-gradient(135deg, var(--sol-purple), #7B2FD4); box-shadow: 0 4px 16px rgba(153,69,255,0.3); }
+        .modal-warning { font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.6rem; }
 
         /* Footer */
         footer { padding: 2.5rem 0; border-top: 1px solid var(--border); }
@@ -288,14 +349,14 @@
         <div class="container">
             <div class="hero-badge"><span class="dot"></span> Live on Solana Devnet</div>
             <h1>Batch Payments on<br><span>Solana</span></h1>
-            <p>Send SOL or USDC to multiple recipients in optimized batch transactions. Auto-chunked. ~$0.001 per transaction.</p>
+            <p>Send SOL, USDC, BONK, or any SPL token to hundreds of recipients. One approval. Auto-chunked. Pennies in fees.</p>
             <div class="hero-buttons">
                 <a href="#app" class="btn btn-sol">Launch App →</a>
                 <a href="https://github.com/plagtech/spraay-solana" target="_blank" class="btn btn-outline">View on GitHub</a>
             </div>
             <div class="hero-stats">
-                <div class="stat"><div class="stat-value">~14</div><div class="stat-label">Recipients / Tx</div></div>
-                <div class="stat"><div class="stat-value">~$0.001</div><div class="stat-label">Per Transaction</div></div>
+                <div class="stat"><div class="stat-value">1,000+</div><div class="stat-label">Recipients / Batch</div></div>
+                <div class="stat"><div class="stat-value">~$0.01</div><div class="stat-label">Per 200 Recipients</div></div>
                 <div class="stat"><div class="stat-value">0.3%</div><div class="stat-label">Protocol Fee</div></div>
             </div>
         </div>
@@ -315,7 +376,7 @@
     <section class="app-section" id="app">
         <div class="container app-container">
             <h2 class="section-title" style="text-align:center; font-size:1.8rem; font-weight:700; margin-bottom:0.5rem;">Spray Tokens</h2>
-            <p style="text-align:center; color:var(--text-dim); margin-bottom:3rem;">Batch send SOL or USDC to multiple wallets on Solana.</p>
+            <p style="text-align:center; color:var(--text-dim); margin-bottom:3rem;">Batch send SOL, USDC, BONK, JUP, WIF, and any SPL token on Solana.</p>
 
             <div class="app-card">
                 <div class="app-header">
@@ -326,10 +387,34 @@
                     </div>
                 </div>
 
-                <!-- Token Toggle -->
-                <div class="mode-toggle">
-                    <button class="mode-btn active" id="btnSOL" onclick="selectToken('SOL')">◎ SOL</button>
-                    <button class="mode-btn" id="btnUSDC" onclick="selectToken('USDC')">$ USDC</button>
+                <!-- Token Selector -->
+                <label class="form-label">Token</label>
+                <div class="token-picker-wrap">
+                    <button class="token-picker-btn" id="tokenPickerBtn" onclick="toggleTokenDropdown(event)">
+                        <span class="tp-icon" id="tpIcon">◎</span>
+                        <span class="tp-name" id="tpName">SOL</span>
+                        <span class="tp-bal" id="tpBal">—</span>
+                        <span class="tp-chevron">▼</span>
+                    </button>
+                    <div class="token-dropdown" id="tokenDropdown">
+                        <div class="td-search-wrap">
+                            <input type="text" class="td-search" id="tokenSearch" placeholder="Search or paste mint address..." oninput="filterTokens()" />
+                        </div>
+                        <div class="td-section-label">Native</div>
+                        <div class="td-list" id="tokenList">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div class="td-section-label" id="customLabel" style="display:none;">Custom Token</div>
+                        <div class="td-custom" id="customTokenRow" style="display:none;">
+                            <button class="td-item" onclick="selectCustomToken()">
+                                <span class="td-item-icon">🔗</span>
+                                <div class="td-item-info">
+                                    <span class="td-item-name" id="customTokenName">Use pasted address</span>
+                                    <span class="td-item-sub" id="customTokenAddr"></span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="balance-display" id="balanceDisplay">Connect wallet to see balance</div>
@@ -337,7 +422,7 @@
                 <label class="form-label">Recipients</label>
                 <div class="recipients-list" id="recipientList"></div>
                 <button class="add-recipient-btn" onclick="addRecipient()">+ Add Recipient</button>
-                <div class="recipient-count-badge"><strong id="recipientCount">0</strong> recipients · auto-chunked into optimal transactions</div>
+                <div class="recipient-count-badge"><strong id="recipientCount">0</strong> recipients · unlimited batch size, one approval</div>
                 <label class="csv-upload" onclick="document.getElementById('csvInput').click()">📄 <span class="csv-upload-text">Upload CSV (address, amount per line)</span><input type="file" id="csvInput" accept=".csv,.txt" onchange="handleCSV(event)"></label>
 
                 <div class="summary-card">
@@ -348,11 +433,32 @@
                     <div class="summary-row summary-total"><span class="summary-label">Total Cost</span><span class="summary-value" id="sumTotal">0</span></div>
                 </div>
 
-                <button class="spray-btn" id="sprayBtn" onclick="executeBatch()" disabled>Connect Phantom to Spray</button>
+                <button class="spray-btn" id="sprayBtn" onclick="openConfirmModal()" disabled>Connect Phantom to Spray</button>
                 <div class="status-msg" id="statusMsg"></div>
             </div>
         </div>
     </section>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3>💧 Confirm Spray</h3>
+            <div class="modal-summary">
+                <div class="modal-row"><span class="label">Token</span><span class="value" id="modalToken">SOL</span></div>
+                <div class="modal-row"><span class="label">Recipients</span><span class="value" id="modalRecipients">0</span></div>
+                <div class="modal-row"><span class="label">Total Amount</span><span class="value" id="modalAmount">0</span></div>
+                <div class="modal-row"><span class="label">Spraay Fee (0.3%)</span><span class="value" id="modalFee">0</span></div>
+                <div class="modal-row"><span class="label">Transactions</span><span class="value" id="modalTxs">0</span></div>
+                <div class="modal-row total"><span class="label">Total Cost</span><span class="value" id="modalTotal">0</span></div>
+            </div>
+            <div class="modal-recipients-preview" id="modalRecipientsList"></div>
+            <div class="modal-buttons">
+                <button class="modal-cancel" onclick="closeConfirmModal()">Cancel</button>
+                <button class="modal-confirm" onclick="confirmAndSend()">💧 Confirm & Spray</button>
+            </div>
+            <div class="modal-warning">You will approve all transactions in a single Phantom popup.</div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer>
@@ -396,16 +502,214 @@
     // ========================================================================
     // State
     // ========================================================================
-    let connected = false, walletPublicKey = null, selectedToken = 'SOL', solBalance = 0, usdcBalance = 0;
+    let connected = false, walletPublicKey = null, solBalance = 0;
+    let selectedToken = 'SOL';
+    let selectedMint = null;   // null for SOL, PublicKey string for SPL
+    let selectedDecimals = 9;
+    let selectedSymbol = 'SOL';
+    let selectedBalance = 0;
+
     const RPC_URL = 'https://api.devnet.solana.com';
-    const USDC_MINT = '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU';
-    const USDC_DECIMALS = 6;
     const SPRAAY_TREASURY = 'bJ37kGB2i121dSCLunANqh3Qt2RRK14WWH2HGHRTJ4T';
     const FEE_PERCENT = 0.3;
     const MAX_PER_TX = 14;
     const connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
     const SPL_TOKEN_PROGRAM = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
     const ASSOCIATED_TOKEN_PROGRAM = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+
+    // ========================================================================
+    // Token Registry (Mainnet addresses — switch USDC for devnet testing)
+    // ========================================================================
+    const TOKEN_REGISTRY = [
+        { symbol: 'SOL',    name: 'Solana',     icon: '◎', mint: null, decimals: 9, tag: null },
+        // Stablecoins
+        { symbol: 'USDC',   name: 'USD Coin',   icon: '💲', mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', decimals: 6, tag: 'stable' },
+        { symbol: 'USDT',   name: 'Tether',     icon: '💵', mint: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', decimals: 6, tag: 'stable' },
+        { symbol: 'pyUSD',  name: 'PayPal USD', icon: '🅿️', mint: '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo', decimals: 6, tag: 'stable' },
+        // DeFi
+        { symbol: 'JUP',    name: 'Jupiter',    icon: '🪐', mint: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',  decimals: 6, tag: 'defi' },
+        { symbol: 'RAY',    name: 'Raydium',    icon: '☀️', mint: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R', decimals: 6, tag: 'defi' },
+        { symbol: 'ORCA',   name: 'Orca',       icon: '🐋', mint: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',  decimals: 6, tag: 'defi' },
+        { symbol: 'PYTH',   name: 'Pyth',       icon: '🔮', mint: 'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3', decimals: 6, tag: 'defi' },
+        { symbol: 'JTO',    name: 'Jito',       icon: '⚡', mint: 'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',  decimals: 9, tag: 'defi' },
+        { symbol: 'W',      name: 'Wormhole',   icon: '🕳️', mint: '85VBFQZC9TZkfaptBWjvUw7YbZjy52A6mjtPGjstQAmQ', decimals: 6, tag: 'defi' },
+        // Memecoins
+        { symbol: 'BONK',   name: 'Bonk',       icon: '🐕', mint: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263', decimals: 5, tag: 'meme' },
+        { symbol: 'WIF',    name: 'dogwifhat',  icon: '🐶', mint: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm', decimals: 6, tag: 'meme' },
+        { symbol: 'POPCAT', name: 'Popcat',     icon: '🐱', mint: '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr', decimals: 9, tag: 'meme' },
+        { symbol: 'MEW',    name: 'cat in a dogs world', icon: '😺', mint: 'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5', decimals: 5, tag: 'meme' },
+        { symbol: 'BOME',   name: 'BOOK OF MEME', icon: '📖', mint: 'ukHH6c7mMyiWCf6b9PkFmZLXQ6Lg9czVn1hYDNT98W3', decimals: 6, tag: 'meme' },
+    ];
+
+    // Devnet USDC override for testing
+    // TOKEN_REGISTRY[1].mint = '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU';
+
+    // ========================================================================
+    // Token Dropdown
+    // ========================================================================
+    function renderTokenList(filter = '') {
+        const list = document.getElementById('tokenList');
+        list.innerHTML = '';
+        const q = filter.toLowerCase();
+        const isAddress = q.length >= 32 && /^[a-zA-Z0-9]+$/.test(q);
+
+        let hasResults = false;
+        let currentCategory = '';
+
+        TOKEN_REGISTRY.forEach((t, idx) => {
+            if (q && !t.symbol.toLowerCase().includes(q) && !t.name.toLowerCase().includes(q)) return;
+            hasResults = true;
+
+            // Category separator
+            const cat = t.tag || 'native';
+            if (cat !== currentCategory) {
+                currentCategory = cat;
+                const label = document.createElement('div');
+                label.className = 'td-section-label';
+                label.textContent = cat === 'native' ? 'Native' : cat === 'stable' ? 'Stablecoins' : cat === 'defi' ? 'DeFi' : 'Memecoins';
+                if (idx > 0) list.appendChild(label);
+            }
+
+            const btn = document.createElement('button');
+            btn.className = 'td-item' + (selectedSymbol === t.symbol ? ' active' : '');
+            const tagHtml = t.tag ? '<span class="td-item-tag '+t.tag+'">'+t.tag+'</span>' : '';
+            btn.innerHTML = '<span class="td-item-icon">'+t.icon+'</span><div class="td-item-info"><span class="td-item-name">'+t.symbol+' '+tagHtml+'</span><span class="td-item-sub">'+t.name+'</span></div><span class="td-item-bal" id="tokBal_'+idx+'">—</span>';
+            btn.onclick = function() { selectTokenByIndex(idx); };
+            list.appendChild(btn);
+        });
+
+        // Custom address
+        const customEl = document.getElementById('customTokenRow');
+        const customLabel = document.getElementById('customLabel');
+        if (isAddress && !hasResults) {
+            customLabel.style.display = '';
+            customEl.style.display = '';
+            document.getElementById('customTokenAddr').textContent = q.slice(0,8)+'...'+q.slice(-6);
+        } else if (isAddress) {
+            customLabel.style.display = '';
+            customEl.style.display = '';
+            document.getElementById('customTokenAddr').textContent = q.slice(0,8)+'...'+q.slice(-6);
+        } else {
+            customLabel.style.display = 'none';
+            customEl.style.display = 'none';
+        }
+
+        // Fetch balances if connected
+        if (connected) fetchTokenBalances();
+    }
+
+    function toggleTokenDropdown(e) {
+        e.stopPropagation();
+        const btn = document.getElementById('tokenPickerBtn');
+        const dd = document.getElementById('tokenDropdown');
+        const isOpen = dd.classList.contains('open');
+        if (isOpen) {
+            dd.classList.remove('open');
+            btn.classList.remove('open');
+        } else {
+            dd.classList.add('open');
+            btn.classList.add('open');
+            document.getElementById('tokenSearch').value = '';
+            renderTokenList();
+            document.getElementById('tokenSearch').focus();
+        }
+    }
+
+    function closeTokenDropdown() {
+        document.getElementById('tokenDropdown').classList.remove('open');
+        document.getElementById('tokenPickerBtn').classList.remove('open');
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.token-picker-wrap')) closeTokenDropdown();
+    });
+
+    function filterTokens() {
+        const q = document.getElementById('tokenSearch').value;
+        renderTokenList(q);
+    }
+
+    function selectTokenByIndex(idx) {
+        const t = TOKEN_REGISTRY[idx];
+        selectedToken = t.mint ? 'SPL' : 'SOL';
+        selectedMint = t.mint;
+        selectedDecimals = t.decimals;
+        selectedSymbol = t.symbol;
+        document.getElementById('tpIcon').textContent = t.icon;
+        document.getElementById('tpName').textContent = t.symbol;
+        document.querySelectorAll('.amt-suffix').forEach(el => el.textContent = t.symbol);
+        closeTokenDropdown();
+        if (connected) fetchSelectedBalance();
+        updateSummary();
+    }
+
+    async function selectCustomToken() {
+        const addr = document.getElementById('tokenSearch').value.trim();
+        if (addr.length < 32) return;
+        try {
+            const mintPk = new solanaWeb3.PublicKey(addr);
+            // Try to fetch mint info to get decimals
+            const mintInfo = await connection.getAccountInfo(mintPk);
+            let decimals = 9;
+            if (mintInfo && mintInfo.data.length >= 45) {
+                decimals = mintInfo.data[44]; // decimals byte offset in Mint layout
+            }
+            selectedToken = 'SPL';
+            selectedMint = addr;
+            selectedDecimals = decimals;
+            selectedSymbol = addr.slice(0,4)+'...';
+            document.getElementById('tpIcon').textContent = '🔗';
+            document.getElementById('tpName').textContent = selectedSymbol;
+            document.querySelectorAll('.amt-suffix').forEach(el => el.textContent = selectedSymbol);
+            closeTokenDropdown();
+            if (connected) fetchSelectedBalance();
+            updateSummary();
+            showStatus('Custom token loaded ('+decimals+' decimals)', 'info');
+        } catch(err) {
+            showStatus('Invalid mint address: '+err.message, 'error');
+        }
+    }
+
+    // ========================================================================
+    // Balance Fetching
+    // ========================================================================
+    async function fetchSelectedBalance() {
+        if (!walletPublicKey) return;
+        if (!selectedMint) {
+            // SOL
+            selectedBalance = solBalance;
+        } else {
+            selectedBalance = await getSPLBalance(selectedMint);
+        }
+        document.getElementById('tpBal').textContent = selectedBalance > 0 ? selectedBalance.toFixed(selectedDecimals <= 6 ? 2 : 4) : '0';
+        document.getElementById('balanceDisplay').innerHTML = 'Balance: <strong>'+solBalance.toFixed(4)+' SOL</strong> · <strong>'+selectedBalance.toFixed(selectedDecimals<=6?2:4)+' '+selectedSymbol+'</strong>';
+    }
+
+    async function getSPLBalance(mintAddr) {
+        try {
+            const mint = new solanaWeb3.PublicKey(mintAddr);
+            const ata = await getATA(mint, walletPublicKey);
+            const info = await connection.getAccountInfo(ata);
+            if (info) return Number(info.data.readBigUInt64LE(64)) / Math.pow(10, selectedDecimals);
+        } catch {}
+        return 0;
+    }
+
+    async function fetchTokenBalances() {
+        if (!walletPublicKey) return;
+        TOKEN_REGISTRY.forEach(async (t, idx) => {
+            const el = document.getElementById('tokBal_'+idx);
+            if (!el) return;
+            try {
+                if (!t.mint) {
+                    el.textContent = solBalance.toFixed(2);
+                } else {
+                    const bal = await getSPLBalance(t.mint);
+                    el.textContent = bal > 0 ? bal.toFixed(bal < 1 ? 4 : 2) : '0';
+                }
+            } catch { el.textContent = '—'; }
+        });
+    }
 
     // ========================================================================
     // Wallet
@@ -421,27 +725,21 @@
             const short = walletPublicKey.toBase58().slice(0,4)+'...'+walletPublicKey.toBase58().slice(-4);
             document.getElementById('navConnectBtn').outerHTML = '<button class="btn-connected" id="navConnectBtn" onclick="connectWallet()"><span class="wallet-dot"></span>'+short+'</button>';
             document.getElementById('walletInfo').innerHTML = '<span class="wallet-dot"></span> '+short;
-            await refreshBalances(); updateSummary();
+            await refreshBalances(); await fetchSelectedBalance(); updateSummary();
         } catch(err) { showStatus('Failed to connect: '+err.message,'error'); }
     }
     function disconnectWallet() {
         const p = getPhantom(); if(p) p.disconnect();
-        connected = false; walletPublicKey = null;
+        connected = false; walletPublicKey = null; solBalance = 0; selectedBalance = 0;
         document.getElementById('navConnectBtn').outerHTML = '<button class="btn-connect" id="navConnectBtn" onclick="connectWallet()">Connect Phantom</button>';
         document.getElementById('walletInfo').innerHTML = 'Not connected';
         document.getElementById('balanceDisplay').textContent = 'Connect wallet to see balance';
+        document.getElementById('tpBal').textContent = '—';
         updateSummary();
     }
     async function refreshBalances() {
         if(!walletPublicKey) return;
         try { solBalance = (await connection.getBalance(walletPublicKey))/solanaWeb3.LAMPORTS_PER_SOL; } catch { solBalance=0; }
-        try {
-            const mint = new solanaWeb3.PublicKey(USDC_MINT);
-            const ata = await getATA(mint, walletPublicKey);
-            const info = await connection.getAccountInfo(ata);
-            if(info) { usdcBalance = Number(info.data.readBigUInt64LE(64))/Math.pow(10,USDC_DECIMALS); } else { usdcBalance=0; }
-        } catch { usdcBalance=0; }
-        document.getElementById('balanceDisplay').innerHTML = 'Balance: <strong>'+solBalance.toFixed(4)+' SOL</strong> · <strong>'+usdcBalance.toFixed(2)+' USDC</strong>';
     }
 
     // ATA helpers
@@ -449,17 +747,15 @@
     function createATAIx(payer,ata,owner,mint) { return new solanaWeb3.TransactionInstruction({keys:[{pubkey:payer,isSigner:true,isWritable:true},{pubkey:ata,isSigner:false,isWritable:true},{pubkey:owner,isSigner:false,isWritable:false},{pubkey:mint,isSigner:false,isWritable:false},{pubkey:solanaWeb3.SystemProgram.programId,isSigner:false,isWritable:false},{pubkey:SPL_TOKEN_PROGRAM,isSigner:false,isWritable:false}],programId:ASSOCIATED_TOKEN_PROGRAM,data:Buffer.alloc(0)}); }
     function createSPLTransfer(source,dest,authority,amount) { const data=Buffer.alloc(9); data.writeUInt8(3,0); data.writeBigUInt64LE(BigInt(amount),1); return new solanaWeb3.TransactionInstruction({keys:[{pubkey:source,isSigner:false,isWritable:true},{pubkey:dest,isSigner:false,isWritable:true},{pubkey:authority,isSigner:true,isWritable:false}],programId:SPL_TOKEN_PROGRAM,data}); }
 
-    // Token selection
-    function selectToken(t) { selectedToken=t; document.getElementById('btnSOL').className=t==='SOL'?'mode-btn active':'mode-btn'; document.getElementById('btnUSDC').className=t==='USDC'?'mode-btn active':'mode-btn'; document.querySelectorAll('.amt-suffix').forEach(el=>el.textContent=t); updateSummary(); }
-
     // Recipients
-    function addRecipient(addr='',amt='') { const list=document.getElementById('recipientList'); const row=document.createElement('div'); row.className='recipient-row'; row.innerHTML='<input type="text" class="addr-input" placeholder="Solana wallet address" value="'+addr+'" oninput="updateSummary()"><div class="amount-wrap"><input type="text" class="amt-input" placeholder="0.00" value="'+amt+'" oninput="updateSummary()"><span class="amt-suffix">'+selectedToken+'</span></div><button class="remove-btn" onclick="this.parentElement.remove();updateSummary();">×</button>'; list.appendChild(row); updateSummary(); }
+    function addRecipient(addr='',amt='') { const list=document.getElementById('recipientList'); const row=document.createElement('div'); row.className='recipient-row'; row.innerHTML='<input type="text" class="addr-input" placeholder="Solana wallet address" value="'+addr+'" oninput="updateSummary()"><div class="amount-wrap"><input type="text" class="amt-input" placeholder="0.00" value="'+amt+'" oninput="updateSummary()"><span class="amt-suffix">'+selectedSymbol+'</span></div><button class="remove-btn" onclick="this.parentElement.remove();updateSummary();">×</button>'; list.appendChild(row); updateSummary(); }
     function getRecipients() { const rows=document.querySelectorAll('#recipientList .recipient-row'); const out=[]; rows.forEach(row=>{ const addr=row.querySelector('.addr-input').value.trim(); const amt=parseFloat(row.querySelector('.amt-input').value)||0; if(addr&&amt>0) out.push({address:addr,amount:amt}); }); return out; }
     function handleCSV(event) { const file=event.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=function(e){ const lines=e.target.result.split('\n').filter(l=>l.trim()); document.getElementById('recipientList').innerHTML=''; lines.forEach(line=>{ const parts=line.split(',').map(s=>s.trim()); if(parts.length>=2) addRecipient(parts[0],parts[1]); }); }; reader.readAsText(file); event.target.value=''; }
 
     // Summary
     function updateSummary() {
-        const r=getRecipients(), total=r.reduce((s,x)=>s+x.amount,0), fee=total*(FEE_PERCENT/100), txs=r.length>0?Math.ceil(r.length/MAX_PER_TX):0, sym=selectedToken;
+        const r=getRecipients(), total=r.reduce((s,x)=>s+x.amount,0), fee=total*(FEE_PERCENT/100), txs=r.length>0?Math.ceil(r.length/MAX_PER_TX):0;
+        const sym = selectedSymbol;
         document.getElementById('recipientCount').textContent=r.length;
         document.getElementById('sumRecipients').textContent=r.length;
         document.getElementById('sumAmount').textContent=total.toFixed(total<1?6:4)+' '+sym;
@@ -472,6 +768,39 @@
         else{btn.textContent='💧 Spray '+total.toFixed(total<1?4:2)+' '+sym+' to '+r.length+' recipients';btn.disabled=false;}
     }
 
+    // Confirmation Modal
+    function openConfirmModal() {
+        if (!connected || !walletPublicKey) return;
+        const recipients = getRecipients();
+        if (recipients.length === 0) { showStatus('Add at least one valid recipient with an amount.', 'error'); return; }
+
+        const total = recipients.reduce((s, r) => s + r.amount, 0);
+        const fee = total * (FEE_PERCENT / 100);
+        const txs = Math.ceil(recipients.length / MAX_PER_TX);
+        const sym = selectedSymbol;
+
+        document.getElementById('modalToken').textContent = sym;
+        document.getElementById('modalRecipients').textContent = recipients.length;
+        document.getElementById('modalAmount').textContent = total.toFixed(total < 1 ? 6 : 4) + ' ' + sym;
+        document.getElementById('modalFee').textContent = fee.toFixed(fee < 0.01 ? 6 : 4) + ' ' + sym;
+        document.getElementById('modalTxs').textContent = txs + (txs > 1 ? ' (signed at once)' : '');
+        document.getElementById('modalTotal').textContent = (total + fee).toFixed(4) + ' ' + sym;
+
+        const previewEl = document.getElementById('modalRecipientsList');
+        previewEl.innerHTML = '';
+        recipients.forEach(r => {
+            const shortAddr = r.address.slice(0, 6) + '...' + r.address.slice(-4);
+            previewEl.innerHTML += '<div class="modal-recip-item"><span class="addr">' + shortAddr + '</span><span>' + r.amount.toFixed(r.amount < 1 ? 6 : 4) + ' ' + sym + '</span></div>';
+        });
+
+        document.getElementById('confirmModal').classList.add('show');
+    }
+
+    function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('show'); }
+    document.getElementById('confirmModal').addEventListener('click', function(e) { if (e.target === this) closeConfirmModal(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeConfirmModal(); });
+    async function confirmAndSend() { closeConfirmModal(); await executeBatch(); }
+
     // Execute
     async function executeBatch() {
         if(!connected||!walletPublicKey) return;
@@ -479,41 +808,114 @@
         const btn=document.getElementById('sprayBtn');
         btn.disabled=true; btn.classList.add('loading'); btn.textContent='⏳ Preparing...';
         try {
-            const sigs=selectedToken==='SOL'?await batchSOL(recipients):await batchUSDC(recipients);
+            const sigs = selectedToken === 'SOL' ? await batchSOL(recipients) : await batchSPL(recipients);
             const total=recipients.reduce((s,r)=>s+r.amount,0);
             const links=sigs.map((s,i)=>'<a href="https://explorer.solana.com/tx/'+s+'?cluster=devnet" target="_blank">Tx '+(i+1)+'</a>').join(' · ');
-            showStatus('💧 Sprayed '+total+' '+selectedToken+' to '+recipients.length+' recipients in '+sigs.length+' tx! '+links,'success');
-            await refreshBalances();
-        } catch(err) { let msg=err.message||'Transaction failed'; if(msg.includes('User rejected')) msg='Transaction rejected by user.'; showStatus(msg,'error'); }
+            showStatus('💧 Sprayed '+total+' '+selectedSymbol+' to '+recipients.length+' recipients in '+sigs.length+' tx! '+links,'success');
+            await refreshBalances(); await fetchSelectedBalance();
+        } catch(err) { let msg=err.message||'Transaction failed'; if(msg.includes('User rejected')) msg='Transaction rejected by user.'; else if(msg.length>200) msg=msg.slice(0,200)+'...'; showStatus(msg,'error'); }
         btn.classList.remove('loading'); updateSummary();
     }
+
     async function batchSOL(recipients) {
         const totalAmt=recipients.reduce((s,r)=>s+r.amount,0), feeAmt=totalAmt*(FEE_PERCENT/100), ixs=[];
         for(const r of recipients) ixs.push(solanaWeb3.SystemProgram.transfer({fromPubkey:walletPublicKey,toPubkey:new solanaWeb3.PublicKey(r.address),lamports:Math.floor(r.amount*solanaWeb3.LAMPORTS_PER_SOL)}));
         if(feeAmt>0) ixs.push(solanaWeb3.SystemProgram.transfer({fromPubkey:walletPublicKey,toPubkey:new solanaWeb3.PublicKey(SPRAAY_TREASURY),lamports:Math.floor(feeAmt*solanaWeb3.LAMPORTS_PER_SOL)}));
         return await sendChunked(ixs);
     }
-    async function batchUSDC(recipients) {
-        const mint=new solanaWeb3.PublicKey(USDC_MINT), totalAmt=recipients.reduce((s,r)=>s+r.amount,0), feeAmt=totalAmt*(FEE_PERCENT/100), mul=Math.pow(10,USDC_DECIMALS);
-        const senderAta=await getATA(mint,walletPublicKey), ixs=[];
-        for(const r of recipients){ const pk=new solanaWeb3.PublicKey(r.address), ata=await getATA(mint,pk), info=await connection.getAccountInfo(ata); if(!info) ixs.push(createATAIx(walletPublicKey,ata,pk,mint)); ixs.push(createSPLTransfer(senderAta,ata,walletPublicKey,Math.floor(r.amount*mul))); }
-        if(feeAmt>0){ const tPk=new solanaWeb3.PublicKey(SPRAAY_TREASURY), tAta=await getATA(mint,tPk), tInfo=await connection.getAccountInfo(tAta); if(!tInfo) ixs.push(createATAIx(walletPublicKey,tAta,tPk,mint)); ixs.push(createSPLTransfer(senderAta,tAta,walletPublicKey,Math.floor(feeAmt*mul))); }
+
+    async function batchSPL(recipients) {
+        const mint = new solanaWeb3.PublicKey(selectedMint);
+        const totalAmt = recipients.reduce((s,r) => s+r.amount, 0);
+        const feeAmt = totalAmt * (FEE_PERCENT/100);
+        const mul = Math.pow(10, selectedDecimals);
+        const senderAta = await getATA(mint, walletPublicKey);
+        const ixs = [];
+
+        showStatus('Checking recipient accounts...', 'info');
+        for (const r of recipients) {
+            const pk = new solanaWeb3.PublicKey(r.address);
+            const ata = await getATA(mint, pk);
+            const info = await connection.getAccountInfo(ata);
+            if (!info) ixs.push(createATAIx(walletPublicKey, ata, pk, mint));
+            ixs.push(createSPLTransfer(senderAta, ata, walletPublicKey, Math.floor(r.amount * mul)));
+        }
+
+        if (feeAmt > 0) {
+            const tPk = new solanaWeb3.PublicKey(SPRAAY_TREASURY);
+            const tAta = await getATA(mint, tPk);
+            const tInfo = await connection.getAccountInfo(tAta);
+            if (!tInfo) ixs.push(createATAIx(walletPublicKey, tAta, tPk, mint));
+            ixs.push(createSPLTransfer(senderAta, tAta, walletPublicKey, Math.floor(feeAmt * mul)));
+        }
         return await sendChunked(ixs);
     }
+
     async function sendChunked(ixs) {
-        const chunks=[]; for(let i=0;i<ixs.length;i+=MAX_PER_TX) chunks.push(ixs.slice(i,i+MAX_PER_TX));
-        const sigs=[], provider=getPhantom();
-        for(let i=0;i<chunks.length;i++){
-            showStatus('Sending transaction '+(i+1)+' of '+chunks.length+'...','info');
-            const tx=new solanaWeb3.Transaction(); chunks[i].forEach(ix=>tx.add(ix));
-            const {blockhash,lastValidBlockHeight}=await connection.getLatestBlockhash('confirmed');
-            tx.recentBlockhash=blockhash; tx.feePayer=walletPublicKey;
-            const signed=await provider.signTransaction(tx);
-            const sig=await connection.sendRawTransaction(signed.serialize(),{skipPreflight:false,preflightCommitment:'confirmed'});
-            await connection.confirmTransaction({signature:sig,blockhash,lastValidBlockHeight},'confirmed');
-            sigs.push(sig);
-            if(i<chunks.length-1) await new Promise(r=>setTimeout(r,300));
+        const chunks = [];
+        for (let i = 0; i < ixs.length; i += MAX_PER_TX) chunks.push(ixs.slice(i, i + MAX_PER_TX));
+        const provider = getPhantom();
+
+        // Build all transactions up front
+        showStatus('Building ' + chunks.length + ' transaction(s)...', 'info');
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+        const transactions = [];
+        for (const chunk of chunks) {
+            const tx = new solanaWeb3.Transaction();
+            chunk.forEach(ix => tx.add(ix));
+            tx.recentBlockhash = blockhash;
+            tx.feePayer = walletPublicKey;
+            transactions.push(tx);
         }
+
+        // Sign ALL at once — one Phantom popup
+        showStatus('Approve ' + transactions.length + ' transaction(s) in Phantom (one popup)...', 'info');
+        let signedTxs;
+        try {
+            if (transactions.length === 1) {
+                signedTxs = [await provider.signTransaction(transactions[0])];
+            } else if (provider.signAllTransactions) {
+                signedTxs = await provider.signAllTransactions(transactions);
+            } else {
+                // Fallback for wallets without signAllTransactions
+                signedTxs = [];
+                for (const tx of transactions) signedTxs.push(await provider.signTransaction(tx));
+            }
+        } catch (err) {
+            if (err.message && (err.message.includes('User rejected') || err.message.includes('user rejected')))
+                throw new Error('Transaction rejected by user.');
+            throw err;
+        }
+
+        // Send all signed transactions rapidly
+        const sigs = [];
+        const failed = [];
+        for (let i = 0; i < signedTxs.length; i++) {
+            showStatus('Sending transaction ' + (i + 1) + ' of ' + signedTxs.length + '...', 'info');
+            try {
+                const sig = await connection.sendRawTransaction(signedTxs[i].serialize(), {
+                    skipPreflight: false, preflightCommitment: 'confirmed'
+                });
+                sigs.push(sig);
+            } catch (err) {
+                failed.push({ index: i + 1, error: err.message || 'Send failed' });
+            }
+            if (i < signedTxs.length - 1) await new Promise(r => setTimeout(r, 150));
+        }
+
+        if (sigs.length === 0) throw new Error('All transactions failed to send. ' + (failed[0] ? failed[0].error : ''));
+
+        // Confirm all successful sends in parallel
+        showStatus('Confirming ' + sigs.length + ' transaction(s)...', 'info');
+        await Promise.all(sigs.map(sig =>
+            connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, 'confirmed')
+        ));
+
+        // Report partial failures
+        if (failed.length > 0) {
+            showStatus('⚠️ ' + sigs.length + '/' + signedTxs.length + ' transactions succeeded. ' + failed.length + ' failed (tx #' + failed.map(f => f.index).join(', #') + '). Check your balances.', 'error');
+        }
+
         return sigs;
     }
 
@@ -521,7 +923,8 @@
 
     // Init
     addRecipient(); addRecipient(); addRecipient();
-    window.addEventListener('load',async()=>{ const p=getPhantom(); if(p){ try{ const resp=await p.connect({onlyIfTrusted:true}); walletPublicKey=resp.publicKey; connected=true; const short=walletPublicKey.toBase58().slice(0,4)+'...'+walletPublicKey.toBase58().slice(-4); document.getElementById('navConnectBtn').outerHTML='<button class="btn-connected" id="navConnectBtn" onclick="connectWallet()"><span class="wallet-dot"></span>'+short+'</button>'; document.getElementById('walletInfo').innerHTML='<span class="wallet-dot"></span> '+short; await refreshBalances(); updateSummary(); }catch{} } });
+    renderTokenList();
+    window.addEventListener('load',async()=>{ const p=getPhantom(); if(p){ try{ const resp=await p.connect({onlyIfTrusted:true}); walletPublicKey=resp.publicKey; connected=true; const short=walletPublicKey.toBase58().slice(0,4)+'...'+walletPublicKey.toBase58().slice(-4); document.getElementById('navConnectBtn').outerHTML='<button class="btn-connected" id="navConnectBtn" onclick="connectWallet()"><span class="wallet-dot"></span>'+short+'</button>'; document.getElementById('walletInfo').innerHTML='<span class="wallet-dot"></span> '+short; await refreshBalances(); await fetchSelectedBalance(); updateSummary(); }catch{} } });
     </script>
 </body>
 </html>
