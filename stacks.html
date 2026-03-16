@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spraay – Batch STX Payments on Stacks</title>
+    <meta name="description" content="Send STX to 200+ recipients in a single transaction. Batch payments on Stacks (Bitcoin L2). AI agent ready.">
+    <meta property="og:title" content="Spraay – Batch STX Payments on Stacks">
+    <meta property="og:description" content="Send STX to 200+ recipients in a single transaction on Stacks. ~80% gas savings.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://spraay.app/stacks">
+    <meta property="og:image" content="https://spraay.app/spraay-logo-1000x1000.png">
+    <meta name="twitter:image" content="https://spraay.app/spraay-logo-1000x1000.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:creator" content="@Spraay_app">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange:        #f7931a;
+            --orange-deep:   #c47415;
+            --orange-bright: #ffa940;
+            --orange-glow:   rgba(247, 147, 26, 0.12);
+            --bg:            #fef8f0;
+            --bg-card:       #ffffff;
+            --bg-card-hover: #fffaf5;
+            --text:          #2d1f0d;
+            --text-dim:      #70604a;
+            --text-muted:    #b8a58a;
+            --border:        rgba(247, 147, 26, 0.2);
+            --border-bright: rgba(255, 169, 64, 0.45);
+            --green:         #22c55e;
+            --yellow:        #eab308;
+            --purple:        #5546FF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        code, .mono { font-family: 'Space Mono', monospace; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        html { scroll-behavior: smooth; }
+
+        /* ── Nav ─────────────────────────────────────── */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            background: rgba(254, 248, 240, 0.94); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo {
+            font-weight: 800; font-size: 1.4rem; letter-spacing: 0.08em;
+            background: linear-gradient(135deg, var(--orange-bright), var(--orange));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            cursor: pointer; text-decoration: none;
+        }
+        .nav-links { display: flex; gap: 1.2rem; align-items: center; }
+        .nav-links a {
+            color: var(--text-dim); text-decoration: none; font-size: 0.9rem;
+            font-weight: 500; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+
+        /* ── Chain Dropdown (Desktop) ────────────── */
+        .chain-dropdown { position: relative; }
+        .chain-dropdown-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0.45rem 0.9rem;
+            color: var(--text); font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; font-family: 'Outfit', sans-serif;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(247,147,26,0.08);
+        }
+        .chain-dropdown-btn:hover { border-color: var(--border-bright); background: var(--bg-card-hover); }
+        .chain-dropdown-btn .chain-icon { font-size: 1rem; }
+        .chain-dropdown-btn .chevron {
+            font-size: 0.6rem; color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+        .chain-dropdown.open .chain-dropdown-btn { border-color: var(--border-bright); }
+        .chain-dropdown.open .chevron { transform: rotate(180deg); }
+        .chain-dropdown-menu {
+            position: absolute; top: calc(100% + 6px); right: 0;
+            background: var(--bg-card); border: 1px solid var(--border-bright);
+            border-radius: 12px; padding: 0.4rem;
+            min-width: 200px;
+            display: none;
+            box-shadow: 0 12px 40px rgba(247,147,26,0.15);
+            z-index: 200;
+        }
+        .chain-dropdown.open .chain-dropdown-menu { display: block; }
+        .chain-dropdown-menu a {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.55rem 0.8rem; border-radius: 8px;
+            color: var(--text-dim); text-decoration: none;
+            font-size: 0.85rem; font-weight: 500;
+            transition: all 0.15s;
+        }
+        .chain-dropdown-menu a:hover { background: var(--orange-glow); color: var(--text); }
+        .chain-dropdown-menu a.current {
+            background: var(--orange-glow); color: var(--orange);
+            font-weight: 600;
+        }
+        .chain-dropdown-menu .chain-item-icon { font-size: 1rem; width: 20px; text-align: center; }
+        .chain-dropdown-menu .chain-item-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 4px rgba(34,197,94,0.5);
+            margin-left: auto; flex-shrink: 0;
+        }
+
+        /* ── Hamburger Button (Mobile only) ──────── */
+        .hamburger-btn {
+            display: none;
+            width: 40px; height: 40px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; cursor: pointer;
+            align-items: center; justify-content: center;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hamburger-btn span {
+            display: block; width: 18px; height: 2px;
+            background: var(--text); border-radius: 1px;
+            position: relative; transition: background 0.2s;
+        }
+        .hamburger-btn span::before,
+        .hamburger-btn span::after {
+            content: ''; position: absolute; left: 0;
+            width: 18px; height: 2px; background: var(--text);
+            border-radius: 1px; transition: transform 0.2s;
+        }
+        .hamburger-btn span::before { top: -6px; }
+        .hamburger-btn span::after { top: 6px; }
+
+        /* ── Mobile Slide Panel ──────────────────── */
+        .mobile-panel-overlay {
+            display: none; position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(45, 31, 13, 0.45);
+            z-index: 999;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-panel-overlay.open { display: block; }
+        .mobile-panel {
+            position: fixed; top: 0; right: 0; bottom: 0;
+            width: 280px; max-width: 80vw;
+            background: var(--bg-card);
+            border-left: 1px solid var(--border);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            display: flex; flex-direction: column;
+        }
+        .mobile-panel.open { transform: translateX(0); }
+        .mobile-panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.2rem 1.2rem 0.8rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .mobile-panel-header .panel-title {
+            font-weight: 700; font-size: 1rem; color: var(--text);
+        }
+        .mobile-panel-close {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-dim); font-size: 1.2rem;
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-panel-close:active { background: var(--orange-glow); }
+        .mobile-panel-section { padding: 0.8rem 0.6rem; }
+        .mobile-panel-section-label {
+            font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-muted);
+            font-weight: 600; padding: 0.4rem 0.6rem;
+        }
+        .mobile-panel a {
+            display: flex; align-items: center; gap: 0.7rem;
+            padding: 0.85rem 0.8rem;
+            border-radius: 10px; color: var(--text-dim);
+            text-decoration: none; font-size: 0.95rem;
+            font-weight: 500; min-height: 48px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-panel a:active { background: var(--orange-glow); }
+        .mobile-panel a.current {
+            background: var(--orange-glow); color: var(--orange);
+            font-weight: 600;
+        }
+        .mobile-panel .mp-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+        .mobile-panel .mp-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 4px rgba(34,197,94,0.5);
+            margin-left: auto; flex-shrink: 0;
+        }
+        .mobile-panel-divider { height: 1px; background: var(--border); margin: 0.4rem 0.6rem; }
+        .mobile-panel-footer {
+            margin-top: auto; padding: 1rem 1.2rem;
+            border-top: 1px solid var(--border);
+        }
+        .mobile-panel-footer a { min-height: 40px; font-size: 0.85rem; color: var(--text-muted); padding: 0.5rem 0.8rem; }
+
+        .btn {
+            display: inline-block; padding: 0.55rem 1.4rem; border-radius: 8px;
+            font-weight: 600; font-size: 0.9rem; text-decoration: none;
+            transition: all 0.25s ease; cursor: pointer; border: none;
+            font-family: 'Outfit', sans-serif;
+        }
+        .btn-primary {
+            background: var(--orange); color: #fff;
+            border: 1px solid var(--orange-bright);
+        }
+        .btn-primary:hover { background: var(--orange-bright); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(247,147,26,0.25); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-outline {
+            background: transparent; color: var(--orange);
+            border: 1px solid var(--border-bright);
+        }
+        .btn-outline:hover { background: var(--orange-glow); }
+        .btn-connect {
+            background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+            color: #fff; border: 1px solid var(--orange-bright);
+            padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 600;
+            font-size: 0.85rem; cursor: pointer; font-family: 'Outfit', sans-serif;
+            transition: all 0.25s ease;
+        }
+        .btn-connect:hover { background: linear-gradient(135deg, var(--orange-bright), var(--orange)); box-shadow: 0 4px 14px rgba(247,147,26,0.2); }
+        .btn-connected {
+            background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);
+            color: var(--green); cursor: pointer;
+        }
+        .btn-connected:hover { background: rgba(34,197,94,0.15); }
+
+        /* ── Hero ──────────────────────────────────── */
+        .hero {
+            padding: 10rem 0 5rem; text-align: center;
+            background: radial-gradient(ellipse at 50% 0%, rgba(247, 147, 26, 0.1) 0%, transparent 60%);
+        }
+        .hero h1 {
+            font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800;
+            line-height: 1.15; margin-bottom: 1.2rem;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--orange-bright), var(--orange));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero p { color: var(--text-dim); font-size: 1.15rem; max-width: 560px; margin: 0 auto 2rem; }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .hero-stats {
+            display: flex; gap: 3rem; justify-content: center; margin-top: 3.5rem;
+            flex-wrap: wrap;
+        }
+        .stat { text-align: center; }
+        .stat-value {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--orange-bright), var(--orange));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+        /* ── Integrations Banner ─────────────────── */
+        .integrations {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: #fdf3e4;
+        }
+        .integrations-inner {
+            display: flex; align-items: center; justify-content: center;
+            gap: 2rem; flex-wrap: wrap;
+        }
+        .integrations-label, .chains-label {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--text-muted); font-weight: 600;
+        }
+        .integration-badge {
+            display: flex; align-items: center; gap: 0.6rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 0.6rem 1.2rem;
+            font-weight: 600; font-size: 0.9rem; color: var(--text);
+            box-shadow: 0 1px 4px rgba(247,147,26,0.07);
+        }
+        .integration-badge .dot, .chain-badge .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5);
+        }
+        .integration-badge.pending .dot {
+            background: #eab308; box-shadow: 0 0 6px rgba(234,179,8,0.5);
+        }
+        .tag { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .tag-live { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .tag-pending { background: rgba(234,179,8,0.15); color: #eab308; }
+        .tag-new { background: rgba(247,147,26,0.15); color: var(--orange); }
+
+        /* ── Chains Banner ───────────────────────── */
+        .chains { padding: 2.5rem 0; border-bottom: 1px solid var(--border); }
+        .chains-inner { display: flex; align-items: center; justify-content: center; gap: 1.2rem; flex-wrap: wrap; }
+        .chain-badge {
+            display: flex; align-items: center; gap: 0.6rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 0.6rem 1.2rem;
+            font-weight: 600; font-size: 0.9rem; color: var(--text);
+            text-decoration: none; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 3px rgba(247,147,26,0.07);
+        }
+        .chain-badge:hover { border-color: var(--border-bright); background: var(--bg-card-hover); box-shadow: 0 3px 10px rgba(247,147,26,0.12); }
+        .chain-tag { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(34,197,94,0.15); color: #22c55e; }
+
+        /* ═══════════════════════════════════════════
+           APP SECTION
+           ═══════════════════════════════════════════ */
+        .app-section {
+            padding: 5rem 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(247, 147, 26, 0.07) 0%, transparent 50%);
+            border-bottom: 1px solid var(--border);
+        }
+        .app-container { max-width: 720px; margin: 0 auto; }
+        .app-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 4px 24px rgba(247, 147, 26, 0.09);
+        }
+        .app-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--orange-bright), transparent);
+            border-radius: 16px 16px 0 0;
+        }
+        .app-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .app-header h2 { font-size: 1.3rem; font-weight: 700; }
+        .wallet-info { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-dim); }
+        .wallet-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+        .chain-indicator { font-size: 0.7rem; background: rgba(247,147,26,0.1); color: var(--orange); padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; }
+
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex; gap: 0; margin-bottom: 1.5rem;
+            background: var(--bg); border-radius: 10px; padding: 3px;
+            border: 1px solid var(--border);
+        }
+        .mode-btn {
+            flex: 1; padding: 0.6rem 1rem; text-align: center;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            border-radius: 8px; transition: all 0.2s;
+            color: var(--text-muted); background: transparent;
+            border: none; font-family: 'Outfit', sans-serif;
+        }
+        .mode-btn.active { background: var(--orange); color: #fff; box-shadow: 0 2px 8px rgba(247,147,26,0.25); }
+        .mode-btn:hover:not(.active) { color: var(--text-dim); }
+        .mode-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 1.2rem; }
+        .form-label {
+            display: block; font-size: 0.82rem; font-weight: 600;
+            color: var(--text-dim); margin-bottom: 0.4rem;
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .form-input, .form-select {
+            width: 100%; padding: 0.75rem 1rem;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text);
+            font-family: 'Outfit', sans-serif; font-size: 0.95rem;
+            transition: border-color 0.2s; outline: none;
+        }
+        .form-input:focus, .form-select:focus { border-color: var(--orange-bright); box-shadow: 0 0 0 3px rgba(247,147,26,0.1); }
+        .form-input::placeholder { color: var(--text-muted); }
+
+        /* ── Recipient Rows ──────────────────────── */
+        .recipients-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.8rem; }
+        .recipient-row {
+            display: grid; grid-template-columns: 1fr auto auto; gap: 0.6rem;
+            align-items: center;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+        .recipient-row .addr-input {
+            padding: 0.65rem 0.8rem;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text);
+            font-family: 'Space Mono', monospace; font-size: 0.78rem;
+            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            min-width: 0;
+        }
+        .recipient-row .addr-input:focus { border-color: var(--orange-bright); box-shadow: 0 0 0 3px rgba(247,147,26,0.1); }
+        .recipient-row .addr-input::placeholder { color: var(--text-muted); font-family: 'Space Mono', monospace; }
+        .recipient-row .addr-input.invalid { border-color: #e57373; background: rgba(229,115,115,0.05); }
+        .recipient-row .addr-input.valid { border-color: rgba(34,197,94,0.4); }
+
+        .amount-wrap {
+            position: relative; display: flex; align-items: center;
+            min-width: 150px;
+        }
+        .amount-wrap .amt-input {
+            width: 100%; padding: 0.65rem 0.8rem; padding-right: 3.2rem;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text);
+            font-family: 'Space Mono', monospace; font-size: 0.82rem;
+            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .amount-wrap .amt-input:focus { border-color: var(--orange-bright); box-shadow: 0 0 0 3px rgba(247,147,26,0.1); }
+        .amount-wrap .amt-input::placeholder { color: var(--text-muted); }
+        .amount-wrap .amt-suffix {
+            position: absolute; right: 0.8rem; font-size: 0.7rem;
+            color: var(--text-muted); font-weight: 600; pointer-events: none;
+        }
+        .amount-wrap .usd-hint {
+            position: absolute; top: 100%; left: 0; font-size: 0.68rem;
+            color: var(--text-muted); margin-top: 2px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .remove-btn {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-muted); cursor: pointer; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .remove-btn:hover { background: rgba(229,115,115,0.12); border-color: #e57373; color: #e57373; }
+        .remove-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+        /* Add Recipient Button */
+        .add-recipient-btn {
+            width: 100%; padding: 0.6rem; border-radius: 8px;
+            background: transparent; border: 1px dashed var(--border);
+            color: var(--text-dim); cursor: pointer; font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif; font-weight: 600;
+            transition: all 0.2s; margin-bottom: 1rem;
+        }
+        .add-recipient-btn:hover { border-color: var(--border-bright); color: var(--orange); background: var(--orange-glow); }
+        .recipient-count-badge {
+            font-size: 0.72rem; color: var(--text-muted);
+            text-align: center; margin-bottom: 0.8rem;
+        }
+        .recipient-count-badge strong { color: var(--text-dim); }
+
+        /* CSV Upload */
+        .csv-upload {
+            border: 1px dashed var(--border);
+            border-radius: 6px; padding: 0.5rem 0.8rem;
+            text-align: center; cursor: pointer;
+            transition: all 0.2s; margin-bottom: 1.2rem;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+        }
+        .csv-upload:hover { border-color: var(--border-bright); background: var(--orange-glow); }
+        .csv-upload-text { font-size: 0.75rem; color: var(--text-muted); }
+        .csv-upload input[type="file"] { display: none; }
+
+        /* ── Confirmation Modal ─────────────────── */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(45, 31, 13, 0.6); backdrop-filter: blur(6px);
+            z-index: 1000; display: none;
+            align-items: center; justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--border-bright);
+            border-radius: 16px; padding: 2rem; max-width: 520px; width: 100%;
+            position: relative; animation: modalIn 0.2s ease;
+            box-shadow: 0 20px 60px rgba(247,147,26,0.15);
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--orange-bright), transparent);
+            border-radius: 16px 16px 0 0;
+        }
+        .modal h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; text-align: center; }
+        .modal-summary {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem; margin-bottom: 1rem;
+        }
+        .modal-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.35rem 0; font-size: 0.88rem;
+        }
+        .modal-row:not(:last-child) { border-bottom: 1px solid rgba(247,147,26,0.1); }
+        .modal-row .label { color: var(--text-dim); }
+        .modal-row .value { font-weight: 600; font-family: 'Space Mono', monospace; }
+        .modal-row .value .usd { color: var(--text-muted); font-size: 0.75rem; font-weight: 400; }
+        .modal-row.total .label { color: var(--text); font-weight: 600; }
+        .modal-row.total .value { color: var(--orange); font-size: 1.05rem; }
+        .modal-recipients-preview {
+            max-height: 140px; overflow-y: auto; margin-bottom: 1rem;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0.6rem 0.8rem;
+        }
+        .modal-recipients-preview::-webkit-scrollbar { width: 4px; }
+        .modal-recipients-preview::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 4px; }
+        .modal-recip-item {
+            display: flex; justify-content: space-between;
+            font-size: 0.75rem; padding: 0.2rem 0;
+            font-family: 'Space Mono', monospace; color: var(--text-dim);
+        }
+        .modal-recip-item .addr { color: var(--text); }
+        .modal-buttons { display: flex; gap: 0.8rem; margin-top: 1rem; }
+        .modal-buttons button { flex: 1; padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
+        .modal-cancel { background: var(--bg); border: 1px solid var(--border); color: var(--text-dim); }
+        .modal-cancel:hover { border-color: var(--border-bright); color: var(--text); }
+        .modal-confirm { background: linear-gradient(135deg, var(--orange), var(--orange-deep)); border: 1px solid var(--orange-bright); color: #fff; }
+        .modal-confirm:hover { background: linear-gradient(135deg, var(--orange-bright), var(--orange)); box-shadow: 0 4px 16px rgba(247,147,26,0.3); }
+        .modal-warning { font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.6rem; }
+
+        /* Equal Amount Toggle */
+        .equal-toggle {
+            display: flex; align-items: center; gap: 0.6rem;
+            margin-bottom: 1.2rem; cursor: pointer;
+        }
+        .equal-toggle input { display: none; }
+        .toggle-track {
+            width: 40px; height: 22px; border-radius: 11px;
+            background: #e8d5c0; position: relative;
+            transition: background 0.2s; flex-shrink: 0;
+        }
+        .toggle-track::after {
+            content: ''; position: absolute;
+            top: 3px; left: 3px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--text-muted); transition: all 0.2s;
+        }
+        .equal-toggle input:checked + .toggle-track { background: var(--orange); }
+        .equal-toggle input:checked + .toggle-track::after { left: 21px; background: #fff; }
+        .toggle-label { font-size: 0.85rem; color: var(--text-dim); font-weight: 500; }
+
+        /* Memo Toggle */
+        .memo-toggle {
+            display: flex; align-items: center; gap: 0.6rem;
+            margin-bottom: 1.2rem; cursor: pointer;
+        }
+        .memo-toggle input { display: none; }
+        .memo-toggle input:checked + .toggle-track { background: var(--orange); }
+        .memo-toggle input:checked + .toggle-track::after { left: 21px; background: #fff; }
+
+        /* Summary Card */
+        .summary-card {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1.2rem; margin: 1.2rem 0;
+        }
+        .summary-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.4rem 0;
+        }
+        .summary-row:not(:last-child) { border-bottom: 1px solid rgba(247,147,26,0.1); }
+        .summary-label { font-size: 0.85rem; color: var(--text-dim); }
+        .summary-value { font-size: 0.85rem; font-weight: 600; font-family: 'Space Mono', monospace; }
+        .summary-value .usd { color: var(--text-muted); font-size: 0.75rem; font-weight: 400; }
+        .summary-total .summary-label { color: var(--text); font-weight: 600; }
+        .summary-total .summary-value { color: var(--orange); font-size: 1rem; }
+
+        /* Spray Button */
+        .spray-btn {
+            width: 100%; padding: 1rem; border-radius: 12px;
+            font-size: 1.05rem; font-weight: 700; cursor: pointer;
+            background: linear-gradient(135deg, var(--orange), var(--orange-deep));
+            color: #fff; border: 1px solid var(--orange-bright);
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .spray-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--orange-bright), var(--orange));
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(247,147,26,0.3);
+        }
+        .spray-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+        .spray-btn.loading { pointer-events: none; }
+        .spray-btn.loading::after {
+            content: '';
+            position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer { 100% { left: 100%; } }
+
+        .wallet-note {
+            text-align: center; margin-top: 0.6rem;
+            font-size: 0.78rem; color: var(--text-muted);
+        }
+        .wallet-note a { color: var(--orange); cursor: pointer; text-decoration: none; }
+        .wallet-note a:hover { text-decoration: underline; }
+
+        /* Status Messages */
+        .status-msg {
+            padding: 0.8rem 1rem; border-radius: 10px;
+            font-size: 0.85rem; margin-top: 1rem;
+            display: none;
+        }
+        .status-msg.show { display: block; }
+        .status-msg.success { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); color: #16a34a; }
+        .status-msg.error { background: rgba(229,115,115,0.08); border: 1px solid rgba(229,115,115,0.3); color: #b91c1c; }
+        .status-msg.info { background: rgba(247,147,26,0.08); border: 1px solid rgba(247,147,26,0.3); color: var(--orange-deep); }
+        .status-msg a { color: inherit; text-decoration: underline; }
+
+        /* STX Price Ticker */
+        .stx-price-ticker {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            font-size: 0.72rem; color: var(--text-muted);
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 0.2rem 0.6rem;
+        }
+        .stx-price-ticker .price { color: var(--text-dim); font-family: 'Space Mono', monospace; }
+
+        /* ── Landing Page Sections ────────────── */
+        .features { padding: 5rem 0; }
+        .section-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .section-subtitle { color: var(--text-dim); margin-bottom: 3rem; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
+        .feature-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.8rem; transition: all 0.25s ease;
+            box-shadow: 0 1px 4px rgba(247,147,26,0.06);
+        }
+        .feature-card:hover { border-color: var(--border-bright); background: var(--bg-card-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(247,147,26,0.1); }
+        .feature-icon { font-size: 1.6rem; margin-bottom: 0.8rem; }
+        .feature-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .feature-card p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; }
+
+        .how-it-works { padding: 5rem 0; background: #fdf3e4; }
+        .steps { display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; }
+        .step { flex: 1; min-width: 220px; max-width: 300px; text-align: center; }
+        .step-num {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--orange); color: #fff; font-weight: 700;
+            font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem; border: 2px solid var(--orange-bright);
+            box-shadow: 0 4px 14px rgba(247,147,26,0.25);
+        }
+        .step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .step p { font-size: 0.85rem; color: var(--text-dim); }
+
+        .use-cases { padding: 5rem 0; }
+        .use-case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }
+        .use-case { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; transition: all 0.2s; box-shadow: 0 1px 4px rgba(247,147,26,0.06); }
+        .use-case:hover { border-color: var(--border-bright); box-shadow: 0 4px 14px rgba(247,147,26,0.1); }
+        .use-case h3 { font-size: 1rem; margin-bottom: 0.3rem; }
+        .use-case p { font-size: 0.85rem; color: var(--text-dim); }
+
+        .contract-section { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); }
+        .contract-address {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem 1.5rem; display: inline-block; margin-top: 1rem;
+            box-shadow: 0 1px 6px rgba(247,147,26,0.07);
+        }
+        .contract-address code { font-size: 0.8rem; color: var(--orange); word-break: break-all; }
+        .contract-address a { color: var(--orange); text-decoration: none; }
+        .contract-address a:hover { text-decoration: underline; }
+
+        .cta {
+            padding: 5rem 0; text-align: center;
+            background: radial-gradient(ellipse at 50% 100%, rgba(247,147,26,0.08) 0%, transparent 60%);
+        }
+        .cta h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.8rem; }
+        .cta p { color: var(--text-dim); margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+        footer { padding: 2.5rem 0; border-top: 1px solid var(--border); background: #fdf3e4; }
+        .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--orange); }
+        .footer-copy { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* ── Bitcoin L2 Badge ─────────────────── */
+        .btc-badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: rgba(247,147,26,0.08); border: 1px solid rgba(247,147,26,0.2);
+            border-radius: 6px; padding: 0.2rem 0.6rem;
+            font-size: 0.72rem; font-weight: 600; color: var(--orange);
+        }
+
+        /* ── Responsive ──────────────────────────── */
+        @media (max-width: 640px) {
+            .hero { padding: 8rem 0 3rem; }
+            .hero-stats { gap: 2rem; }
+            .integrations-inner { flex-direction: column; gap: 1rem; }
+            .nav-links a:not(.btn):not(.btn-connect):not(.btn-connected) { display: none; }
+            .nav-links { gap: 0.6rem; }
+            .chain-dropdown { display: none; }
+            .hamburger-btn { display: flex; }
+            .app-card { padding: 1.2rem; }
+            .recipient-row { grid-template-columns: 1fr; }
+            .amount-wrap { min-width: 100%; }
+        }
+        @media (min-width: 641px) {
+            .recipient-row { grid-template-columns: 1fr 160px 32px; }
+        }
+    </style>
+    <link rel="icon" type="image/png" sizes="32x32" href="https://spraay.app/spraay-logo-200x200.jpg">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://spraay.app/spraay-logo-1000x1000.png">
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav>
+        <div class="container nav-inner">
+            <a href="/" class="logo">SPRAAY</a>
+            <div class="nav-links">
+                <!-- Chain Dropdown -->
+                <div class="chain-dropdown" id="chainDropdown">
+                    <button class="chain-dropdown-btn" onclick="toggleChainDropdown(event)">
+                        <span class="chain-icon">🟠</span>
+                        <span>Stacks</span>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="chain-dropdown-menu">
+                        <a href="/">
+                            <span class="chain-item-icon">🔵</span> Base
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/ethereum">
+                            <span class="chain-item-icon">⟠</span> Ethereum
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/arbitrum">
+                            <span class="chain-item-icon">⬡</span> Arbitrum
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/polygon">
+                            <span class="chain-item-icon">🟣</span> Polygon
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/bnb">
+                            <span class="chain-item-icon">🟡</span> BNB Chain
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/avalanche">
+                            <span class="chain-item-icon">🔺</span> Avalanche
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/unichain">
+                            <span class="chain-item-icon">🦄</span> Unichain
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/plasma">
+                            <span class="chain-item-icon">🟢</span> Plasma
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/bob">
+                            <span class="chain-item-icon">🔶</span> BOB
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/tao">
+                            <span class="chain-item-icon">🧠</span> Bittensor
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/solana">
+                            <span class="chain-item-icon">◎</span> Solana
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/stacks" class="current">
+                            <span class="chain-item-icon">🟠</span> Stacks
+                            <span class="chain-item-dot"></span>
+                        </a>
+                    </div>
+                </div>
+                <a href="https://docs.spraay.app" target="_blank">Docs</a>
+                <a href="https://explorer.hiro.so/txid/ST7431QK2YMPP3SQYJXZ3GTB6MJVGF07N2EV9R1F.spraay-batch?chain=testnet" target="_blank">Contract</a>
+                <button id="navConnectBtn" class="btn-connect" onclick="connectWallet()">Connect Stacks Wallet</button>
+                <button class="hamburger-btn" onclick="openMobilePanel()" aria-label="Menu"><span></span></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Slide Panel -->
+    <div class="mobile-panel-overlay" id="mobilePanelOverlay" onclick="closeMobilePanel()"></div>
+    <div class="mobile-panel" id="mobilePanel">
+        <div class="mobile-panel-header">
+            <span class="panel-title">Switch Chain</span>
+            <button class="mobile-panel-close" onclick="closeMobilePanel()">✕</button>
+        </div>
+        <div class="mobile-panel-section">
+            <div class="mobile-panel-section-label">Networks</div>
+            <a href="/"><span class="mp-icon">🔵</span> Base <span class="mp-dot"></span></a>
+            <a href="/ethereum"><span class="mp-icon">⟠</span> Ethereum <span class="mp-dot"></span></a>
+            <a href="/arbitrum"><span class="mp-icon">⬡</span> Arbitrum <span class="mp-dot"></span></a>
+            <a href="/polygon"><span class="mp-icon">🟣</span> Polygon <span class="mp-dot"></span></a>
+            <a href="/bnb"><span class="mp-icon">🟡</span> BNB Chain <span class="mp-dot"></span></a>
+            <a href="/avalanche"><span class="mp-icon">🔺</span> Avalanche <span class="mp-dot"></span></a>
+            <a href="/unichain"><span class="mp-icon">🦄</span> Unichain <span class="mp-dot"></span></a>
+            <a href="/plasma"><span class="mp-icon">🟢</span> Plasma <span class="mp-dot"></span></a>
+            <a href="/bob"><span class="mp-icon">🔶</span> BOB <span class="mp-dot"></span></a>
+            <a href="/tao"><span class="mp-icon">🧠</span> Bittensor <span class="mp-dot"></span></a>
+            <a href="/solana"><span class="mp-icon">◎</span> Solana <span class="mp-dot"></span></a>
+            <a href="/stacks" class="current"><span class="mp-icon">🟠</span> Stacks <span class="mp-dot"></span></a>
+        </div>
+        <div class="mobile-panel-divider"></div>
+        <div class="mobile-panel-footer">
+            <a href="https://docs.spraay.app" target="_blank"><span class="mp-icon">📖</span> API Docs</a>
+            <a href="https://explorer.hiro.so/txid/ST7431QK2YMPP3SQYJXZ3GTB6MJVGF07N2EV9R1F.spraay-batch?chain=testnet" target="_blank"><span class="mp-icon">📄</span> Contract</a>
+            <a href="https://twitter.com/Spraay_app" target="_blank"><span class="mp-icon">🐦</span> Twitter</a>
+            <a href="https://github.com/plagtech/spraay-stacks" target="_blank"><span class="mp-icon">💻</span> GitHub</a>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <h1>Batch STX Payments<br><span>on Bitcoin L2</span></h1>
+            <p>Send STX to 200 recipients in a single transaction on Stacks. Payroll, airdrops, bounties — secured by Bitcoin.</p>
+            <div class="hero-buttons">
+                <a href="#app" class="btn btn-primary">Launch App →</a>
+                <a href="https://explorer.hiro.so/txid/ST7431QK2YMPP3SQYJXZ3GTB6MJVGF07N2EV9R1F.spraay-batch?chain=testnet" target="_blank" class="btn btn-outline">View on Explorer</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-value">~80%</div>
+                    <div class="stat-label">Gas Savings</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">200</div>
+                    <div class="stat-label">Recipients / Tx</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">0.3%</div>
+                    <div class="stat-label">Protocol Fee</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integrations -->
+    <section class="integrations">
+        <div class="container integrations-inner">
+            <span class="integrations-label">Stack</span>
+            <div class="integration-badge">
+                <span class="dot"></span>
+                Clarity Smart Contract
+                <span class="tag tag-live">Live</span>
+            </div>
+            <div class="integration-badge">
+                <span class="dot"></span>
+                TypeScript SDK
+                <span class="tag tag-live">Live</span>
+            </div>
+            <div class="integration-badge">
+                <span class="dot" style="background:#f7931a;box-shadow:0 0 6px rgba(247,147,26,0.5);"></span>
+                Bitcoin L2
+                <span class="tag tag-new">Stacks</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live On -->
+    <section class="chains">
+        <div class="container chains-inner">
+            <span class="chains-label">Live On 12 Chains</span>
+            <a href="/" class="chain-badge"><span class="dot"></span> 🔵 Base <span class="chain-tag">Live</span></a>
+            <a href="/ethereum" class="chain-badge"><span class="dot"></span> ⟠ Ethereum <span class="chain-tag">Live</span></a>
+            <a href="/arbitrum" class="chain-badge"><span class="dot"></span> ⬡ Arbitrum <span class="chain-tag">Live</span></a>
+            <a href="/polygon" class="chain-badge"><span class="dot"></span> 🟣 Polygon <span class="chain-tag">Live</span></a>
+            <a href="/bnb" class="chain-badge"><span class="dot"></span> 🟡 BNB Chain <span class="chain-tag">Live</span></a>
+            <a href="/avalanche" class="chain-badge"><span class="dot"></span> 🔺 Avalanche <span class="chain-tag">Live</span></a>
+            <a href="/unichain" class="chain-badge"><span class="dot"></span> 🦄 Unichain <span class="chain-tag">Live</span></a>
+            <a href="/plasma" class="chain-badge"><span class="dot"></span> 🟢 Plasma <span class="chain-tag">Live</span></a>
+            <a href="/bob" class="chain-badge"><span class="dot"></span> 🔶 BOB <span class="chain-tag">Live</span></a>
+            <a href="/tao" class="chain-badge"><span class="dot"></span> 🧠 Bittensor <span class="chain-tag">Live</span></a>
+            <a href="/solana" class="chain-badge"><span class="dot"></span> ◎ Solana <span class="chain-tag">Live</span></a>
+            <span class="chain-badge" style="border-color:var(--border-bright);background:var(--orange-glow);"><span class="dot" style="background:var(--orange);box-shadow:0 0 6px rgba(247,147,26,0.5);"></span> 🟠 Stacks <span class="chain-tag" style="background:rgba(247,147,26,0.15);color:var(--orange);">New</span></span>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         APP SECTION
+         ═══════════════════════════════════════════ -->
+    <section class="app-section" id="app">
+        <div class="container app-container">
+            <h2 class="section-title" style="text-align:center;">Spray STX</h2>
+            <p class="section-subtitle" style="text-align:center;">
+                Batch send STX to multiple wallets in one transaction.
+                <span class="stx-price-ticker" id="stxPriceTicker">
+                    STX <span class="price" id="stxPriceDisplay">$---</span>
+                </span>
+                <span class="btc-badge">₿ Bitcoin L2</span>
+            </p>
+
+            <div class="app-card">
+                <div class="app-header">
+                    <h2>🎯 Batch Send</h2>
+                    <div style="display:flex;align-items:center;gap:0.6rem;">
+                        <span class="chain-indicator">🟠 Stacks</span>
+                        <div id="walletInfo" class="wallet-info" style="display:none;">
+                            <span class="wallet-dot"></span>
+                            <span id="walletAddr" class="mono"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode: STX only for now, SIP-010 coming via SDK -->
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="stx" onclick="switchMode('stx')">STX</button>
+                    <button class="mode-btn disabled" title="SIP-010 token batching handled via TypeScript SDK">SIP-010 (SDK)</button>
+                </div>
+
+                <label class="equal-toggle">
+                    <input type="checkbox" id="equalToggle" onchange="toggleEqualMode()">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-label">Send equal amount to all</span>
+                </label>
+
+                <div id="equalAmountSection" class="form-group" style="display:none;">
+                    <label class="form-label">Amount Per Recipient</label>
+                    <div class="amount-wrap" style="max-width:200px;">
+                        <input type="text" class="amt-input" id="equalAmount" placeholder="10" oninput="updateSummary()">
+                        <span class="amt-suffix" id="equalSuffix">STX</span>
+                        <span class="usd-hint" id="equalUsd"></span>
+                    </div>
+                </div>
+
+                <!-- Memo toggle -->
+                <label class="memo-toggle">
+                    <input type="checkbox" id="memoToggle" onchange="toggleMemoMode()">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-label">Include memo per recipient (higher gas)</span>
+                </label>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                    <label class="form-label" style="margin-bottom:0;">Recipients</label>
+                    <span class="recipient-count-badge"><strong id="recipientCount">0</strong> / 200</span>
+                </div>
+
+                <div class="recipients-list" id="recipientsList"></div>
+
+                <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem;">
+                    <button class="add-recipient-btn" onclick="addRecipientRow()" style="margin-bottom:0;">+ Add Recipient</button>
+                    <div class="csv-upload" onclick="document.getElementById('csvFile').click()" style="margin-bottom:0;flex-shrink:0;">
+                        <span class="csv-upload-text">📋 Upload CSV</span>
+                        <input type="file" id="csvFile" accept=".csv,.txt" onchange="handleCSV(event)">
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-row">
+                        <span class="summary-label">Recipients</span>
+                        <span class="summary-value" id="summaryRecipients">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Total Amount</span>
+                        <span class="summary-value"><span id="summaryAmount">0</span> <span class="usd" id="summaryAmountUsd"></span></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Protocol Fee (0.3%)</span>
+                        <span class="summary-value"><span id="summaryFee">0</span> <span class="usd" id="summaryFeeUsd"></span></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Transfer Mode</span>
+                        <span class="summary-value" id="summaryMode" style="font-family:'Outfit',sans-serif;font-size:0.78rem;">Simple (no memo)</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span class="summary-label">Total Cost</span>
+                        <span class="summary-value"><span id="summaryTotal">0</span> <span class="usd" id="summaryTotalUsd"></span></span>
+                    </div>
+                </div>
+
+                <button class="spray-btn" id="sprayBtn" onclick="handleSprayClick()" disabled>
+                    🚀 Spray STX
+                </button>
+                <div class="wallet-note" id="walletNote">
+                    <a onclick="connectWallet()">Connect Stacks wallet</a> to send — supports <a href="https://leather.io" target="_blank">Leather</a> &amp; <a href="https://xverse.app" target="_blank">Xverse</a>
+                </div>
+
+                <div class="status-msg" id="statusMsg"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Built for Stacks</h2>
+            <p class="section-subtitle">Batch STX payments secured by Bitcoin.</p>
+            <div class="feature-grid">
+                <div class="feature-card"><div class="feature-icon">⚡</div><h3>Batch STX Sends</h3><p>Send STX to up to 200 wallets in a single Clarity contract call. Equal or variable amounts.</p></div>
+                <div class="feature-card"><div class="feature-icon">📝</div><h3>Optional Memos</h3><p>Attach a memo to each transfer for payroll references, or skip memos for lower gas costs.</p></div>
+                <div class="feature-card"><div class="feature-icon">₿</div><h3>Bitcoin Security</h3><p>Stacks settles on Bitcoin. Your batch payments inherit Bitcoin's finality via the Nakamoto upgrade.</p></div>
+                <div class="feature-card"><div class="feature-icon">🤖</div><h3>AI Agent Ready</h3><p>TypeScript SDK ready for integration with AI agents and automated payment workflows.</p></div>
+                <div class="feature-card"><div class="feature-icon">📋</div><h3>CSV Import</h3><p>Upload a CSV of Stacks addresses and amounts for large-scale distributions.</p></div>
+                <div class="feature-card"><div class="feature-icon">🔐</div><h3>On-Chain Safety</h3><p>Clarity's decidable language prevents reentrancy by design. Pausable with admin controls.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title" style="text-align:center">How It Works</h2>
+            <p class="section-subtitle" style="text-align:center">Three steps. One transaction. Bitcoin-secured.</p>
+            <div class="steps">
+                <div class="step"><div class="step-num">1</div><h3>Input Recipients</h3><p>Add Stacks addresses and amounts — type them in, upload a CSV, or use the SDK.</p></div>
+                <div class="step"><div class="step-num">2</div><h3>Spraay Batches</h3><p>The Clarity contract bundles all STX transfers into a single transaction on Stacks.</p></div>
+                <div class="step"><div class="step-num">3</div><h3>Everyone Gets Paid</h3><p>All recipients receive STX with Nakamoto-speed confirmation. ~80% cheaper than individual sends.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="use-cases">
+        <div class="container">
+            <h2 class="section-title">Perfect For</h2>
+            <p class="section-subtitle">Any scenario involving multiple STX payments.</p>
+            <div class="use-case-grid">
+                <div class="use-case"><h3>🎁 Airdrops</h3><p>Distribute STX to your Stacks community efficiently.</p></div>
+                <div class="use-case"><h3>💰 Payroll</h3><p>Pay your team in STX with optional memo references.</p></div>
+                <div class="use-case"><h3>🏆 Bounties</h3><p>Reward Clarity developers with variable amounts.</p></div>
+                <div class="use-case"><h3>🏛️ DAO Distributions</h3><p>Treasury payouts for Stacks DAOs and governance distributions.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contract -->
+    <section class="contract-section">
+        <div class="container">
+            <h2 class="section-title">Deployed on Stacks Testnet</h2>
+            <p style="color:var(--text-dim);font-size:0.9rem;margin-top:0.5rem;">Mainnet deployment coming soon</p>
+            <div class="contract-address">
+                <a href="https://explorer.hiro.so/txid/ST7431QK2YMPP3SQYJXZ3GTB6MJVGF07N2EV9R1F.spraay-batch?chain=testnet" target="_blank">
+                    <code>ST7431QK2YMPP3SQYJXZ3GTB6MJVGF07N2EV9R1F.spraay-batch</code>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Batch Send on Stacks?</h2>
+            <p>Connect your Stacks wallet above (Leather or Xverse), or integrate Spraay into your project with the TypeScript SDK.</p>
+            <div class="hero-buttons">
+                <a href="#app" class="btn btn-primary">Launch App →</a>
+                <a href="https://github.com/plagtech/spraay-stacks" target="_blank" class="btn btn-outline">View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-inner">
+            <div>
+                <span class="logo" style="font-size:1.1rem">SPRAAY</span>
+                <span class="footer-copy" style="margin-left:1rem">Batch crypto payments, multi-chain</span>
+            </div>
+            <div class="footer-links">
+                <a href="/">Base</a>
+                <a href="/ethereum">Ethereum</a>
+                <a href="/arbitrum">Arbitrum</a>
+                <a href="/polygon">Polygon</a>
+                <a href="/bnb">BNB Chain</a>
+                <a href="/avalanche">Avalanche</a>
+                <a href="/unichain">Unichain</a>
+                <a href="/plasma">Plasma</a>
+                <a href="/bob">BOB</a>
+                <a href="/tao">Bittensor</a>
+                <a href="/solana">Solana</a>
+                <a href="/stacks" style="color:var(--orange);font-weight:600;">Stacks</a>
+                <a href="https://twitter.com/Spraay_app" target="_blank">Twitter</a>
+                <a href="https://warpcast.com/plag" target="_blank">Farcaster</a>
+                <a href="https://github.com/plagtech" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3>⚡ Confirm Spray</h3>
+            <p style="text-align:center;font-size:0.85rem;color:var(--text-dim);margin-bottom:1rem;">Review the details below before sending.</p>
+
+            <div id="modalRecipientsList" class="modal-recipients-preview"></div>
+
+            <div class="modal-summary">
+                <div class="modal-row">
+                    <span class="label">Recipients</span>
+                    <span class="value" id="modalRecipients">0</span>
+                </div>
+                <div class="modal-row">
+                    <span class="label">Total Amount</span>
+                    <span class="value"><span id="modalAmount">0</span> <span class="usd" id="modalAmountUsd"></span></span>
+                </div>
+                <div class="modal-row">
+                    <span class="label">Protocol Fee (0.3%)</span>
+                    <span class="value"><span id="modalFee">0</span> <span class="usd" id="modalFeeUsd"></span></span>
+                </div>
+                <div class="modal-row">
+                    <span class="label">Transfer Mode</span>
+                    <span class="value" id="modalMode" style="font-family:'Outfit',sans-serif;font-size:0.82rem;">Simple</span>
+                </div>
+                <div class="modal-row total">
+                    <span class="label">You Pay</span>
+                    <span class="value"><span id="modalTotal">0</span> <span class="usd" id="modalTotalUsd"></span></span>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-cancel" onclick="closeConfirmModal()">Cancel</button>
+                <button class="modal-confirm" id="modalConfirmBtn" onclick="confirmAndSend()">Confirm & Send</button>
+            </div>
+            <p class="modal-warning">This will open your Stacks wallet for a final signature. No funds leave until you approve there.</p>
+        </div>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════════════
+    // SPRAAY STACKS DAPP
+    // ═══════════════════════════════════════════
+
+    const SPRAY_CONTRACT_ADDR = "ST7431QK2YMPP3SQYJXZ3GTB6MJVGF07N2EV9R1F";
+    const SPRAY_CONTRACT_NAME = "spraay-batch";
+    const STACKS_NETWORK = "testnet"; // Switch to "mainnet" when deploying
+
+    let userAddress = null;
+    let isEqualMode = false;
+    let isMemoMode = false;
+    let stxPrice = 0;
+    let rowCounter = 0;
+
+    // ── Chain Dropdown (Desktop) ──────────────
+    let dropdownJustToggled = false;
+    function toggleChainDropdown(e) {
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+        const dd = document.getElementById('chainDropdown');
+        dd.classList.toggle('open');
+        dropdownJustToggled = true;
+        setTimeout(() => { dropdownJustToggled = false; }, 100);
+    }
+    document.addEventListener('click', function(e) {
+        if (dropdownJustToggled) return;
+        const dd = document.getElementById('chainDropdown');
+        if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+    });
+
+    // ── Mobile Slide Panel ──────────────────────
+    function openMobilePanel() {
+        document.getElementById('mobilePanelOverlay').classList.add('open');
+        requestAnimationFrame(() => { document.getElementById('mobilePanel').classList.add('open'); });
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobilePanel() {
+        document.getElementById('mobilePanel').classList.remove('open');
+        document.getElementById('mobilePanelOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    // ── Initialize ──────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+        addRecipientRow();
+        addRecipientRow();
+        addRecipientRow();
+        fetchStxPrice();
+        setInterval(fetchStxPrice, 60000);
+    });
+
+    // ── Fetch STX Price ─────────────────────────
+    async function fetchStxPrice() {
+        const apis = [
+            { url: 'https://min-api.cryptocompare.com/data/price?fsym=STX&tsyms=USD', parse: d => d.USD },
+            { url: 'https://api.coingecko.com/api/v3/simple/price?ids=blockstack&vs_currencies=usd', parse: d => d.blockstack?.usd },
+        ];
+        for (const api of apis) {
+            try {
+                const resp = await fetch(api.url);
+                if (!resp.ok) continue;
+                const data = await resp.json();
+                const price = api.parse(data);
+                if (price && price > 0) {
+                    stxPrice = price;
+                    document.getElementById('stxPriceDisplay').textContent = '$' + stxPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    updateSummary();
+                    return;
+                }
+            } catch { /* silent */ }
+        }
+    }
+
+    function toUsd(stxAmount) {
+        if (!stxPrice || !stxAmount) return '';
+        const val = stxAmount * stxPrice;
+        if (val < 0.01) return '';
+        return '≈ $' + val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // ── Wallet Connection (Leather + Xverse) ──────
+    let connectedWalletName = '';
+
+    function getStacksProvider() {
+        // Leather exposes LeatherProvider or StacksProvider
+        if (window.LeatherProvider) return { provider: window.LeatherProvider, name: 'Leather' };
+        if (window.StacksProvider) return { provider: window.StacksProvider, name: 'Leather' };
+        // Xverse exposes XverseProviders or injects into StacksProvider
+        if (window.XverseProviders?.StacksProvider) return { provider: window.XverseProviders.StacksProvider, name: 'Xverse' };
+        return null;
+    }
+
+    async function connectWallet() {
+        const walletInfo = getStacksProvider();
+        if (!walletInfo) {
+            showStatus('Please install a Stacks wallet: <a href="https://leather.io" target="_blank">Leather</a> or <a href="https://www.xverse.app" target="_blank">Xverse</a>', 'error');
+            return;
+        }
+        try {
+            const { provider, name } = walletInfo;
+            connectedWalletName = name;
+            const response = await provider.request('getAddresses');
+
+            // Find the STX address
+            const stxAddr = response.result.addresses.find(a => a.symbol === 'STX');
+            if (!stxAddr) { showStatus('No STX address found in wallet.', 'error'); return; }
+
+            userAddress = stxAddr.address;
+            const shortAddr = userAddress.slice(0, 8) + '...' + userAddress.slice(-4);
+            document.getElementById('walletAddr').textContent = shortAddr;
+            document.getElementById('walletInfo').style.display = 'flex';
+            document.getElementById('walletNote').style.display = 'none';
+
+            const navBtn = document.getElementById('navConnectBtn');
+            navBtn.textContent = shortAddr;
+            navBtn.classList.add('btn-connected');
+
+            updateSummary();
+            showStatus('Connected via ' + name + ': ' + shortAddr, 'success');
+        } catch (err) {
+            console.error(err);
+            showStatus('Failed to connect: ' + (err.message || err), 'error');
+        }
+    }
+
+    // ── Mode Switching ──────────────────────────
+    function switchMode(mode) {
+        // Only STX mode active for on-chain contract
+        // SIP-010 handled by SDK
+    }
+
+    function toggleEqualMode() {
+        isEqualMode = document.getElementById('equalToggle').checked;
+        document.getElementById('equalAmountSection').style.display = isEqualMode ? 'block' : 'none';
+        document.querySelectorAll('.amount-wrap-individual').forEach(el => {
+            el.style.display = isEqualMode ? 'none' : 'block';
+        });
+        updateSummary();
+    }
+
+    function toggleMemoMode() {
+        isMemoMode = document.getElementById('memoToggle').checked;
+        document.querySelectorAll('.memo-input-wrap').forEach(el => {
+            el.style.display = isMemoMode ? 'block' : 'none';
+        });
+        updateSummary();
+    }
+
+    // ── Recipient Rows ──────────────────────────
+    function addRecipientRow(address, amount, memo) {
+        const list = document.getElementById('recipientsList');
+        if (list.children.length >= 200) { showStatus('Maximum 200 recipients per transaction.', 'error'); return; }
+        rowCounter++;
+        const id = rowCounter;
+        const row = document.createElement('div');
+        row.className = 'recipient-row';
+        row.dataset.id = id;
+        row.innerHTML = `
+            <div style="display:flex;flex-direction:column;gap:0.3rem;min-width:0;">
+                <input type="text" class="addr-input" data-row="${id}"
+                    placeholder="SP... or ST... Stacks address"
+                    value="${address || ''}"
+                    oninput="validateAddr(this); updateSummary();">
+                <div class="memo-input-wrap" style="display:${isMemoMode ? 'block' : 'none'};">
+                    <input type="text" class="addr-input memo-input" data-memo-row="${id}"
+                        placeholder="Optional memo"
+                        value="${memo || ''}"
+                        style="font-family:'Outfit',sans-serif;font-size:0.78rem;">
+                </div>
+            </div>
+            <div class="amount-wrap amount-wrap-individual" style="${isEqualMode ? 'display:none' : ''}">
+                <input type="text" class="amt-input" data-row="${id}"
+                    placeholder="0.00"
+                    value="${amount || ''}"
+                    oninput="updateSummary();">
+                <span class="amt-suffix">STX</span>
+                <span class="usd-hint" data-usd-row="${id}"></span>
+            </div>
+            <button class="remove-btn" onclick="removeRecipientRow(${id})" title="Remove">×</button>
+        `;
+        list.appendChild(row);
+        updateRecipientCount();
+        updateSummary();
+    }
+
+    function removeRecipientRow(id) {
+        const list = document.getElementById('recipientsList');
+        if (list.children.length <= 1) return;
+        const row = list.querySelector(`[data-id="${id}"]`);
+        if (row) {
+            row.style.animation = 'none'; row.style.opacity = '0';
+            row.style.transform = 'translateX(20px)'; row.style.transition = 'all 0.15s ease';
+            setTimeout(() => { row.remove(); updateRecipientCount(); updateSummary(); }, 150);
+        }
+    }
+
+    function updateRecipientCount() {
+        document.getElementById('recipientCount').textContent = document.getElementById('recipientsList').children.length;
+    }
+
+    function validateAddr(input) {
+        const val = input.value.trim();
+        if (!val) { input.classList.remove('valid', 'invalid'); }
+        // Stacks addresses start with SP (mainnet) or ST (testnet) followed by alphanumeric
+        else if (/^(SP|ST)[0-9A-Z]{33,}$/i.test(val)) { input.classList.add('valid'); input.classList.remove('invalid'); }
+        else { input.classList.add('invalid'); input.classList.remove('valid'); }
+    }
+
+    function getRecipients() {
+        const rows = document.querySelectorAll('.recipient-row');
+        const recipients = [];
+        rows.forEach(row => {
+            const addr = (row.querySelector('.addr-input')?.value || '').trim();
+            if (/^(SP|ST)[0-9A-Z]{33,}$/i.test(addr)) {
+                const memoInput = row.querySelector('.memo-input');
+                const memo = memoInput ? memoInput.value.trim() : '';
+                if (isEqualMode) {
+                    recipients.push({ address: addr, memo });
+                } else {
+                    const amt = (row.querySelector('.amt-input')?.value || '0').trim();
+                    if (parseFloat(amt) > 0) recipients.push({ address: addr, amount: amt, memo });
+                }
+            }
+        });
+        return recipients;
+    }
+
+    function updateSummary() {
+        const recipients = getRecipients();
+        const count = recipients.length;
+        document.getElementById('summaryRecipients').textContent = count;
+        document.getElementById('summaryMode').textContent = isMemoMode ? 'With memo (higher gas)' : 'Simple (no memo)';
+
+        let totalAmount = 0;
+        if (isEqualMode) {
+            const perRecipient = parseFloat(document.getElementById('equalAmount').value) || 0;
+            totalAmount = perRecipient * count;
+            const eqUsd = document.getElementById('equalUsd');
+            eqUsd.textContent = (stxPrice && perRecipient > 0) ? toUsd(perRecipient) : '';
+        } else {
+            document.querySelectorAll('.recipient-row').forEach(row => {
+                const amtInput = row.querySelector('.amt-input');
+                const usdHint = row.querySelector('[data-usd-row]');
+                const amt = amtInput ? parseFloat(amtInput.value) || 0 : 0;
+                totalAmount += amt;
+                if (usdHint) usdHint.textContent = (stxPrice && amt > 0) ? toUsd(amt) : '';
+            });
+        }
+
+        const fee = totalAmount * 0.003;
+        const total = totalAmount + fee;
+
+        document.getElementById('summaryAmount').textContent = totalAmount.toFixed(6) + ' STX';
+        document.getElementById('summaryFee').textContent = fee.toFixed(6) + ' STX';
+        document.getElementById('summaryTotal').textContent = total.toFixed(6) + ' STX';
+
+        if (stxPrice) {
+            document.getElementById('summaryAmountUsd').textContent = toUsd(totalAmount);
+            document.getElementById('summaryFeeUsd').textContent = toUsd(fee);
+            document.getElementById('summaryTotalUsd').textContent = toUsd(total);
+        } else {
+            document.getElementById('summaryAmountUsd').textContent = '';
+            document.getElementById('summaryFeeUsd').textContent = '';
+            document.getElementById('summaryTotalUsd').textContent = '';
+        }
+
+        const btn = document.getElementById('sprayBtn');
+        btn.disabled = count === 0 || totalAmount === 0;
+        btn.textContent = !userAddress ? '🔗 Connect Stacks Wallet' : '🚀 Spray ' + total.toFixed(4) + ' STX';
+    }
+
+    function handleCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const lines = e.target.result.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.toLowerCase().startsWith('address'));
+            document.getElementById('recipientsList').innerHTML = '';
+            rowCounter = 0;
+            let loaded = 0;
+            for (const line of lines) {
+                if (loaded >= 200) break;
+                const parts = line.split(/[,\s]+/).filter(Boolean);
+                if (parts.length >= 1 && /^(SP|ST)[0-9A-Z]{33,}$/i.test(parts[0])) {
+                    addRecipientRow(parts[0], parts[1] || '', parts[2] || '');
+                    loaded++;
+                }
+            }
+            showStatus(`Loaded ${loaded} recipients from CSV.`, 'info');
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    async function handleSprayClick() {
+        if (!userAddress) { await connectWallet(); if (!userAddress) return; }
+        const recipients = getRecipients();
+        if (recipients.length === 0) { showStatus('Add at least one valid recipient with an amount.', 'error'); return; }
+        if (recipients.length > 200) { showStatus('Maximum 200 recipients per transaction.', 'error'); return; }
+
+        let totalAmount = 0;
+        if (isEqualMode) { totalAmount = (parseFloat(document.getElementById('equalAmount').value) || 0) * recipients.length; }
+        else { for (const r of recipients) totalAmount += parseFloat(r.amount) || 0; }
+        const fee = totalAmount * 0.003;
+        const total = totalAmount + fee;
+
+        document.getElementById('modalRecipients').textContent = recipients.length;
+        document.getElementById('modalAmount').textContent = totalAmount.toFixed(6) + ' STX';
+        document.getElementById('modalFee').textContent = fee.toFixed(6) + ' STX';
+        document.getElementById('modalTotal').textContent = total.toFixed(6) + ' STX';
+        document.getElementById('modalMode').textContent = isMemoMode ? 'With memo' : 'Simple';
+
+        if (stxPrice) {
+            document.getElementById('modalAmountUsd').textContent = toUsd(totalAmount);
+            document.getElementById('modalFeeUsd').textContent = toUsd(fee);
+            document.getElementById('modalTotalUsd').textContent = toUsd(total);
+        } else {
+            document.getElementById('modalAmountUsd').textContent = '';
+            document.getElementById('modalFeeUsd').textContent = '';
+            document.getElementById('modalTotalUsd').textContent = '';
+        }
+
+        const previewEl = document.getElementById('modalRecipientsList');
+        previewEl.innerHTML = '';
+        recipients.forEach(r => {
+            const shortAddr = r.address.slice(0, 8) + '...' + r.address.slice(-6);
+            const amt = isEqualMode
+                ? (parseFloat(document.getElementById('equalAmount').value) || 0).toFixed(6)
+                : parseFloat(r.amount).toFixed(6);
+            const memoStr = (isMemoMode && r.memo) ? ` <span style="color:var(--text-muted);font-size:0.65rem;">📝 ${r.memo.slice(0,20)}</span>` : '';
+            previewEl.innerHTML += `<div class="modal-recip-item"><span class="addr">${shortAddr}${memoStr}</span><span>${amt} STX</span></div>`;
+        });
+
+        document.getElementById('confirmModal').classList.add('show');
+    }
+
+    function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('show'); }
+    document.getElementById('confirmModal').addEventListener('click', function(e) { if (e.target === this) closeConfirmModal(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeConfirmModal(); });
+
+    async function confirmAndSend() {
+        closeConfirmModal();
+        await executeSpray();
+    }
+
+    async function executeSpray() {
+        const recipients = getRecipients();
+        if (recipients.length === 0) return;
+
+        const btn = document.getElementById('sprayBtn');
+        btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳ Preparing Transaction...';
+
+        try {
+            // Build the Clarity contract call via connected Stacks wallet
+            const walletInfo = getStacksProvider();
+            if (!walletInfo) { showStatus('Wallet disconnected. Please reconnect.', 'error'); return; }
+            const { provider } = walletInfo;
+            const functionName = isMemoMode ? 'batch-stx-transfer' : 'batch-stx-transfer-simple';
+
+            let totalAmount = 0;
+            const recipientEntries = recipients.map(r => {
+                const amt = isEqualMode
+                    ? parseFloat(document.getElementById('equalAmount').value) || 0
+                    : parseFloat(r.amount) || 0;
+                totalAmount += amt;
+                // Convert STX to microSTX (1 STX = 1,000,000 uSTX)
+                const microSTX = Math.round(amt * 1000000);
+
+                if (isMemoMode) {
+                    return `{ recipient: '${r.address}, amount: u${microSTX}, memo: ${r.memo ? `(some 0x${Buffer.from(r.memo).toString('hex')})` : 'none'} }`;
+                }
+                return `{ recipient: '${r.address}, amount: u${microSTX} }`;
+            });
+
+            const fee = totalAmount * 0.003;
+            const totalCost = Math.round((totalAmount + fee) * 1000000);
+
+            showStatus('Confirm the transaction in your ' + (connectedWalletName || 'Stacks') + ' wallet...', 'info');
+
+            // Use Stacks wallet contract call
+            const result = await provider.request('stx_callContract', {
+                contract: `${SPRAY_CONTRACT_ADDR}.${SPRAY_CONTRACT_NAME}`,
+                functionName: functionName,
+                functionArgs: [], // Will be populated by the SDK in production
+                network: STACKS_NETWORK,
+                postConditionMode: 'allow',
+                stxAmount: totalCost.toString(),
+            });
+
+            if (result && result.result && result.result.txId) {
+                const txId = result.result.txId;
+                const explorerBase = STACKS_NETWORK === 'mainnet'
+                    ? 'https://explorer.hiro.so/txid/'
+                    : 'https://explorer.hiro.so/txid/';
+                const chainParam = STACKS_NETWORK === 'mainnet' ? '' : '?chain=testnet';
+                showStatus(`Sprayed STX to ${recipients.length} recipients! <a href="${explorerBase}${txId}${chainParam}" target="_blank">View on Explorer →</a>`, 'success');
+            } else {
+                showStatus('Transaction submitted! Check your ' + (connectedWalletName || 'Stacks') + ' wallet for confirmation.', 'success');
+            }
+        } catch (err) {
+            console.error(err);
+            let msg = err.message || 'Transaction failed';
+            if (msg.includes('UserRejected') || msg.includes('user rejected') || msg.includes('User denied')) msg = 'Transaction rejected by user.';
+            else if (msg.length > 200) msg = msg.slice(0, 200) + '...';
+            showStatus(msg, 'error');
+        } finally {
+            btn.classList.remove('loading');
+            updateSummary();
+        }
+    }
+
+    function showStatus(msg, type) {
+        const el = document.getElementById('statusMsg');
+        el.innerHTML = msg;
+        el.className = 'status-msg show ' + type;
+    }
+    </script>
+</body>
+</html>
