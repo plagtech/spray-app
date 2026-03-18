@@ -1,0 +1,2000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spraay – Non-Custodial Bitcoin Batch Payments</title>
+    <meta name="description" content="Pay multiple Bitcoin recipients in a single transaction. Save up to 77% on network fees. Non-custodial PSBT-based batch payments.">
+    <meta property="og:title" content="Spraay – Bitcoin Batch Payments">
+    <meta property="og:description" content="Send BTC to 50+ recipients in a single transaction. Non-custodial. ~77% fee savings.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://btc.spraay.app">
+    <meta property="og:image" content="https://spraay.app/spraay-og-square.png">
+    <meta name="twitter:image" content="https://spraay.app/spraay-og-square.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:creator" content="@spraay_app">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --btc-orange: #F7931A;
+            --btc-orange-deep: #c57615;
+            --btc-orange-bright: #FFA940;
+            --btc-orange-glow: rgba(247, 147, 26, 0.10);
+            --btc-orange-dim: rgba(247, 147, 26, 0.08);
+            --btc-orange-border: rgba(247, 147, 26, 0.30);
+            --crimson: #8B0000;
+            --crimson-bright: #DC143C;
+            --bg: #FAFAF8;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #FFF9F2;
+            --bg-inset: #F3F1EE;
+            --text: #1A1A18;
+            --text-dim: #6B6960;
+            --text-muted: #9E9A90;
+            --border: rgba(26, 26, 24, 0.10);
+            --border-bright: rgba(247, 147, 26, 0.35);
+            --green: #16a34a;
+            --green-bg: rgba(22, 163, 74, 0.08);
+            --green-border: rgba(22, 163, 74, 0.25);
+            --yellow: #b45309;
+            --yellow-bg: rgba(180, 83, 9, 0.08);
+            --yellow-border: rgba(180, 83, 9, 0.25);
+            --red: #dc2626;
+            --red-bg: rgba(220, 38, 38, 0.06);
+            --red-border: rgba(220, 38, 38, 0.20);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        code, .mono { font-family: 'Space Mono', monospace; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        html { scroll-behavior: smooth; }
+
+        /* ── Nav ─────────────────────────────────────── */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            background: rgba(250,250,248,0.92); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo {
+            font-weight: 800; font-size: 1.4rem; letter-spacing: 0.08em;
+            background: linear-gradient(135deg, var(--btc-orange), var(--btc-orange-deep));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+        .nav-links { display: flex; gap: 1.2rem; align-items: center; }
+        .nav-links a {
+            color: var(--text-dim); text-decoration: none; font-size: 0.9rem;
+            font-weight: 500; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+
+        /* ── Chain Dropdown ────────────── */
+        .chain-dropdown { position: relative; }
+        .chain-dropdown-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--bg-card); border: 1px solid var(--btc-orange-border);
+            border-radius: 8px; padding: 0.45rem 0.9rem;
+            color: var(--text); font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; font-family: inherit;
+            transition: all 0.2s; box-shadow: var(--shadow-sm);
+        }
+        .chain-dropdown-btn:hover { border-color: var(--btc-orange); background: var(--bg-card-hover); }
+        .chain-dropdown-btn .chain-icon { font-size: 1rem; }
+        .chain-dropdown-btn .chevron { font-size: 0.6rem; color: var(--text-muted); transition: transform 0.2s; }
+        .chain-dropdown.open .chain-dropdown-btn { border-color: var(--btc-orange); }
+        .chain-dropdown.open .chevron { transform: rotate(180deg); }
+        .chain-dropdown-menu {
+            position: absolute; top: calc(100% + 6px); right: 0;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 0.4rem; min-width: 200px;
+            display: none; box-shadow: var(--shadow-lg); z-index: 200;
+        }
+        .chain-dropdown.open .chain-dropdown-menu { display: block; }
+        .chain-dropdown-menu a {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.55rem 0.8rem; border-radius: 8px;
+            color: var(--text-dim); text-decoration: none;
+            font-size: 0.85rem; font-weight: 500; transition: all 0.15s;
+        }
+        .chain-dropdown-menu a:hover { background: var(--btc-orange-glow); color: var(--text); }
+        .chain-dropdown-menu a.current { background: var(--btc-orange-glow); color: var(--btc-orange); font-weight: 600; }
+        .chain-dropdown-menu .chain-item-icon { font-size: 1rem; width: 20px; text-align: center; }
+        .chain-dropdown-menu .chain-item-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 4px rgba(22,163,74,0.5);
+            margin-left: auto; flex-shrink: 0;
+        }
+
+        /* Hamburger */
+        .hamburger-btn {
+            display: none; width: 40px; height: 40px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; cursor: pointer;
+            align-items: center; justify-content: center;
+            flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+        }
+        .hamburger-btn span {
+            display: block; width: 18px; height: 2px;
+            background: var(--text); border-radius: 1px; position: relative;
+        }
+        .hamburger-btn span::before, .hamburger-btn span::after {
+            content: ''; position: absolute; left: 0;
+            width: 18px; height: 2px; background: var(--text); border-radius: 1px;
+        }
+        .hamburger-btn span::before { top: -6px; }
+        .hamburger-btn span::after { top: 6px; }
+
+        /* Mobile Panel */
+        .mobile-panel-overlay {
+            display: none; position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3); z-index: 999;
+        }
+        .mobile-panel-overlay.open { display: block; }
+        .mobile-panel {
+            position: fixed; top: 0; right: 0; bottom: 0;
+            width: 280px; max-width: 80vw;
+            background: var(--bg-card); border-left: 1px solid var(--border);
+            z-index: 1000; transform: translateX(100%);
+            transition: transform 0.25s ease;
+            overflow-y: auto; display: flex; flex-direction: column;
+            box-shadow: var(--shadow-lg);
+        }
+        .mobile-panel.open { transform: translateX(0); }
+        .mobile-panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.2rem 1.2rem 0.8rem; border-bottom: 1px solid var(--border);
+        }
+        .mobile-panel-header .panel-title { font-weight: 700; font-size: 1rem; color: var(--text); }
+        .mobile-panel-close {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-dim); font-size: 1.2rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .mobile-panel-close:active { background: var(--btc-orange-glow); }
+        .mobile-panel-section { padding: 0.8rem 0.6rem; }
+        .mobile-panel-section-label {
+            font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-muted);
+            font-weight: 600; padding: 0.4rem 0.6rem;
+        }
+        .mobile-panel a {
+            display: flex; align-items: center; gap: 0.7rem;
+            padding: 0.85rem 0.8rem; border-radius: 10px;
+            color: var(--text-dim); text-decoration: none;
+            font-size: 0.95rem; font-weight: 500; min-height: 48px;
+        }
+        .mobile-panel a:active { background: var(--btc-orange-glow); }
+        .mobile-panel a.current { background: var(--btc-orange-glow); color: var(--btc-orange); font-weight: 600; }
+        .mobile-panel .mp-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+        .mobile-panel .mp-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 4px rgba(22,163,74,0.5);
+            margin-left: auto; flex-shrink: 0;
+        }
+        .mobile-panel-divider { height: 1px; background: var(--border); margin: 0.4rem 0.6rem; }
+        .mobile-panel-footer {
+            margin-top: auto; padding: 1rem 1.2rem;
+            border-top: 1px solid var(--border);
+        }
+        .mobile-panel-footer a { min-height: 40px; font-size: 0.85rem; color: var(--text-muted); padding: 0.5rem 0.8rem; }
+
+        /* ── Buttons ────────────────────────────────── */
+        .btn {
+            display: inline-block; padding: 0.55rem 1.4rem; border-radius: 8px;
+            font-weight: 600; font-size: 0.9rem; text-decoration: none;
+            transition: all 0.25s ease; cursor: pointer; border: none;
+            font-family: 'Outfit', sans-serif;
+        }
+        .btn-primary {
+            background: var(--btc-orange); color: #fff;
+            border: 1px solid var(--btc-orange-bright);
+            box-shadow: 0 2px 8px rgba(247, 147, 26, 0.20);
+        }
+        .btn-primary:hover { background: var(--btc-orange-bright); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(247, 147, 26, 0.25); }
+        .btn-outline {
+            background: transparent; color: var(--btc-orange);
+            border: 1px solid var(--btc-orange-border);
+        }
+        .btn-outline:hover { background: var(--btc-orange-glow); }
+        .btn-btc {
+            background: var(--btc-orange-dim); color: var(--btc-orange);
+            border: 1px solid var(--btc-orange-border);
+        }
+        .btn-btc:hover { background: rgba(247, 147, 26, 0.15); transform: translateY(-1px); }
+        .btn-connect {
+            background: linear-gradient(135deg, var(--btc-orange), var(--btc-orange-deep));
+            color: #fff; border: 1px solid var(--btc-orange-border);
+            padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 600;
+            font-size: 0.85rem; cursor: pointer; font-family: 'Outfit', sans-serif;
+            transition: all 0.25s ease; box-shadow: 0 2px 8px rgba(247,147,26,0.20);
+        }
+        .btn-connect:hover { background: linear-gradient(135deg, var(--btc-orange-bright), var(--btc-orange)); }
+        .btn-connected {
+            background: var(--btc-orange-dim); border: 1px solid var(--btc-orange-border);
+            color: var(--btc-orange); cursor: pointer; box-shadow: none;
+        }
+        .btn-connected:hover { background: rgba(247,147,26,0.12); }
+
+        /* ── Hero ──────────────────────────────────── */
+        .hero {
+            padding: 10rem 0 5rem; text-align: center;
+            background: radial-gradient(ellipse at 50% 0%, rgba(247,147,26,0.06) 0%, transparent 60%);
+            position: relative;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; top: 60px; left: 0; right: 0; bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23F7931A' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: var(--btc-orange-dim); border: 1px solid var(--btc-orange-border);
+            border-radius: 20px; padding: 0.4rem 1rem;
+            font-size: 0.82rem; font-weight: 600; color: var(--btc-orange);
+            margin-bottom: 1.5rem; box-shadow: var(--shadow-sm);
+        }
+        .hero-badge .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--btc-orange);
+            box-shadow: 0 0 6px rgba(247,147,26,0.6);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .hero h1 {
+            font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800;
+            line-height: 1.15; margin-bottom: 1.2rem; position: relative;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--btc-orange), var(--btc-orange-bright));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero p { color: var(--text-dim); font-size: 1.15rem; max-width: 580px; margin: 0 auto 2rem; position: relative; }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; }
+        .hero-stats {
+            display: flex; gap: 3rem; justify-content: center; margin-top: 3.5rem;
+            flex-wrap: wrap; position: relative;
+        }
+        .stat { text-align: center; }
+        .stat-value {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--btc-orange), var(--btc-orange-bright));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+        /* ── Integrations Banner ─────────────────── */
+        .integrations {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+        .integrations-inner {
+            display: flex; align-items: center; justify-content: center;
+            gap: 2rem; flex-wrap: wrap;
+        }
+        .integrations-label {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--text-muted); font-weight: 600;
+        }
+        .integration-badge {
+            display: flex; align-items: center; gap: 0.6rem;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; padding: 0.6rem 1.2rem;
+            font-weight: 600; font-size: 0.9rem; color: var(--text);
+            box-shadow: var(--shadow-sm);
+        }
+        .integration-badge .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 6px rgba(22,163,74,0.5);
+        }
+        .tag { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .tag-live { background: var(--green-bg); color: var(--green); }
+        .tag-soon { background: var(--yellow-bg); color: var(--yellow); }
+
+        /* ═══════════════════════════════════════════
+           APP SECTION
+           ═══════════════════════════════════════════ */
+        .app-section {
+            padding: 5rem 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(247,147,26,0.04) 0%, transparent 50%);
+            border-bottom: 1px solid var(--border);
+        }
+        .app-container { max-width: 720px; margin: 0 auto; }
+        .app-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            box-shadow: var(--shadow-md);
+        }
+        .app-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--btc-orange), transparent);
+        }
+        .app-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .app-header h2 { font-size: 1.3rem; font-weight: 700; }
+        .wallet-info { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-dim); }
+        .wallet-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(22,163,74,0.5); }
+        .chain-indicator {
+            font-size: 0.7rem; background: var(--btc-orange-dim);
+            color: var(--btc-orange); padding: 0.15rem 0.5rem;
+            border-radius: 4px; font-weight: 700;
+        }
+
+        /* Network Toggle */
+        .network-toggle {
+            display: flex; gap: 0; margin-bottom: 1.5rem;
+            background: var(--bg-inset); border-radius: 10px; padding: 3px;
+            border: 1px solid var(--border);
+        }
+        .network-btn {
+            flex: 1; padding: 0.6rem 1rem; text-align: center;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            border-radius: 8px; transition: all 0.2s;
+            color: var(--text-muted); background: transparent;
+            border: none; font-family: 'Outfit', sans-serif;
+        }
+        .network-btn.active {
+            background: linear-gradient(135deg, var(--btc-orange), var(--btc-orange-deep));
+            color: #fff; box-shadow: 0 2px 8px rgba(247,147,26,0.25);
+        }
+        .network-btn:hover:not(.active) { color: var(--text-dim); }
+
+        /* Wallet Selector */
+        .wallet-selector { margin-bottom: 1.5rem; }
+        .wallet-selector-label {
+            font-size: 0.82rem; font-weight: 600; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; display: block;
+        }
+        .wallet-options { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+        .wallet-option {
+            flex: 1; min-width: 140px; padding: 0.8rem 1rem; border-radius: 10px;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.2s; text-align: center;
+            font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.88rem;
+            color: var(--text-dim); display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .wallet-option:hover { border-color: var(--btc-orange-border); background: var(--bg-card-hover); }
+        .wallet-option.active { border-color: var(--btc-orange); background: var(--btc-orange-dim); color: var(--btc-orange); }
+        .wallet-option .wallet-icon { font-size: 1.1rem; }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 1.2rem; }
+        .form-label {
+            display: block; font-size: 0.82rem; font-weight: 600;
+            color: var(--text-dim); margin-bottom: 0.4rem;
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .form-input {
+            width: 100%; padding: 0.75rem 1rem;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text);
+            font-family: 'Outfit', sans-serif; font-size: 0.95rem;
+            transition: border-color 0.2s; outline: none;
+        }
+        .form-input:focus { border-color: var(--btc-orange-border); }
+        .form-input::placeholder { color: var(--text-muted); }
+
+        /* ── Recipient Rows ──────────────────────── */
+        .recipients-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.8rem; }
+        .recipient-row {
+            display: grid; grid-template-columns: 1fr auto auto; gap: 0.6rem;
+            align-items: center;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+        .recipient-row .addr-input {
+            padding: 0.65rem 0.8rem;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text);
+            font-family: 'Space Mono', monospace; font-size: 0.78rem;
+            outline: none; transition: border-color 0.2s; min-width: 0;
+        }
+        .recipient-row .addr-input:focus { border-color: var(--btc-orange-border); }
+        .recipient-row .addr-input::placeholder { color: var(--text-muted); font-family: 'Space Mono', monospace; }
+        .recipient-row .addr-input.invalid { border-color: var(--red); background: var(--red-bg); }
+        .recipient-row .addr-input.valid { border-color: var(--green-border); }
+
+        .amount-wrap {
+            position: relative; display: flex; align-items: center; min-width: 150px;
+        }
+        .amount-wrap .amt-input {
+            width: 100%; padding: 0.65rem 0.8rem; padding-right: 3.2rem;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text);
+            font-family: 'Space Mono', monospace; font-size: 0.82rem;
+            outline: none; transition: border-color 0.2s;
+        }
+        .amount-wrap .amt-input:focus { border-color: var(--btc-orange-border); }
+        .amount-wrap .amt-input::placeholder { color: var(--text-muted); }
+        .amount-wrap .amt-suffix {
+            position: absolute; right: 0.8rem; font-size: 0.7rem;
+            color: var(--text-muted); font-weight: 600; pointer-events: none;
+        }
+
+        .remove-btn {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-muted); cursor: pointer; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .remove-btn:hover { background: var(--btc-orange-glow); border-color: var(--btc-orange-border); color: var(--btc-orange); }
+
+        .add-recipient-btn {
+            width: 100%; padding: 0.6rem; border-radius: 8px;
+            background: transparent; border: 1px dashed var(--border);
+            color: var(--text-dim); cursor: pointer; font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif; font-weight: 600;
+            transition: all 0.2s; margin-bottom: 1rem;
+        }
+        .add-recipient-btn:hover { border-color: var(--btc-orange-border); color: var(--btc-orange); background: var(--btc-orange-glow); }
+        .recipient-count-badge { font-size: 0.72rem; color: var(--text-muted); }
+        .recipient-count-badge strong { color: var(--text-dim); }
+
+        .csv-upload {
+            border: 1px dashed var(--border); border-radius: 6px;
+            padding: 0.5rem 0.8rem; text-align: center; cursor: pointer;
+            transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem;
+        }
+        .csv-upload:hover { border-color: var(--btc-orange-border); background: var(--btc-orange-glow); }
+        .csv-upload-text { font-size: 0.75rem; color: var(--text-muted); }
+        .csv-upload input[type="file"] { display: none; }
+
+        /* Equal Amount Toggle */
+        .equal-toggle {
+            display: flex; align-items: center; gap: 0.6rem;
+            margin-bottom: 1.2rem; cursor: pointer;
+        }
+        .equal-toggle input { display: none; }
+        .toggle-track {
+            width: 40px; height: 22px; border-radius: 11px;
+            background: var(--border); position: relative;
+            transition: background 0.2s; flex-shrink: 0;
+        }
+        .toggle-track::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--text-muted); transition: all 0.2s;
+        }
+        .equal-toggle input:checked + .toggle-track { background: linear-gradient(135deg, var(--btc-orange), var(--btc-orange-deep)); }
+        .equal-toggle input:checked + .toggle-track::after { left: 21px; background: #fff; }
+        .toggle-label { font-size: 0.85rem; color: var(--text-dim); font-weight: 500; }
+
+        /* Fee Priority Selector */
+        .fee-selector { margin-bottom: 1.2rem; }
+        .fee-options { display: flex; gap: 0.5rem; }
+        .fee-option {
+            flex: 1; padding: 0.6rem 0.5rem; border-radius: 8px;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            cursor: pointer; text-align: center; transition: all 0.2s;
+            font-family: 'Outfit', sans-serif;
+        }
+        .fee-option:hover { border-color: var(--btc-orange-border); }
+        .fee-option.active { border-color: var(--btc-orange); background: var(--btc-orange-dim); }
+        .fee-option .fee-label { font-size: 0.78rem; font-weight: 600; color: var(--text-dim); }
+        .fee-option.active .fee-label { color: var(--btc-orange); }
+        .fee-option .fee-rate { font-size: 0.72rem; color: var(--text-muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+        .fee-option.active .fee-rate { color: var(--btc-orange-deep); }
+
+        /* Summary Card */
+        .summary-card {
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1.2rem; margin: 1.2rem 0;
+        }
+        .summary-row {
+            display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0;
+        }
+        .summary-row:not(:last-child) { border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .summary-label { font-size: 0.85rem; color: var(--text-dim); }
+        .summary-value { font-size: 0.85rem; font-weight: 600; font-family: 'Space Mono', monospace; }
+        .summary-total .summary-label { color: var(--text); font-weight: 600; }
+        .summary-total .summary-value { color: var(--btc-orange); font-size: 1rem; }
+        .summary-savings { color: var(--green); }
+
+        /* Spray Button */
+        .spray-btn {
+            width: 100%; padding: 1rem; border-radius: 12px;
+            font-size: 1.05rem; font-weight: 700; cursor: pointer;
+            background: linear-gradient(135deg, var(--btc-orange), var(--btc-orange-deep));
+            color: #fff; border: 1px solid var(--btc-orange-border);
+            font-family: 'Outfit', sans-serif; transition: all 0.25s;
+            box-shadow: 0 4px 16px rgba(247,147,26,0.25);
+        }
+        .spray-btn:hover:not(:disabled) { background: linear-gradient(135deg, var(--btc-orange-bright), var(--btc-orange)); box-shadow: 0 6px 24px rgba(247,147,26,0.30); transform: translateY(-1px); }
+        .spray-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+        .spray-btn.loading { pointer-events: none; opacity: 0.7; }
+
+        .wallet-note {
+            text-align: center; margin-top: 0.6rem;
+            font-size: 0.78rem; color: var(--text-muted);
+        }
+        .wallet-note a { color: var(--btc-orange); cursor: pointer; text-decoration: none; }
+        .wallet-note a:hover { text-decoration: underline; }
+
+        /* Status Messages */
+        .status-msg {
+            padding: 0.8rem 1rem; border-radius: 10px;
+            font-size: 0.85rem; margin-top: 1rem; display: none;
+        }
+        .status-msg.show { display: block; }
+        .status-msg.success { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green); }
+        .status-msg.error { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red); }
+        .status-msg.info { background: var(--yellow-bg); border: 1px solid var(--yellow-border); color: var(--yellow); }
+        .status-msg a { color: inherit; text-decoration: underline; }
+
+        /* ── Confirmation Modal ─────────────────── */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
+            z-index: 1000; display: none;
+            align-items: center; justify-content: center; padding: 1rem;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--btc-orange-border);
+            border-radius: 16px; padding: 2rem; max-width: 520px; width: 100%;
+            position: relative; animation: modalIn 0.2s ease;
+            box-shadow: var(--shadow-lg);
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--btc-orange), transparent);
+        }
+        .modal h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; text-align: center; }
+        .modal-summary {
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem; margin-bottom: 1rem;
+        }
+        .modal-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.35rem 0; font-size: 0.88rem;
+        }
+        .modal-row:not(:last-child) { border-bottom: 1px solid rgba(0,0,0,0.04); }
+        .modal-row .label { color: var(--text-dim); }
+        .modal-row .value { font-weight: 600; font-family: 'Space Mono', monospace; }
+        .modal-row.total .label { color: var(--text); font-weight: 600; }
+        .modal-row.total .value { color: var(--btc-orange); font-size: 1.05rem; }
+        .modal-recipients-preview {
+            max-height: 140px; overflow-y: auto; margin-bottom: 1rem;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0.6rem 0.8rem;
+        }
+        .modal-recipients-preview::-webkit-scrollbar { width: 4px; }
+        .modal-recipients-preview::-webkit-scrollbar-thumb { background: var(--btc-orange-border); border-radius: 4px; }
+        .modal-recip-item {
+            display: flex; justify-content: space-between;
+            font-size: 0.75rem; padding: 0.2rem 0;
+            font-family: 'Space Mono', monospace; color: var(--text-dim);
+        }
+        .modal-recip-item .addr { color: var(--text); }
+        .modal-buttons { display: flex; gap: 0.8rem; margin-top: 1rem; }
+        .modal-buttons button { flex: 1; padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
+        .modal-cancel { background: var(--bg-inset); border: 1px solid var(--border); color: var(--text-dim); }
+        .modal-cancel:hover { border-color: var(--btc-orange-border); color: var(--text); }
+        .modal-confirm { background: linear-gradient(135deg, var(--btc-orange), var(--btc-orange-deep)); border: 1px solid var(--btc-orange-border); color: #fff; }
+        .modal-confirm:hover { background: linear-gradient(135deg, var(--btc-orange-bright), var(--btc-orange)); box-shadow: 0 4px 16px rgba(247,147,26,0.25); }
+        .modal-warning { font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.6rem; }
+
+        /* ── Landing Page Sections ────────────── */
+        .section-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .section-subtitle { color: var(--text-dim); margin-bottom: 3rem; }
+
+        .features { padding: 5rem 0; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
+        .feature-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.8rem; transition: all 0.25s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        .feature-card:hover { border-color: var(--btc-orange-border); background: var(--bg-card-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .feature-icon { font-size: 1.6rem; margin-bottom: 0.8rem; }
+        .feature-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .feature-card p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; }
+
+        .how-it-works { padding: 5rem 0; }
+        .steps { display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; }
+        .step { flex: 1; min-width: 220px; max-width: 300px; text-align: center; }
+        .step-num {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--btc-orange-dim); color: var(--btc-orange); font-weight: 700;
+            font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem; border: 2px solid var(--btc-orange-border);
+        }
+        .step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .step p { font-size: 0.85rem; color: var(--text-dim); }
+
+        .use-cases { padding: 5rem 0; }
+        .use-case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }
+        .use-case { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; transition: border-color 0.2s; box-shadow: var(--shadow-sm); }
+        .use-case:hover { border-color: var(--btc-orange-border); }
+        .use-case h3 { font-size: 1rem; margin-bottom: 0.3rem; }
+        .use-case p { font-size: 0.85rem; color: var(--text-dim); }
+
+        .contract-section { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); }
+        .contract-address {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem 1.5rem; display: inline-block; margin-top: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .contract-address code { font-size: 0.85rem; color: var(--btc-orange); word-break: break-all; }
+        .contract-address a { color: var(--btc-orange); text-decoration: none; }
+        .contract-address a:hover { text-decoration: underline; }
+
+        .cta {
+            padding: 5rem 0; text-align: center;
+            background: radial-gradient(ellipse at 50% 100%, rgba(247,147,26,0.05) 0%, transparent 60%);
+        }
+        .cta h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.8rem; }
+        .cta p { color: var(--text-dim); margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+        footer { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+        .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--text); }
+        .footer-copy { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* ── Responsive ──────────────────────────── */
+        @media (max-width: 640px) {
+            .hero { padding: 8rem 0 3rem; }
+            .hero-stats { gap: 2rem; }
+            .integrations-inner { flex-direction: column; gap: 1rem; }
+            .nav-links a:not(.btn):not(.btn-connect):not(.btn-connected) { display: none; }
+            .chain-dropdown { display: none; }
+            .hamburger-btn { display: flex; }
+            .app-card { padding: 1.2rem; }
+            .recipient-row { grid-template-columns: 1fr; }
+            .amount-wrap { min-width: 100%; }
+            .wallet-options { flex-direction: column; }
+            .fee-options { flex-direction: column; }
+        }
+        @media (min-width: 641px) {
+            .recipient-row { grid-template-columns: 1fr 160px 32px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav>
+        <div class="container nav-inner">
+            <a href="/" class="logo">SPRAAY</a>
+            <div class="nav-links">
+                <div class="chain-dropdown" id="chainDropdown">
+                    <button class="chain-dropdown-btn" onclick="toggleChainDropdown(event)">
+                        <span class="chain-icon">₿</span>
+                        <span>Bitcoin</span>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="chain-dropdown-menu">
+                        <a href="/">
+                            <span class="chain-item-icon">🔵</span> Base
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/ethereum">
+                            <span class="chain-item-icon">⟠</span> Ethereum
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/arbitrum">
+                            <span class="chain-item-icon">⬡</span> Arbitrum
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/polygon">
+                            <span class="chain-item-icon">🟣</span> Polygon
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/bnb">
+                            <span class="chain-item-icon">🟡</span> BNB Chain
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/avalanche">
+                            <span class="chain-item-icon">🔺</span> Avalanche
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/unichain">
+                            <span class="chain-item-icon">🦄</span> Unichain
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/plasma">
+                            <span class="chain-item-icon">🟢</span> Plasma
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/bob">
+                            <span class="chain-item-icon">🔶</span> BOB
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/tao">
+                            <span class="chain-item-icon">🧠</span> Bittensor
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/solana">
+                            <span class="chain-item-icon">◎</span> Solana
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/stacks">
+                            <span class="chain-item-icon">Ⓢ</span> Stacks
+                            <span class="chain-item-dot"></span>
+                        </a>
+                        <a href="/bitcoin" class="current">
+                            <span class="chain-item-icon">₿</span> Bitcoin
+                            <span class="chain-item-dot"></span>
+                        </a>
+                    </div>
+                </div>
+                <a href="https://github.com/plagtech/spraay-bitcoin" target="_blank">GitHub</a>
+                <button id="navConnectBtn" class="btn-connect" onclick="connectWallet()">Connect Wallet</button>
+                <button class="hamburger-btn" onclick="openMobilePanel()" aria-label="Menu"><span></span></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Slide Panel -->
+    <div class="mobile-panel-overlay" id="mobilePanelOverlay" onclick="closeMobilePanel()"></div>
+    <div class="mobile-panel" id="mobilePanel">
+        <div class="mobile-panel-header">
+            <span class="panel-title">Switch Chain</span>
+            <button class="mobile-panel-close" onclick="closeMobilePanel()">✕</button>
+        </div>
+        <div class="mobile-panel-section">
+            <div class="mobile-panel-section-label">Networks</div>
+            <a href="/"><span class="mp-icon">🔵</span> Base <span class="mp-dot"></span></a>
+            <a href="/ethereum"><span class="mp-icon">⟠</span> Ethereum <span class="mp-dot"></span></a>
+            <a href="/arbitrum"><span class="mp-icon">⬡</span> Arbitrum <span class="mp-dot"></span></a>
+            <a href="/polygon"><span class="mp-icon">🟣</span> Polygon <span class="mp-dot"></span></a>
+            <a href="/bnb"><span class="mp-icon">🟡</span> BNB Chain <span class="mp-dot"></span></a>
+            <a href="/avalanche"><span class="mp-icon">🔺</span> Avalanche <span class="mp-dot"></span></a>
+            <a href="/unichain"><span class="mp-icon">🦄</span> Unichain <span class="mp-dot"></span></a>
+            <a href="/plasma"><span class="mp-icon">🟢</span> Plasma <span class="mp-dot"></span></a>
+            <a href="/bob"><span class="mp-icon">🔶</span> BOB <span class="mp-dot"></span></a>
+            <a href="/tao"><span class="mp-icon">🧠</span> Bittensor <span class="mp-dot"></span></a>
+            <a href="/solana"><span class="mp-icon">◎</span> Solana <span class="mp-dot"></span></a>
+            <a href="/stacks"><span class="mp-icon">Ⓢ</span> Stacks <span class="mp-dot"></span></a>
+            <a href="/bitcoin" class="current"><span class="mp-icon">₿</span> Bitcoin <span class="mp-dot"></span></a>
+        </div>
+        <div class="mobile-panel-divider"></div>
+        <div class="mobile-panel-footer">
+            <a href="https://github.com/plagtech/spraay-bitcoin" target="_blank"><span class="mp-icon">💻</span> GitHub</a>
+            <a href="https://twitter.com/Spraay_app" target="_blank"><span class="mp-icon">🐦</span> Twitter</a>
+            <a href="https://warpcast.com/plag" target="_blank"><span class="mp-icon">🟣</span> Farcaster</a>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                Non-Custodial Bitcoin Batch Payments
+            </div>
+            <h1>Batch Payments on<br><span>Bitcoin</span></h1>
+            <p>Pay multiple recipients in a single transaction. Non-custodial PSBT-based batch payments — save up to 77% on network fees.</p>
+            <div class="hero-buttons">
+                <a href="#app" class="btn btn-primary">Launch App →</a>
+                <a href="https://github.com/plagtech/spraay-bitcoin" target="_blank" class="btn btn-outline">View on GitHub</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-value">~77%</div>
+                    <div class="stat-label">Fee Savings</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">50+</div>
+                    <div class="stat-label">Recipients / Tx</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">0.3%</div>
+                    <div class="stat-label">Service Fee</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">PSBT</div>
+                    <div class="stat-label">Non-Custodial</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Supported Wallets -->
+    <section class="integrations">
+        <div class="container integrations-inner">
+            <span class="integrations-label">Wallet Support</span>
+            <div class="integration-badge">
+                <span class="dot"></span>
+                UniSat
+                <span class="tag tag-live">Live</span>
+            </div>
+            <div class="integration-badge">
+                <span class="dot"></span>
+                Xverse
+                <span class="tag tag-live">Live</span>
+            </div>
+            <div class="integration-badge">
+                <span class="dot"></span>
+                mempool.space
+                <span class="tag tag-live">API</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- APP SECTION -->
+    <section class="app-section" id="app">
+        <div class="container app-container">
+            <h2 class="section-title" style="text-align:center;">Batch Send BTC</h2>
+            <p class="section-subtitle" style="text-align:center;">
+                Pay multiple Bitcoin addresses in one transaction. Your keys never leave your wallet.
+            </p>
+
+            <div class="app-card">
+                <div class="app-header">
+                    <h2>₿ Batch Send</h2>
+                    <div style="display:flex;align-items:center;gap:0.6rem;">
+                        <span class="chain-indicator">₿ Bitcoin</span>
+                        <div id="walletInfo" class="wallet-info" style="display:none;">
+                            <span class="wallet-dot"></span>
+                            <span id="walletAddr" class="mono"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Toggle -->
+                <div class="network-toggle">
+                    <button class="network-btn active" data-network="mainnet" onclick="switchNetwork('mainnet')">Mainnet</button>
+                    <button class="network-btn" data-network="testnet" onclick="switchNetwork('testnet')">Testnet</button>
+                </div>
+
+                <!-- Wallet Selector -->
+                <div class="wallet-selector" id="walletSelector">
+                    <span class="wallet-selector-label">Connect Wallet</span>
+                    <div class="wallet-options">
+                        <div class="wallet-option" onclick="connectWallet('unisat')">
+                            <span class="wallet-icon">🟧</span> UniSat
+                        </div>
+                        <div class="wallet-option" onclick="connectWallet('xverse')">
+                            <span class="wallet-icon">🟪</span> Xverse
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Balance Display -->
+                <div id="balanceDisplay" class="form-group" style="display:none;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 1rem;background:var(--bg-inset);border:1px solid var(--border);border-radius:8px;">
+                        <span style="font-size:0.82rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;">Balance</span>
+                        <span id="balanceValue" class="mono" style="font-size:0.9rem;font-weight:600;color:var(--btc-orange);">— BTC</span>
+                    </div>
+                </div>
+
+                <!-- Equal Amount Toggle -->
+                <label class="equal-toggle">
+                    <input type="checkbox" id="equalToggle" onchange="toggleEqualMode()">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-label">Send equal amount to all</span>
+                </label>
+
+                <!-- Equal Amount Input -->
+                <div id="equalAmountSection" class="form-group" style="display:none;">
+                    <label class="form-label">Amount Per Recipient (BTC)</label>
+                    <div class="amount-wrap" style="max-width:200px;">
+                        <input type="text" class="amt-input" id="equalAmount" placeholder="0.001" oninput="updateSummary()">
+                        <span class="amt-suffix">BTC</span>
+                    </div>
+                </div>
+
+                <!-- Recipients -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                    <label class="form-label" style="margin-bottom:0;">Recipients</label>
+                    <span class="recipient-count-badge"><strong id="recipientCount">0</strong> / 50</span>
+                </div>
+
+                <div class="recipients-list" id="recipientsList"></div>
+
+                <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem;">
+                    <button class="add-recipient-btn" onclick="addRecipientRow()" style="margin-bottom:0;">+ Add Recipient</button>
+                    <div class="csv-upload" onclick="document.getElementById('csvFile').click()" style="margin-bottom:0;flex-shrink:0;">
+                        <span class="csv-upload-text">📋 Upload CSV</span>
+                        <input type="file" id="csvFile" accept=".csv,.txt" onchange="handleCSV(event)">
+                    </div>
+                </div>
+
+                <!-- Fee Priority -->
+                <div class="fee-selector">
+                    <label class="form-label">Fee Priority</label>
+                    <div class="fee-options">
+                        <div class="fee-option" onclick="selectFee('low')" data-fee="low">
+                            <div class="fee-label">🐢 Low</div>
+                            <div class="fee-rate" id="feeLow">— sat/vB</div>
+                        </div>
+                        <div class="fee-option active" onclick="selectFee('medium')" data-fee="medium">
+                            <div class="fee-label">⚡ Medium</div>
+                            <div class="fee-rate" id="feeMedium">— sat/vB</div>
+                        </div>
+                        <div class="fee-option" onclick="selectFee('high')" data-fee="high">
+                            <div class="fee-label">🚀 Fast</div>
+                            <div class="fee-rate" id="feeHigh">— sat/vB</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="summary-card">
+                    <div class="summary-row">
+                        <span class="summary-label">Recipients</span>
+                        <span class="summary-value" id="summaryRecipients">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Total Amount</span>
+                        <span class="summary-value"><span id="summaryAmount">0 BTC</span></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Service Fee (0.3%)</span>
+                        <span class="summary-value"><span id="summaryServiceFee">0 BTC</span></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Network Fee (est.)</span>
+                        <span class="summary-value"><span id="summaryNetworkFee">0 BTC</span></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label summary-savings">Est. Fee Savings</span>
+                        <span class="summary-value summary-savings"><span id="summarySavings">—</span></span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span class="summary-label">Total Cost</span>
+                        <span class="summary-value"><span id="summaryTotal">0 BTC</span></span>
+                    </div>
+                </div>
+
+                <button class="spray-btn" id="sprayBtn" onclick="handleSprayClick()" disabled>
+                    ₿ Sign & Broadcast
+                </button>
+                <div class="wallet-note" id="walletNote">
+                    <a onclick="connectWallet('unisat')">Connect a Bitcoin wallet</a> to send — or explore the interface first
+                </div>
+
+                <div class="status-msg" id="statusMsg"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Spraay on Bitcoin?</h2>
+            <p class="section-subtitle">Non-custodial batch payments that save you real BTC on fees.</p>
+            <div class="feature-grid">
+                <div class="feature-card"><div class="feature-icon">🔐</div><h3>Non-Custodial</h3><p>PSBT-based — your private keys never leave your wallet. Sign transactions locally with UniSat or Xverse.</p></div>
+                <div class="feature-card"><div class="feature-icon">💰</div><h3>Save Up to 77%</h3><p>Batch all outputs into a single transaction. Pay one set of overhead fees instead of N separate transactions.</p></div>
+                <div class="feature-card"><div class="feature-icon">⚡</div><h3>Smart Coin Selection</h3><p>Automatic UTXO selection and optimization. Efficient input consolidation minimizes transaction weight.</p></div>
+                <div class="feature-card"><div class="feature-icon">📊</div><h3>Live Fee Estimates</h3><p>Real-time fee data from mempool.space. Choose low, medium, or high priority for your batch.</p></div>
+                <div class="feature-card"><div class="feature-icon">📋</div><h3>CSV Import</h3><p>Upload a CSV with addresses and amounts. Perfect for payroll, airdrops, and bulk distributions.</p></div>
+                <div class="feature-card"><div class="feature-icon">🌐</div><h3>Multi-Chain</h3><p>Spraay is live on 13+ chains including Base, Ethereum, Solana, Stacks, and now Bitcoin L1.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title" style="text-align:center">How It Works</h2>
+            <p class="section-subtitle" style="text-align:center">Four steps. One transaction. Non-custodial.</p>
+            <div class="steps">
+                <div class="step"><div class="step-num">1</div><h3>Connect Wallet</h3><p>Connect your UniSat or Xverse browser wallet. Your keys stay local.</p></div>
+                <div class="step"><div class="step-num">2</div><h3>Add Recipients</h3><p>Enter Bitcoin addresses and amounts (in BTC), or upload a CSV file.</p></div>
+                <div class="step"><div class="step-num">3</div><h3>Sign PSBT</h3><p>We construct a PSBT. Your wallet signs it locally — non-custodial.</p></div>
+                <div class="step"><div class="step-num">4</div><h3>Broadcast</h3><p>Signed transaction is broadcast to the network. Track on mempool.space.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="use-cases">
+        <div class="container">
+            <h2 class="section-title">Perfect For</h2>
+            <p class="section-subtitle">Bitcoin-native batch payments for every use case.</p>
+            <div class="use-case-grid">
+                <div class="use-case"><h3>💵 BTC Payroll</h3><p>Pay your entire team in Bitcoin with a single transaction.</p></div>
+                <div class="use-case"><h3>🎁 Ordinals / BRC-20 Drops</h3><p>Distribute BTC to your community efficiently and cheaply.</p></div>
+                <div class="use-case"><h3>🏆 Mining Pool Payouts</h3><p>Consolidate miner payouts into one efficient transaction.</p></div>
+                <div class="use-case"><h3>🏛️ Treasury Distributions</h3><p>Bitcoin-native DAO payouts and fund distributions.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fee Info -->
+    <section class="contract-section">
+        <div class="container">
+            <h2 class="section-title">Fee Structure</h2>
+            <p class="section-subtitle" style="margin-bottom: 0.5rem;">Transparent, on-chain service fee</p>
+            <div class="contract-address">
+                <code>0.3% of batch total · Min 0.00000546 BTC (dust threshold) · No cap</code>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <span style="color: var(--text-dim); font-size: 0.85rem;">
+                    Fee address (mainnet): <code style="color:var(--btc-orange);">bc1q6lhucxf5p5eaqy4dcwkla8c9ctzaz3d2zsk2cj</code>
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Batch Send on Bitcoin?</h2>
+            <p>Non-custodial Bitcoin batch payments. Save up to 77% on network fees with Spraay.</p>
+            <div class="hero-buttons">
+                <a href="#app" class="btn btn-primary">Launch App →</a>
+                <a href="https://github.com/plagtech/spraay-bitcoin" target="_blank" class="btn btn-outline">GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-inner">
+            <div>
+                <a href="/" class="logo" style="font-size:1.1rem">SPRAAY</a>
+                <span class="footer-copy" style="margin-left:1rem">Batch crypto payments, multi-chain</span>
+            </div>
+            <div class="footer-links">
+                <a href="/">Base</a>
+                <a href="/ethereum">Ethereum</a>
+                <a href="/solana">Solana</a>
+                <a href="/stacks">Stacks</a>
+                <a href="/bitcoin">Bitcoin</a>
+                <a href="https://twitter.com/Spraay_app" target="_blank">Twitter</a>
+                <a href="https://warpcast.com/plag" target="_blank">Farcaster</a>
+                <a href="https://github.com/plagtech" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3>₿ Confirm Batch Send</h3>
+            <p style="text-align:center;font-size:0.85rem;color:var(--text-dim);margin-bottom:1rem;">Review the details below before signing.</p>
+
+            <div id="modalRecipientsList" class="modal-recipients-preview"></div>
+
+            <div class="modal-summary">
+                <div class="modal-row">
+                    <span class="label">Recipients</span>
+                    <span class="value" id="modalRecipients">0</span>
+                </div>
+                <div class="modal-row">
+                    <span class="label">Total Amount</span>
+                    <span class="value"><span id="modalAmount">0 BTC</span></span>
+                </div>
+                <div class="modal-row">
+                    <span class="label">Service Fee (0.3%)</span>
+                    <span class="value"><span id="modalServiceFee">0 BTC</span></span>
+                </div>
+                <div class="modal-row">
+                    <span class="label">Network Fee (est.)</span>
+                    <span class="value"><span id="modalNetworkFee">0 BTC</span></span>
+                </div>
+                <div class="modal-row total">
+                    <span class="label">Total</span>
+                    <span class="value"><span id="modalTotal">0 BTC</span></span>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-cancel" onclick="closeConfirmModal()">Cancel</button>
+                <button class="modal-confirm" id="modalConfirmBtn" onclick="confirmAndSend()">Sign & Broadcast</button>
+            </div>
+            <p class="modal-warning">Your wallet will prompt you to sign a PSBT. No funds leave until you approve.</p>
+        </div>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════════════
+    // SPRAAY BITCOIN – BATCH PAYMENTS UI
+    // ═══════════════════════════════════════════
+
+    const FEE_ADDRESS_MAINNET = 'bc1q6lhucxf5p5eaqy4dcwkla8c9ctzaz3d2zsk2cj';
+    const FEE_ADDRESS_TESTNET = 'tb1q6lhucxf5p5eaqy4dcwkla8c9ctzaz3d2gkderp';
+    const FEE_PERCENT = 0.003; // 0.3%
+    const MIN_FEE_SATS = 546;  // dust threshold
+    const DUST_LIMIT = 546;
+
+    let currentNetwork = 'mainnet';
+    let connectedWallet = null; // 'unisat' | 'xverse'
+    let userAddress = null;
+    let userUtxos = [];
+    let feeRates = { low: 1, medium: 5, high: 15 };
+    let selectedFee = 'medium';
+    let isEqualMode = false;
+    let rowCounter = 0;
+
+    function getMempoolBase() {
+        return currentNetwork === 'mainnet'
+            ? 'https://mempool.space/api'
+            : 'https://mempool.space/testnet/api';
+    }
+
+    function getMempoolUrl() {
+        return currentNetwork === 'mainnet'
+            ? 'https://mempool.space'
+            : 'https://mempool.space/testnet';
+    }
+
+    function getFeeAddress() {
+        return currentNetwork === 'mainnet' ? FEE_ADDRESS_MAINNET : FEE_ADDRESS_TESTNET;
+    }
+
+    // ── Chain Dropdown ──────────────────────────
+    let dropdownJustToggled = false;
+    function toggleChainDropdown(e) {
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+        document.getElementById('chainDropdown').classList.toggle('open');
+        dropdownJustToggled = true;
+        setTimeout(() => { dropdownJustToggled = false; }, 100);
+    }
+    document.addEventListener('click', function(e) {
+        if (dropdownJustToggled) return;
+        const dd = document.getElementById('chainDropdown');
+        if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+    });
+    function openMobilePanel() {
+        document.getElementById('mobilePanelOverlay').classList.add('open');
+        requestAnimationFrame(() => { document.getElementById('mobilePanel').classList.add('open'); });
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobilePanel() {
+        document.getElementById('mobilePanel').classList.remove('open');
+        document.getElementById('mobilePanelOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    // ── Initialize ──────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+        addRecipientRow();
+        addRecipientRow();
+        addRecipientRow();
+        fetchFeeRates();
+    });
+
+    // ── Network Switching ───────────────────────
+    function switchNetwork(net) {
+        currentNetwork = net;
+        document.querySelectorAll('.network-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.network === net);
+        });
+        // Disconnect wallet on network switch
+        if (connectedWallet) {
+            disconnectWallet();
+            showStatus('Switched to ' + net + '. Please reconnect your wallet.', 'info');
+        }
+        fetchFeeRates();
+    }
+
+    // ── Fee Rates from mempool.space ─────────────
+    async function fetchFeeRates() {
+        try {
+            const res = await fetch(getMempoolBase() + '/v1/fees/recommended');
+            const data = await res.json();
+            feeRates.low = data.hourFee || 1;
+            feeRates.medium = data.halfHourFee || 5;
+            feeRates.high = data.fastestFee || 15;
+            document.getElementById('feeLow').textContent = feeRates.low + ' sat/vB';
+            document.getElementById('feeMedium').textContent = feeRates.medium + ' sat/vB';
+            document.getElementById('feeHigh').textContent = feeRates.high + ' sat/vB';
+            updateSummary();
+        } catch (err) {
+            console.warn('Fee fetch failed:', err);
+        }
+    }
+
+    function selectFee(level) {
+        selectedFee = level;
+        document.querySelectorAll('.fee-option').forEach(el => {
+            el.classList.toggle('active', el.dataset.fee === level);
+        });
+        updateSummary();
+    }
+
+    // ── Wallet Connection ───────────────────────
+    async function connectWallet(walletType) {
+        if (!walletType) walletType = 'unisat';
+
+        if (walletType === 'unisat') {
+            if (!window.unisat) {
+                showStatus('UniSat wallet not detected. <a href="https://unisat.io" target="_blank">Install UniSat →</a>', 'error');
+                return;
+            }
+            try {
+                const network = currentNetwork === 'mainnet' ? 'livenet' : 'testnet';
+                await window.unisat.switchNetwork(network);
+                const accounts = await window.unisat.requestAccounts();
+                userAddress = accounts[0];
+                connectedWallet = 'unisat';
+            } catch (err) {
+                showStatus('UniSat connection failed: ' + (err.message || err), 'error');
+                return;
+            }
+        } else if (walletType === 'xverse') {
+            if (!window.XverseProviders && !window.BitcoinProvider) {
+                showStatus('Xverse wallet not detected. <a href="https://www.xverse.app" target="_blank">Install Xverse →</a>', 'error');
+                return;
+            }
+            try {
+                const provider = window.XverseProviders?.BitcoinProvider || window.BitcoinProvider;
+                const response = await provider.request('getAccounts', {
+                    purposes: ['payment'],
+                    message: 'Spraay Bitcoin Batch Payments'
+                });
+                if (response.result && response.result.length > 0) {
+                    userAddress = response.result[0].address;
+                    connectedWallet = 'xverse';
+                } else {
+                    throw new Error('No payment account returned');
+                }
+            } catch (err) {
+                showStatus('Xverse connection failed: ' + (err.message || err), 'error');
+                return;
+            }
+        }
+
+        // Update UI
+        const shortAddr = userAddress.slice(0, 8) + '...' + userAddress.slice(-6);
+        document.getElementById('walletAddr').textContent = shortAddr;
+        document.getElementById('walletInfo').style.display = 'flex';
+        document.getElementById('walletNote').style.display = 'none';
+        document.getElementById('balanceDisplay').style.display = 'block';
+
+        document.querySelectorAll('.wallet-option').forEach(el => {
+            el.classList.toggle('active', el.textContent.trim().toLowerCase().includes(connectedWallet));
+        });
+
+        const navBtn = document.getElementById('navConnectBtn');
+        navBtn.textContent = shortAddr;
+        navBtn.classList.add('btn-connected');
+
+        // Fetch balance & UTXOs
+        await fetchBalance();
+        updateSummary();
+    }
+
+    function disconnectWallet() {
+        userAddress = null;
+        connectedWallet = null;
+        userUtxos = [];
+        document.getElementById('walletInfo').style.display = 'none';
+        document.getElementById('walletNote').style.display = 'block';
+        document.getElementById('balanceDisplay').style.display = 'none';
+        document.getElementById('balanceValue').textContent = '— BTC';
+        document.querySelectorAll('.wallet-option').forEach(el => el.classList.remove('active'));
+        const navBtn = document.getElementById('navConnectBtn');
+        navBtn.textContent = 'Connect Wallet';
+        navBtn.classList.remove('btn-connected');
+        document.getElementById('sprayBtn').disabled = true;
+    }
+
+    async function fetchBalance() {
+        if (!userAddress) return;
+        try {
+            const res = await fetch(getMempoolBase() + '/address/' + userAddress + '/utxo');
+            userUtxos = await res.json();
+            const totalSats = userUtxos.reduce((sum, u) => sum + u.value, 0);
+            const btcBalance = (totalSats / 1e8).toFixed(8);
+            document.getElementById('balanceValue').textContent = btcBalance + ' BTC (' + totalSats.toLocaleString() + ' sats)';
+        } catch (err) {
+            document.getElementById('balanceValue').textContent = 'Error loading balance';
+            console.error('Balance fetch error:', err);
+        }
+    }
+
+    // ── Recipients ──────────────────────────────
+    function addRecipientRow() {
+        const list = document.getElementById('recipientsList');
+        const count = list.querySelectorAll('.recipient-row').length;
+        if (count >= 50) { showStatus('Maximum 50 recipients per transaction.', 'error'); return; }
+
+        const row = document.createElement('div');
+        row.className = 'recipient-row';
+        row.dataset.id = ++rowCounter;
+
+        const amountSection = isEqualMode ? '' : `
+            <div class="amount-wrap">
+                <input type="text" class="amt-input" placeholder="0.001" oninput="updateSummary()">
+                <span class="amt-suffix">BTC</span>
+            </div>`;
+
+        row.innerHTML = `
+            <input type="text" class="addr-input" placeholder="bc1q..." oninput="validateAddress(this)">
+            ${amountSection}
+            <button class="remove-btn" onclick="this.closest('.recipient-row').remove();updateRecipientCount();updateSummary();">✕</button>
+        `;
+        list.appendChild(row);
+        updateRecipientCount();
+    }
+
+    function updateRecipientCount() {
+        const count = document.querySelectorAll('.recipient-row').length;
+        document.getElementById('recipientCount').textContent = count;
+    }
+
+    function validateAddress(input) {
+        const addr = input.value.trim();
+        if (!addr) { input.classList.remove('valid', 'invalid'); return; }
+
+        // Basic validation patterns
+        const mainnetPatterns = [
+            /^bc1q[a-z0-9]{38,59}$/i,   // Native SegWit (bech32)
+            /^bc1p[a-z0-9]{58}$/i,       // Taproot (bech32m)
+            /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/,  // Legacy / P2SH
+        ];
+        const testnetPatterns = [
+            /^tb1q[a-z0-9]{38,59}$/i,
+            /^tb1p[a-z0-9]{58}$/i,
+            /^[mn2][a-km-zA-HJ-NP-Z1-9]{25,34}$/,
+        ];
+
+        const patterns = currentNetwork === 'mainnet' ? mainnetPatterns : testnetPatterns;
+        const isValid = patterns.some(p => p.test(addr));
+        input.classList.toggle('valid', isValid);
+        input.classList.toggle('invalid', !isValid);
+        updateSummary();
+    }
+
+    function toggleEqualMode() {
+        isEqualMode = document.getElementById('equalToggle').checked;
+        document.getElementById('equalAmountSection').style.display = isEqualMode ? 'block' : 'none';
+
+        // Rebuild rows — remove/add amount inputs
+        const rows = document.querySelectorAll('.recipient-row');
+        rows.forEach(row => {
+            const existingWrap = row.querySelector('.amount-wrap');
+            if (isEqualMode && existingWrap) {
+                existingWrap.remove();
+            } else if (!isEqualMode && !existingWrap) {
+                const wrap = document.createElement('div');
+                wrap.className = 'amount-wrap';
+                wrap.innerHTML = '<input type="text" class="amt-input" placeholder="0.001" oninput="updateSummary()"><span class="amt-suffix">BTC</span>';
+                row.insertBefore(wrap, row.querySelector('.remove-btn'));
+            }
+        });
+        updateSummary();
+    }
+
+    function handleCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.trim().split('\n');
+            // Clear existing rows
+            document.getElementById('recipientsList').innerHTML = '';
+            rowCounter = 0;
+
+            lines.forEach(line => {
+                const parts = line.split(',').map(s => s.trim());
+                if (parts.length >= 1 && parts[0]) {
+                    addRecipientRow();
+                    const rows = document.querySelectorAll('.recipient-row');
+                    const lastRow = rows[rows.length - 1];
+                    lastRow.querySelector('.addr-input').value = parts[0];
+                    validateAddress(lastRow.querySelector('.addr-input'));
+                    if (!isEqualMode && parts.length >= 2 && parts[1]) {
+                        const amtInput = lastRow.querySelector('.amt-input');
+                        if (amtInput) amtInput.value = parts[1];
+                    }
+                }
+            });
+            updateSummary();
+            showStatus('Loaded ' + lines.length + ' recipients from CSV.', 'success');
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    // ── Get Recipients ──────────────────────────
+    // ── Helper: sats to BTC display string ────
+    function satsToBtc(sats) {
+        return (sats / 1e8).toFixed(8) + ' BTC';
+    }
+
+    function getRecipients() {
+        const rows = document.querySelectorAll('.recipient-row');
+        const recipients = [];
+        rows.forEach(row => {
+            const addr = row.querySelector('.addr-input').value.trim();
+            if (!addr || row.querySelector('.addr-input').classList.contains('invalid')) return;
+
+            let sats;
+            if (isEqualMode) {
+                sats = Math.round((parseFloat(document.getElementById('equalAmount').value) || 0) * 1e8);
+            } else {
+                const amtInput = row.querySelector('.amt-input');
+                sats = amtInput ? Math.round((parseFloat(amtInput.value) || 0) * 1e8) : 0;
+            }
+            if (addr && sats > 0) {
+                recipients.push({ address: addr, sats });
+            }
+        });
+        return recipients;
+    }
+
+    // ── Summary ─────────────────────────────────
+    function updateSummary() {
+        const recipients = getRecipients();
+        const totalSats = recipients.reduce((sum, r) => sum + r.sats, 0);
+        const serviceFee = Math.max(Math.ceil(totalSats * FEE_PERCENT), totalSats > 0 ? MIN_FEE_SATS : 0);
+
+        // Estimate network fee
+        const estInputs = Math.max(1, Math.ceil((totalSats + serviceFee) / 50000));
+        const estOutputs = recipients.length + 1 + 1;
+        const estVbytes = (estInputs * 68) + (estOutputs * 31) + 11;
+        const feeRate = feeRates[selectedFee] || 5;
+        const networkFee = Math.ceil(estVbytes * feeRate);
+
+        // Savings: compare batch vs individual
+        const individualVbytes = recipients.length * (68 + 31 + 31 + 11);
+        const individualFee = Math.ceil(individualVbytes * feeRate);
+        const savings = recipients.length > 1 ? Math.max(0, individualFee - networkFee) : 0;
+        const savingsPercent = individualFee > 0 ? Math.round((savings / individualFee) * 100) : 0;
+
+        document.getElementById('summaryRecipients').textContent = recipients.length;
+        document.getElementById('summaryAmount').textContent = satsToBtc(totalSats);
+        document.getElementById('summaryServiceFee').textContent = satsToBtc(serviceFee);
+        document.getElementById('summaryNetworkFee').textContent = '~' + satsToBtc(networkFee);
+        document.getElementById('summarySavings').textContent = savings > 0
+            ? '~' + satsToBtc(savings) + ' (' + savingsPercent + '%)'
+            : '—';
+        document.getElementById('summaryTotal').textContent = satsToBtc(totalSats + serviceFee + networkFee);
+
+        // Enable/disable button
+        const canSend = connectedWallet && recipients.length > 0 && totalSats > 0;
+        document.getElementById('sprayBtn').disabled = !canSend;
+    }
+
+    // ── Spray Flow ──────────────────────────────
+    function handleSprayClick() {
+        const recipients = getRecipients();
+        if (recipients.length === 0) { showStatus('Add at least one valid recipient with an amount.', 'error'); return; }
+        if (recipients.length > 50) { showStatus('Maximum 50 recipients per transaction.', 'error'); return; }
+
+        // Check dust
+        for (const r of recipients) {
+            if (r.sats < DUST_LIMIT) {
+                showStatus('Amount for ' + r.address.slice(0, 10) + '... is below dust limit (0.00000546 BTC).', 'error');
+                return;
+            }
+        }
+
+        // Populate modal
+        const totalSats = recipients.reduce((sum, r) => sum + r.sats, 0);
+        const serviceFee = Math.max(Math.ceil(totalSats * FEE_PERCENT), MIN_FEE_SATS);
+        const estInputs = Math.max(1, Math.ceil((totalSats + serviceFee) / 50000));
+        const estOutputs = recipients.length + 1 + 1;
+        const estVbytes = (estInputs * 68) + (estOutputs * 31) + 11;
+        const networkFee = Math.ceil(estVbytes * (feeRates[selectedFee] || 5));
+
+        document.getElementById('modalRecipients').textContent = recipients.length;
+        document.getElementById('modalAmount').textContent = satsToBtc(totalSats);
+        document.getElementById('modalServiceFee').textContent = satsToBtc(serviceFee);
+        document.getElementById('modalNetworkFee').textContent = '~' + satsToBtc(networkFee);
+        document.getElementById('modalTotal').textContent = satsToBtc(totalSats + serviceFee + networkFee);
+
+        const previewEl = document.getElementById('modalRecipientsList');
+        previewEl.innerHTML = '';
+        recipients.forEach(r => {
+            const shortAddr = r.address.slice(0, 10) + '...' + r.address.slice(-6);
+            previewEl.innerHTML += '<div class="modal-recip-item"><span class="addr">' + shortAddr + '</span><span>' + satsToBtc(r.sats) + '</span></div>';
+        });
+
+        document.getElementById('confirmModal').classList.add('show');
+    }
+
+    function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('show'); }
+    document.getElementById('confirmModal').addEventListener('click', function(e) { if (e.target === this) closeConfirmModal(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeConfirmModal(); });
+
+    async function confirmAndSend() {
+        closeConfirmModal();
+        await executeBatchSend();
+    }
+
+    // ── Core: Build PSBT, Sign, Broadcast ───────
+    async function executeBatchSend() {
+        const recipients = getRecipients();
+        if (recipients.length === 0) return;
+
+        const btn = document.getElementById('sprayBtn');
+        btn.disabled = true; btn.classList.add('loading');
+        btn.textContent = '⏳ Building PSBT...';
+
+        try {
+            // 1. Refresh UTXOs
+            showStatus('Fetching UTXOs...', 'info');
+            const utxoRes = await fetch(getMempoolBase() + '/address/' + userAddress + '/utxo');
+            userUtxos = await utxoRes.json();
+
+            if (userUtxos.length === 0) {
+                showStatus('No UTXOs found for this address.', 'error');
+                return;
+            }
+
+            // 2. Calculate amounts
+            const totalSats = recipients.reduce((sum, r) => sum + r.sats, 0);
+            const serviceFee = Math.max(Math.ceil(totalSats * FEE_PERCENT), MIN_FEE_SATS);
+
+            // 3. Build outputs array
+            const outputs = [];
+            recipients.forEach(r => {
+                outputs.push({ address: r.address, value: r.sats });
+            });
+            // Service fee output
+            outputs.push({ address: getFeeAddress(), value: serviceFee });
+
+            // 4. Coin selection (simple: largest-first)
+            const sortedUtxos = [...userUtxos]
+                .filter(u => u.status && u.status.confirmed)
+                .sort((a, b) => b.value - a.value);
+
+            const selectedInputs = [];
+            let inputTotal = 0;
+            const targetWithBuffer = totalSats + serviceFee + 5000; // buffer for network fee
+
+            for (const utxo of sortedUtxos) {
+                selectedInputs.push(utxo);
+                inputTotal += utxo.value;
+                if (inputTotal >= targetWithBuffer) break;
+            }
+
+            // Estimate network fee
+            const estVbytes = (selectedInputs.length * 68) + ((outputs.length + 1) * 31) + 11;
+            const feeRate = feeRates[selectedFee] || 5;
+            const networkFee = Math.ceil(estVbytes * feeRate);
+
+            const totalNeeded = totalSats + serviceFee + networkFee;
+            if (inputTotal < totalNeeded) {
+                showStatus('Insufficient confirmed balance. Need ' + satsToBtc(totalNeeded) + ', have ' + satsToBtc(inputTotal) + '.', 'error');
+                return;
+            }
+
+            // Change
+            const change = inputTotal - totalNeeded;
+            if (change > DUST_LIMIT) {
+                outputs.push({ address: userAddress, value: change });
+            }
+
+            // 5. Request wallet to create & sign the PSBT
+            btn.textContent = '✍️ Sign in wallet...';
+            showStatus('Confirm the transaction in your wallet...', 'info');
+
+            let txHex;
+
+            if (connectedWallet === 'unisat') {
+                // UniSat: use sendBitcoin for simple sends, or signPsbt for complex
+                // For batch, we'll use the lower-level approach
+                try {
+                    // Try using UniSat's native batch send (if available)
+                    // Otherwise construct PSBT manually
+                    const psbtInputs = selectedInputs.map(utxo => ({
+                        txid: utxo.txid,
+                        vout: utxo.vout,
+                        value: utxo.value,
+                    }));
+
+                    const psbtOutputs = outputs.map(o => ({
+                        address: o.address,
+                        value: o.value,
+                    }));
+
+                    // Use UniSat's signPsbt
+                    const psbtHex = await buildPsbtHex(psbtInputs, psbtOutputs);
+                    const signedPsbtHex = await window.unisat.signPsbt(psbtHex);
+
+                    // Extract tx hex and broadcast
+                    btn.textContent = '📡 Broadcasting...';
+                    showStatus('Broadcasting transaction...', 'info');
+                    txHex = signedPsbtHex; // UniSat returns finalized tx
+
+                    // Push via UniSat
+                    const txid = await window.unisat.pushPsbt(signedPsbtHex);
+                    showSuccess(txid);
+                    return;
+                } catch (unisatErr) {
+                    // Fallback: try direct send approach
+                    console.warn('UniSat PSBT signing failed, trying sendBitcoin fallback:', unisatErr);
+                    showStatus('PSBT signing error: ' + (unisatErr.message || unisatErr) + '. Make sure UniSat is unlocked and on the correct network.', 'error');
+                    return;
+                }
+            } else if (connectedWallet === 'xverse') {
+                try {
+                    const provider = window.XverseProviders?.BitcoinProvider || window.BitcoinProvider;
+
+                    const psbtInputs = selectedInputs.map(utxo => ({
+                        txid: utxo.txid,
+                        vout: utxo.vout,
+                        value: utxo.value,
+                    }));
+                    const psbtOutputs = outputs.map(o => ({
+                        address: o.address,
+                        value: o.value,
+                    }));
+
+                    const psbtHex = await buildPsbtHex(psbtInputs, psbtOutputs);
+
+                    // Xverse sign PSBT
+                    const signResponse = await provider.request('signPsbt', {
+                        psbt: psbtHex,
+                        signInputs: { [userAddress]: selectedInputs.map((_, i) => i) },
+                        broadcast: true,
+                    });
+
+                    if (signResponse.result && signResponse.result.txid) {
+                        showSuccess(signResponse.result.txid);
+                    } else {
+                        showStatus('Transaction signed but txid not returned. Check your wallet for confirmation.', 'info');
+                    }
+                    return;
+                } catch (xverseErr) {
+                    showStatus('Xverse error: ' + (xverseErr.message || xverseErr), 'error');
+                    return;
+                }
+            }
+
+        } catch (err) {
+            console.error('Batch send error:', err);
+            let msg = err.message || 'Transaction failed';
+            if (msg.includes('user rejected') || msg.includes('User denied') || msg.includes('cancel')) {
+                msg = 'Transaction rejected by user.';
+            }
+            if (msg.length > 200) msg = msg.slice(0, 200) + '...';
+            showStatus(msg, 'error');
+        } finally {
+            btn.classList.remove('loading');
+            btn.textContent = '₿ Sign & Broadcast';
+            updateSummary();
+        }
+    }
+
+    // ── Build PSBT Hex (minimal construction) ───
+    // NOTE: In production, this uses bitcoinjs-lib.
+    // For this UI, we construct a minimal unsigned PSBT
+    // that wallets (UniSat/Xverse) can parse and sign.
+    async function buildPsbtHex(inputs, outputs) {
+        // We need to fetch the full previous tx hex for each input
+        // This is required for SegWit signing in PSBTs
+        const inputDetails = [];
+        for (const input of inputs) {
+            try {
+                const txRes = await fetch(getMempoolBase() + '/tx/' + input.txid + '/hex');
+                const txHex = await txRes.text();
+                inputDetails.push({
+                    ...input,
+                    nonWitnessUtxo: txHex,
+                });
+            } catch (err) {
+                console.warn('Failed to fetch tx hex for', input.txid);
+                inputDetails.push(input);
+            }
+        }
+
+        // Construct PSBT using binary format
+        // PSBT v0 format: magic bytes + global map + input maps + output maps
+        const psbt = constructPsbtBinary(inputDetails, outputs);
+        return bytesToHex(psbt);
+    }
+
+    function constructPsbtBinary(inputs, outputs) {
+        const parts = [];
+
+        // Magic: "psbt" + 0xff
+        parts.push(new Uint8Array([0x70, 0x73, 0x62, 0x74, 0xff]));
+
+        // Global map
+        // Key 0x00: unsigned tx
+        const unsignedTx = buildUnsignedTx(inputs, outputs);
+        parts.push(writeKeyValue(0x00, unsignedTx));
+        // End global map
+        parts.push(new Uint8Array([0x00]));
+
+        // Input maps
+        for (const input of inputs) {
+            if (input.nonWitnessUtxo) {
+                // Key 0x00: non-witness UTXO (full tx)
+                const txBytes = hexToBytes(input.nonWitnessUtxo);
+                parts.push(writeKeyValue(0x00, txBytes));
+            }
+            // Witness UTXO for segwit
+            if (input.value) {
+                const witnessUtxo = buildWitnessUtxo(input);
+                parts.push(writeKeyValue(0x01, witnessUtxo));
+            }
+            parts.push(new Uint8Array([0x00])); // end input
+        }
+
+        // Output maps (empty for now — wallet fills in redeem scripts if needed)
+        for (let i = 0; i < outputs.length; i++) {
+            parts.push(new Uint8Array([0x00])); // end output
+        }
+
+        // Concatenate
+        let totalLen = 0;
+        parts.forEach(p => totalLen += p.length);
+        const result = new Uint8Array(totalLen);
+        let offset = 0;
+        parts.forEach(p => { result.set(p, offset); offset += p.length; });
+        return result;
+    }
+
+    function buildUnsignedTx(inputs, outputs) {
+        const parts = [];
+        // Version (2)
+        parts.push(new Uint8Array([0x02, 0x00, 0x00, 0x00]));
+        // Input count
+        parts.push(encodeVarInt(inputs.length));
+        // Inputs
+        for (const input of inputs) {
+            // txid (reversed)
+            const txidBytes = hexToBytes(input.txid).reverse();
+            parts.push(new Uint8Array(txidBytes));
+            // vout (4 bytes LE)
+            parts.push(uint32LE(input.vout));
+            // scriptSig (empty)
+            parts.push(new Uint8Array([0x00]));
+            // sequence
+            parts.push(new Uint8Array([0xfd, 0xff, 0xff, 0xff]));
+        }
+        // Output count
+        parts.push(encodeVarInt(outputs.length));
+        // Outputs
+        for (const output of outputs) {
+            // value (8 bytes LE)
+            parts.push(uint64LE(output.value));
+            // scriptPubKey
+            const scriptPubKey = addressToScriptPubKey(output.address);
+            parts.push(encodeVarInt(scriptPubKey.length));
+            parts.push(scriptPubKey);
+        }
+        // Locktime
+        parts.push(new Uint8Array([0x00, 0x00, 0x00, 0x00]));
+
+        let totalLen = 0;
+        parts.forEach(p => totalLen += p.length);
+        const result = new Uint8Array(totalLen);
+        let offset = 0;
+        parts.forEach(p => { result.set(p, offset); offset += p.length; });
+        return result;
+    }
+
+    function buildWitnessUtxo(input) {
+        // value (8 bytes) + scriptPubKey
+        const parts = [];
+        parts.push(uint64LE(input.value));
+        // Assume our address's scriptPubKey
+        const scriptPubKey = addressToScriptPubKey(userAddress);
+        parts.push(encodeVarInt(scriptPubKey.length));
+        parts.push(scriptPubKey);
+
+        let totalLen = 0;
+        parts.forEach(p => totalLen += p.length);
+        const result = new Uint8Array(totalLen);
+        let offset = 0;
+        parts.forEach(p => { result.set(p, offset); offset += p.length; });
+        return result;
+    }
+
+    // Address to scriptPubKey (supports bech32/bech32m)
+    function addressToScriptPubKey(address) {
+        if (address.startsWith('bc1q') || address.startsWith('tb1q')) {
+            // P2WPKH: OP_0 <20-byte-hash>
+            const decoded = bech32Decode(address);
+            if (decoded) {
+                const prog = decoded.program;
+                const script = new Uint8Array(2 + prog.length);
+                script[0] = 0x00; // OP_0
+                script[1] = prog.length;
+                script.set(prog, 2);
+                return script;
+            }
+        }
+        if (address.startsWith('bc1p') || address.startsWith('tb1p')) {
+            // P2TR: OP_1 <32-byte-key>
+            const decoded = bech32Decode(address);
+            if (decoded) {
+                const prog = decoded.program;
+                const script = new Uint8Array(2 + prog.length);
+                script[0] = 0x51; // OP_1
+                script[1] = prog.length;
+                script.set(prog, 2);
+                return script;
+            }
+        }
+        // Legacy P2PKH (1...)
+        if (address.startsWith('1') || address.startsWith('m') || address.startsWith('n')) {
+            const decoded = base58Decode(address);
+            if (decoded) {
+                // OP_DUP OP_HASH160 <20 bytes> OP_EQUALVERIFY OP_CHECKSIG
+                const hash = decoded.slice(1, 21);
+                const script = new Uint8Array(25);
+                script[0] = 0x76; script[1] = 0xa9; script[2] = 0x14;
+                script.set(hash, 3);
+                script[23] = 0x88; script[24] = 0xac;
+                return script;
+            }
+        }
+        // P2SH (3... / 2...)
+        if (address.startsWith('3') || address.startsWith('2')) {
+            const decoded = base58Decode(address);
+            if (decoded) {
+                const hash = decoded.slice(1, 21);
+                const script = new Uint8Array(23);
+                script[0] = 0xa9; script[1] = 0x14;
+                script.set(hash, 2);
+                script[22] = 0x87;
+                return script;
+            }
+        }
+        // Fallback: empty
+        console.error('Unsupported address format:', address);
+        return new Uint8Array([0x00]);
+    }
+
+    // ── Bech32 Decode ───────────────────────────
+    const BECH32_CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+    function bech32Decode(str) {
+        str = str.toLowerCase();
+        const pos = str.lastIndexOf('1');
+        if (pos < 1) return null;
+        const hrp = str.slice(0, pos);
+        const dataStr = str.slice(pos + 1);
+        const data = [];
+        for (let i = 0; i < dataStr.length; i++) {
+            const idx = BECH32_CHARSET.indexOf(dataStr[i]);
+            if (idx === -1) return null;
+            data.push(idx);
+        }
+        // Remove checksum (last 6)
+        const payload = data.slice(0, -6);
+        const witnessVersion = payload[0];
+        const groups = payload.slice(1);
+        // Convert 5-bit groups to 8-bit
+        const program = convertBits(groups, 5, 8, false);
+        if (!program) return null;
+        return { hrp, witnessVersion, program: new Uint8Array(program) };
+    }
+
+    function convertBits(data, fromBits, toBits, pad) {
+        let acc = 0, bits = 0;
+        const result = [];
+        const maxv = (1 << toBits) - 1;
+        for (const value of data) {
+            if (value < 0 || value >> fromBits) return null;
+            acc = (acc << fromBits) | value;
+            bits += fromBits;
+            while (bits >= toBits) {
+                bits -= toBits;
+                result.push((acc >> bits) & maxv);
+            }
+        }
+        if (pad) {
+            if (bits > 0) result.push((acc << (toBits - bits)) & maxv);
+        } else if (bits >= fromBits || ((acc << (toBits - bits)) & maxv)) {
+            // invalid
+        }
+        return result;
+    }
+
+    // ── Base58 Decode ───────────────────────────
+    const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    function base58Decode(str) {
+        let result = BigInt(0);
+        for (const char of str) {
+            const idx = BASE58_ALPHABET.indexOf(char);
+            if (idx === -1) return null;
+            result = result * BigInt(58) + BigInt(idx);
+        }
+        let hex = result.toString(16);
+        if (hex.length % 2) hex = '0' + hex;
+        // Add leading zeros
+        let leadingZeros = 0;
+        for (const char of str) {
+            if (char === '1') leadingZeros++;
+            else break;
+        }
+        const bytes = new Uint8Array(leadingZeros + hex.length / 2);
+        for (let i = 0; i < hex.length; i += 2) {
+            bytes[leadingZeros + i / 2] = parseInt(hex.substr(i, 2), 16);
+        }
+        // Strip 4-byte checksum
+        return bytes.slice(0, -4);
+    }
+
+    // ── Binary Helpers ──────────────────────────
+    function writeKeyValue(keyType, value) {
+        const keyLen = encodeVarInt(1);
+        const key = new Uint8Array([keyType]);
+        const valLen = encodeVarInt(value.length);
+        const result = new Uint8Array(keyLen.length + key.length + valLen.length + value.length);
+        let offset = 0;
+        result.set(keyLen, offset); offset += keyLen.length;
+        result.set(key, offset); offset += key.length;
+        result.set(valLen, offset); offset += valLen.length;
+        result.set(value, offset);
+        return result;
+    }
+
+    function encodeVarInt(n) {
+        if (n < 0xfd) return new Uint8Array([n]);
+        if (n <= 0xffff) return new Uint8Array([0xfd, n & 0xff, (n >> 8) & 0xff]);
+        return new Uint8Array([0xfe, n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, (n >> 24) & 0xff]);
+    }
+
+    function uint32LE(n) {
+        return new Uint8Array([n & 0xff, (n >> 8) & 0xff, (n >> 16) & 0xff, (n >> 24) & 0xff]);
+    }
+
+    function uint64LE(n) {
+        const buf = new Uint8Array(8);
+        let val = n;
+        for (let i = 0; i < 8; i++) {
+            buf[i] = val & 0xff;
+            val = Math.floor(val / 256);
+        }
+        return buf;
+    }
+
+    function hexToBytes(hex) {
+        const bytes = new Uint8Array(hex.length / 2);
+        for (let i = 0; i < hex.length; i += 2) {
+            bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+        }
+        return bytes;
+    }
+
+    function bytesToHex(bytes) {
+        return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // ── Success Display ─────────────────────────
+    function showSuccess(txid) {
+        const recipients = getRecipients();
+        const totalSats = recipients.reduce((sum, r) => sum + r.sats, 0);
+        const btcAmount = (totalSats / 1e8).toFixed(8);
+        const link = getMempoolUrl() + '/tx/' + txid;
+        showStatus(
+            '✅ Batch sent ' + btcAmount + ' BTC to ' + recipients.length + ' recipients! ' +
+            '<a href="' + link + '" target="_blank">View on mempool.space →</a>',
+            'success'
+        );
+        fetchBalance();
+    }
+
+    function showStatus(msg, type) {
+        const el = document.getElementById('statusMsg');
+        el.innerHTML = msg;
+        el.className = 'status-msg show ' + type;
+    }
+    </script>
+</body>
+</html>
