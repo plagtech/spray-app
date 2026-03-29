@@ -1072,12 +1072,12 @@
     const EXPLORER_NAME = "Snowtrace";
 
     const SPRAY_ABI = [
-        "function sprayETH(tuple(address recipient, uint256 amount)[] recipients) payable",
-        "function sprayToken(address token, tuple(address recipient, uint256 amount)[] recipients)",
-        "function sprayEqual(address token, address[] recipients, uint256 amountPerRecipient) payable",
-        "function calculateFee(uint256 amount) view returns (uint256)",
-        "function calculateTotalCost(uint256 totalAmount) view returns (uint256)",
-        "function feeBps() view returns (uint256)"
+        "function batchSendETH(address payable[] recipients, uint256 amountPerRecipient) payable",
+        "function batchSendETHVariable((address recipient, uint256 amount)[] recipients) payable",
+        "function batchSendToken(address token, address[] recipients, uint256 amountPerRecipient)",
+        "function batchSendTokenVariable(address token, address[] recipients, uint256[] amounts)",
+        "function feeBps() view returns (uint256)",
+        "function feeRecipient() view returns (address)"
     ];
 
     const ERC20_ABI = [
@@ -1417,7 +1417,7 @@
             const fee = totalAmount.mul(30).div(10000);
             const totalCost = totalAmount.add(fee);
             showStatus('Confirm the transaction in your wallet...', 'info');
-            const tx = await contract.sprayEqual(ethers.constants.AddressZero, addresses, amountPerRecipient, { value: totalCost });
+            const tx = await contract.batchSendETH(addresses, amountPerRecipient, { value: totalCost });
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
             const receipt = await tx.wait();
             showStatus(`Sprayed ${NATIVE_SYMBOL} to ${addresses.length} recipients! <a href="${EXPLORER_URL}/tx/${receipt.transactionHash}" target="_blank">View on ${EXPLORER_NAME} →</a>`, 'success');
@@ -1428,7 +1428,7 @@
             const fee = totalAmount.mul(30).div(10000);
             const totalCost = totalAmount.add(fee);
             showStatus('Confirm the transaction in your wallet...', 'info');
-            const tx = await contract.sprayETH(tuples, { value: totalCost });
+            const tx = await contract.batchSendETHVariable(tuples, { value: totalCost });
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
             const receipt = await tx.wait();
             showStatus(`Sprayed ${NATIVE_SYMBOL} to ${tuples.length} recipients! <a href="${EXPLORER_URL}/tx/${receipt.transactionHash}" target="_blank">View on ${EXPLORER_NAME} →</a>`, 'success');
@@ -1449,23 +1449,24 @@
             const allowance = await tokenContract.allowance(userAddress, SPRAY_CONTRACT);
             if (allowance.lt(totalNeeded)) { showStatus('Approving token spend... Confirm in your wallet.', 'info'); const appTx = await tokenContract.approve(SPRAY_CONTRACT, totalNeeded); await appTx.wait(); }
             showStatus('Confirm the spray transaction in your wallet...', 'info');
-            const tx = await contract.sprayEqual(tokenAddr, addresses, amountPerRecipient);
+            const tx = await contract.batchSendToken(tokenAddr, addresses, amountPerRecipient);
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
             const receipt = await tx.wait();
             showStatus(`Sprayed tokens to ${addresses.length} recipients! <a href="${EXPLORER_URL}/tx/${receipt.transactionHash}" target="_blank">View on ${EXPLORER_NAME} →</a>`, 'success');
         } else {
-            const tuples = recipients.map(r => ({ recipient: r.address, amount: ethers.utils.parseUnits(r.amount, decimals) }));
+            const addresses = recipients.map(r => r.address);
+            const amounts = recipients.map(r => ethers.utils.parseUnits(r.amount, decimals));
             let totalAmount = ethers.BigNumber.from(0);
-            for (const r of tuples) totalAmount = totalAmount.add(r.amount);
+            for (const a of amounts) totalAmount = totalAmount.add(a);
             const fee = totalAmount.mul(30).div(10000);
             const totalNeeded = totalAmount.add(fee);
             const allowance = await tokenContract.allowance(userAddress, SPRAY_CONTRACT);
             if (allowance.lt(totalNeeded)) { showStatus('Approving token spend... Confirm in your wallet.', 'info'); const appTx = await tokenContract.approve(SPRAY_CONTRACT, totalNeeded); await appTx.wait(); }
             showStatus('Confirm the spray transaction in your wallet...', 'info');
-            const tx = await contract.sprayToken(tokenAddr, tuples);
+            const tx = await contract.batchSendTokenVariable(tokenAddr, addresses, amounts);
             showStatus('Transaction submitted! Waiting for confirmation...', 'info');
             const receipt = await tx.wait();
-            showStatus(`Sprayed tokens to ${tuples.length} recipients! <a href="${EXPLORER_URL}/tx/${receipt.transactionHash}" target="_blank">View on ${EXPLORER_NAME} →</a>`, 'success');
+            showStatus(`Sprayed tokens to ${addresses.length} recipients! <a href="${EXPLORER_URL}/tx/${receipt.transactionHash}" target="_blank">View on ${EXPLORER_NAME} →</a>`, 'success');
         }
     }
 
