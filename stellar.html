@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spraay – Stellar XLM Batch Payments</title>
+    <meta name="description" content="Pay multiple Stellar recipients in a single transaction. Native multi-op batching. Non-custodial XLM batch payments.">
+    <meta property="og:title" content="Spraay – Stellar Batch Payments">
+    <meta property="og:description" content="Send XLM to 99 recipients in a single transaction. Non-custodial. ~5 second finality.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stellar.spraay.app">
+    <meta property="og:image" content="https://spraay.app/spraay-og-square.png">
+    <meta name="twitter:image" content="https://spraay.app/spraay-og-square.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:creator" content="@spraay_app">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --xlm-blue: #3E68FF;
+            --xlm-blue-deep: #1B3BA8;
+            --xlm-blue-bright: #5B82FF;
+            --xlm-blue-glow: rgba(62, 104, 255, 0.10);
+            --xlm-blue-dim: rgba(62, 104, 255, 0.08);
+            --xlm-blue-border: rgba(62, 104, 255, 0.30);
+            --bg: #FAFAF8;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #F5F7FF;
+            --bg-inset: #F3F1EE;
+            --text: #1A1A18;
+            --text-dim: #6B6960;
+            --text-muted: #9E9A90;
+            --border: rgba(26, 26, 24, 0.10);
+            --border-bright: rgba(62, 104, 255, 0.35);
+            --green: #16a34a;
+            --green-bg: rgba(22, 163, 74, 0.08);
+            --green-border: rgba(22, 163, 74, 0.25);
+            --yellow: #b45309;
+            --yellow-bg: rgba(180, 83, 9, 0.08);
+            --yellow-border: rgba(180, 83, 9, 0.25);
+            --red: #dc2626;
+            --red-bg: rgba(220, 38, 38, 0.06);
+            --red-border: rgba(220, 38, 38, 0.20);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        code, .mono { font-family: 'Space Mono', monospace; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        html { scroll-behavior: smooth; }
+
+        /* ── Nav ─────────────────────────────────────── */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            background: rgba(250,250,248,0.92); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo {
+            font-weight: 800; font-size: 1.4rem; letter-spacing: 0.08em;
+            background: linear-gradient(135deg, var(--xlm-blue), var(--xlm-blue-deep));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+        .nav-links { display: flex; gap: 1.2rem; align-items: center; }
+        .nav-links a {
+            color: var(--text-dim); text-decoration: none; font-size: 0.9rem;
+            font-weight: 500; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+
+        /* ── Chain Dropdown ────────────── */
+        .chain-dropdown { position: relative; }
+        .chain-dropdown-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--bg-card); border: 1px solid var(--xlm-blue-border);
+            border-radius: 8px; padding: 0.45rem 0.9rem;
+            color: var(--text); font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; font-family: inherit;
+            transition: all 0.2s; box-shadow: var(--shadow-sm);
+        }
+        .chain-dropdown-btn:hover { border-color: var(--xlm-blue); background: var(--bg-card-hover); }
+        .chain-dropdown-btn .chain-icon { font-size: 1rem; }
+        .chain-dropdown-btn .chevron { font-size: 0.6rem; color: var(--text-muted); transition: transform 0.2s; }
+        .chain-dropdown.open .chain-dropdown-btn { border-color: var(--xlm-blue); }
+        .chain-dropdown.open .chevron { transform: rotate(180deg); }
+        .chain-dropdown-menu {
+            position: absolute; top: calc(100% + 6px); right: 0;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 0.4rem; min-width: 200px;
+            display: none; box-shadow: var(--shadow-lg); z-index: 200;
+        }
+        .chain-dropdown.open .chain-dropdown-menu { display: block; }
+        .chain-dropdown-menu a {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.55rem 0.8rem; border-radius: 8px;
+            color: var(--text-dim); text-decoration: none;
+            font-size: 0.85rem; font-weight: 500; transition: all 0.15s;
+        }
+        .chain-dropdown-menu a:hover { background: var(--xlm-blue-glow); color: var(--text); }
+        .chain-dropdown-menu a.current { background: var(--xlm-blue-glow); color: var(--xlm-blue); font-weight: 600; }
+        .chain-dropdown-menu .chain-item-icon { font-size: 1rem; width: 20px; text-align: center; }
+        .chain-dropdown-menu .chain-item-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 4px rgba(22,163,74,0.5);
+            margin-left: auto; flex-shrink: 0;
+        }
+
+        /* Hamburger */
+        .hamburger-btn {
+            display: none; width: 40px; height: 40px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; cursor: pointer;
+            align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .hamburger-btn span {
+            display: block; width: 18px; height: 2px;
+            background: var(--text); border-radius: 1px; position: relative;
+        }
+        .hamburger-btn span::before, .hamburger-btn span::after {
+            content: ''; position: absolute; left: 0;
+            width: 18px; height: 2px; background: var(--text); border-radius: 1px;
+        }
+        .hamburger-btn span::before { top: -6px; }
+        .hamburger-btn span::after { top: 6px; }
+
+        /* Mobile Panel */
+        .mobile-panel-overlay {
+            display: none; position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3); z-index: 999;
+        }
+        .mobile-panel-overlay.open { display: block; }
+        .mobile-panel {
+            position: fixed; top: 0; right: 0; bottom: 0;
+            width: 280px; max-width: 80vw;
+            background: var(--bg-card); border-left: 1px solid var(--border);
+            z-index: 1000; transform: translateX(100%);
+            transition: transform 0.25s ease;
+            overflow-y: auto; display: flex; flex-direction: column;
+            box-shadow: var(--shadow-lg);
+        }
+        .mobile-panel.open { transform: translateX(0); }
+        .mobile-panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.2rem 1.2rem 0.8rem; border-bottom: 1px solid var(--border);
+        }
+        .mobile-panel-header .panel-title { font-weight: 700; font-size: 1rem; color: var(--text); }
+        .mobile-panel-close {
+            width: 36px; height: 36px; border-radius: 8px;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-dim); font-size: 1.2rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .mobile-panel-section { padding: 0.8rem 0.6rem; }
+        .mobile-panel-section-label {
+            font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-muted);
+            font-weight: 600; padding: 0.4rem 0.6rem;
+        }
+        .mobile-panel a {
+            display: flex; align-items: center; gap: 0.7rem;
+            padding: 0.85rem 0.8rem; border-radius: 10px;
+            color: var(--text-dim); text-decoration: none;
+            font-size: 0.95rem; font-weight: 500; min-height: 48px;
+        }
+        .mobile-panel a:active { background: var(--xlm-blue-glow); }
+        .mobile-panel a.current { background: var(--xlm-blue-glow); color: var(--xlm-blue); font-weight: 600; }
+        .mobile-panel .mp-icon { font-size: 1.1rem; width: 24px; text-align: center; }
+        .mobile-panel .mp-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 4px rgba(22,163,74,0.5);
+            margin-left: auto; flex-shrink: 0;
+        }
+        .mobile-panel-divider { height: 1px; background: var(--border); margin: 0.4rem 0.6rem; }
+        .mobile-panel-footer {
+            margin-top: auto; padding: 1rem 1.2rem;
+            border-top: 1px solid var(--border);
+        }
+        .mobile-panel-footer a { min-height: 40px; font-size: 0.85rem; color: var(--text-muted); padding: 0.5rem 0.8rem; }
+
+        /* ── Buttons ────────────────────────────────── */
+        .btn {
+            display: inline-block; padding: 0.55rem 1.4rem; border-radius: 8px;
+            font-weight: 600; font-size: 0.9rem; text-decoration: none;
+            transition: all 0.25s ease; cursor: pointer; border: none;
+            font-family: 'Outfit', sans-serif;
+        }
+        .btn-primary {
+            background: var(--xlm-blue); color: #fff;
+            border: 1px solid var(--xlm-blue-bright);
+            box-shadow: 0 2px 8px rgba(62, 104, 255, 0.20);
+        }
+        .btn-primary:hover { background: var(--xlm-blue-bright); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(62, 104, 255, 0.25); }
+        .btn-outline {
+            background: transparent; color: var(--xlm-blue);
+            border: 1px solid var(--xlm-blue-border);
+        }
+        .btn-outline:hover { background: var(--xlm-blue-glow); }
+        .btn-connect {
+            background: linear-gradient(135deg, var(--xlm-blue), var(--xlm-blue-deep));
+            color: #fff; border: 1px solid var(--xlm-blue-border);
+            padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: 600;
+            font-size: 0.85rem; cursor: pointer; font-family: 'Outfit', sans-serif;
+            transition: all 0.25s ease; box-shadow: 0 2px 8px rgba(62,104,255,0.20);
+        }
+        .btn-connect:hover { background: linear-gradient(135deg, var(--xlm-blue-bright), var(--xlm-blue)); }
+        .btn-connected {
+            background: var(--xlm-blue-dim); border: 1px solid var(--xlm-blue-border);
+            color: var(--xlm-blue); cursor: pointer; box-shadow: none;
+        }
+
+        /* ── Hero ──────────────────────────────────── */
+        .hero {
+            padding: 10rem 0 5rem; text-align: center;
+            background: radial-gradient(ellipse at 50% 0%, rgba(62,104,255,0.06) 0%, transparent 60%);
+            position: relative;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; top: 60px; left: 0; right: 0; bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233E68FF' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: var(--xlm-blue-dim); border: 1px solid var(--xlm-blue-border);
+            border-radius: 20px; padding: 0.4rem 1rem;
+            font-size: 0.82rem; font-weight: 600; color: var(--xlm-blue);
+            margin-bottom: 1.5rem; box-shadow: var(--shadow-sm);
+        }
+        .hero-badge .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--xlm-blue);
+            box-shadow: 0 0 6px rgba(62,104,255,0.6);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .hero h1 {
+            font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800;
+            line-height: 1.15; margin-bottom: 1.2rem; position: relative;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--xlm-blue), var(--xlm-blue-bright));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero p { color: var(--text-dim); font-size: 1.15rem; max-width: 580px; margin: 0 auto 2rem; position: relative; }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; position: relative; }
+        .hero-stats {
+            display: flex; gap: 3rem; justify-content: center; margin-top: 3.5rem;
+            flex-wrap: wrap; position: relative;
+        }
+        .stat { text-align: center; }
+        .stat-value {
+            font-size: 2rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--xlm-blue), var(--xlm-blue-bright));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+        /* ── Integrations Banner ─────────────────── */
+        .integrations {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+        .integrations-inner {
+            display: flex; align-items: center; justify-content: center;
+            gap: 2rem; flex-wrap: wrap;
+        }
+        .integrations-label {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--text-muted); font-weight: 600;
+        }
+        .integration-badge {
+            display: flex; align-items: center; gap: 0.6rem;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 10px; padding: 0.6rem 1.2rem;
+            font-weight: 600; font-size: 0.9rem; color: var(--text);
+            box-shadow: var(--shadow-sm);
+        }
+        .integration-badge .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 6px rgba(22,163,74,0.5);
+        }
+        .tag { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .tag-live { background: var(--green-bg); color: var(--green); }
+        .tag-x402 { background: var(--xlm-blue-dim); color: var(--xlm-blue); }
+
+        /* ═══════════════════════════════════════════
+           APP SECTION
+           ═══════════════════════════════════════════ */
+        .app-section {
+            padding: 5rem 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(62,104,255,0.04) 0%, transparent 50%);
+            border-bottom: 1px solid var(--border);
+        }
+        .app-container { max-width: 720px; margin: 0 auto; }
+        .app-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            box-shadow: var(--shadow-md);
+        }
+        .app-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--xlm-blue), transparent);
+        }
+        .app-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .app-header h2 { font-size: 1.3rem; font-weight: 700; }
+        .wallet-info { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-dim); }
+        .wallet-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(22,163,74,0.5); }
+        .chain-indicator {
+            font-size: 0.7rem; background: var(--xlm-blue-dim);
+            color: var(--xlm-blue); padding: 0.15rem 0.5rem;
+            border-radius: 4px; font-weight: 700;
+        }
+
+        /* Wallet Selector */
+        .wallet-selector { margin-bottom: 1.5rem; }
+        .wallet-selector-label {
+            font-size: 0.82rem; font-weight: 600; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; display: block;
+        }
+        .wallet-options { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+        .wallet-option {
+            flex: 1; min-width: 140px; padding: 0.8rem 1rem; border-radius: 10px;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.2s; text-align: center;
+            font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.88rem;
+            color: var(--text-dim); display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .wallet-option:hover { border-color: var(--xlm-blue-border); background: var(--bg-card-hover); }
+        .wallet-option.active { border-color: var(--xlm-blue); background: var(--xlm-blue-dim); color: var(--xlm-blue); }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 1.2rem; }
+        .form-label {
+            display: block; font-size: 0.82rem; font-weight: 600;
+            color: var(--text-dim); margin-bottom: 0.4rem;
+            text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        .form-input {
+            width: 100%; padding: 0.75rem 1rem;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text);
+            font-family: 'Outfit', sans-serif; font-size: 0.95rem;
+            transition: border-color 0.2s; outline: none;
+        }
+        .form-input:focus { border-color: var(--xlm-blue-border); }
+
+        /* ── Recipient Rows ──────────────────────── */
+        .recipients-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.8rem; }
+        .recipient-row {
+            display: grid; grid-template-columns: 1fr 160px 32px; gap: 0.6rem;
+            align-items: center;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+        .recipient-row .addr-input {
+            padding: 0.65rem 0.8rem;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text);
+            font-family: 'Space Mono', monospace; font-size: 0.78rem;
+            outline: none; transition: border-color 0.2s; min-width: 0;
+        }
+        .recipient-row .addr-input:focus { border-color: var(--xlm-blue-border); }
+        .recipient-row .addr-input::placeholder { color: var(--text-muted); font-family: 'Space Mono', monospace; }
+        .recipient-row .addr-input.invalid { border-color: var(--red); background: var(--red-bg); }
+        .recipient-row .addr-input.valid { border-color: var(--green-border); }
+
+        .amount-wrap {
+            position: relative; display: flex; align-items: center;
+        }
+        .amount-wrap .amt-input {
+            width: 100%; padding: 0.65rem 0.8rem; padding-right: 3.2rem;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text);
+            font-family: 'Space Mono', monospace; font-size: 0.82rem;
+            outline: none; transition: border-color 0.2s;
+        }
+        .amount-wrap .amt-input:focus { border-color: var(--xlm-blue-border); }
+        .amount-wrap .amt-input::placeholder { color: var(--text-muted); }
+        .amount-wrap .amt-suffix {
+            position: absolute; right: 0.8rem; font-size: 0.7rem;
+            color: var(--text-muted); font-weight: 600; pointer-events: none;
+        }
+
+        .remove-btn {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-muted); cursor: pointer; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .remove-btn:hover { background: var(--xlm-blue-glow); border-color: var(--xlm-blue-border); color: var(--xlm-blue); }
+
+        .add-recipient-btn {
+            width: 100%; padding: 0.6rem; border-radius: 8px;
+            background: transparent; border: 1px dashed var(--border);
+            color: var(--text-dim); cursor: pointer; font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif; font-weight: 600;
+            transition: all 0.2s; margin-bottom: 1rem;
+        }
+        .add-recipient-btn:hover { border-color: var(--xlm-blue-border); color: var(--xlm-blue); background: var(--xlm-blue-glow); }
+        .recipient-count-badge { font-size: 0.72rem; color: var(--text-muted); }
+        .recipient-count-badge strong { color: var(--text-dim); }
+
+        .csv-upload {
+            border: 1px dashed var(--border); border-radius: 6px;
+            padding: 0.5rem 0.8rem; text-align: center; cursor: pointer;
+            transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem;
+        }
+        .csv-upload:hover { border-color: var(--xlm-blue-border); background: var(--xlm-blue-glow); }
+        .csv-upload-text { font-size: 0.75rem; color: var(--text-muted); }
+        .csv-upload input[type="file"] { display: none; }
+
+        /* Equal Amount Toggle */
+        .equal-toggle {
+            display: flex; align-items: center; gap: 0.6rem;
+            margin-bottom: 1.2rem; cursor: pointer;
+        }
+        .equal-toggle input { display: none; }
+        .toggle-track {
+            width: 40px; height: 22px; border-radius: 11px;
+            background: var(--border); position: relative;
+            transition: background 0.2s; flex-shrink: 0;
+        }
+        .toggle-track::after {
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--text-muted); transition: all 0.2s;
+        }
+        .equal-toggle input:checked + .toggle-track { background: linear-gradient(135deg, var(--xlm-blue), var(--xlm-blue-deep)); }
+        .equal-toggle input:checked + .toggle-track::after { left: 21px; background: #fff; }
+        .toggle-label { font-size: 0.85rem; color: var(--text-dim); font-weight: 500; }
+
+        /* Summary Card */
+        .summary-card {
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1.2rem; margin: 1.2rem 0;
+        }
+        .summary-row {
+            display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0;
+        }
+        .summary-row:not(:last-child) { border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .summary-label { font-size: 0.85rem; color: var(--text-dim); }
+        .summary-value { font-size: 0.85rem; font-weight: 600; font-family: 'Space Mono', monospace; }
+        .summary-total .summary-label { color: var(--text); font-weight: 600; }
+        .summary-total .summary-value { color: var(--xlm-blue); font-size: 1rem; }
+
+        /* Spray Button */
+        .spray-btn {
+            width: 100%; padding: 1rem; border-radius: 12px;
+            font-size: 1.05rem; font-weight: 700; cursor: pointer;
+            background: linear-gradient(135deg, var(--xlm-blue), var(--xlm-blue-deep));
+            color: #fff; border: 1px solid var(--xlm-blue-border);
+            font-family: 'Outfit', sans-serif; transition: all 0.25s;
+            box-shadow: 0 4px 16px rgba(62,104,255,0.25);
+        }
+        .spray-btn:hover:not(:disabled) { background: linear-gradient(135deg, var(--xlm-blue-bright), var(--xlm-blue)); box-shadow: 0 6px 24px rgba(62,104,255,0.30); transform: translateY(-1px); }
+        .spray-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+        .spray-btn.loading { pointer-events: none; opacity: 0.7; }
+
+        .wallet-note {
+            text-align: center; margin-top: 0.6rem;
+            font-size: 0.78rem; color: var(--text-muted);
+        }
+        .wallet-note a { color: var(--xlm-blue); cursor: pointer; text-decoration: none; }
+        .wallet-note a:hover { text-decoration: underline; }
+
+        /* Status Messages */
+        .status-msg {
+            padding: 0.8rem 1rem; border-radius: 10px;
+            font-size: 0.85rem; margin-top: 1rem; display: none;
+        }
+        .status-msg.show { display: block; }
+        .status-msg.success { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green); }
+        .status-msg.error { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red); }
+        .status-msg.info { background: var(--yellow-bg); border: 1px solid var(--yellow-border); color: var(--yellow); }
+        .status-msg a { color: inherit; text-decoration: underline; }
+
+        /* ── Confirmation Modal ─────────────────── */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
+            z-index: 1000; display: none;
+            align-items: center; justify-content: center; padding: 1rem;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-card); border: 1px solid var(--xlm-blue-border);
+            border-radius: 16px; padding: 2rem; max-width: 520px; width: 100%;
+            position: relative; animation: modalIn 0.2s ease;
+            box-shadow: var(--shadow-lg);
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .modal::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--xlm-blue), transparent);
+        }
+        .modal h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; text-align: center; }
+        .modal-summary {
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem; margin-bottom: 1rem;
+        }
+        .modal-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.35rem 0; font-size: 0.88rem;
+        }
+        .modal-row:not(:last-child) { border-bottom: 1px solid rgba(0,0,0,0.04); }
+        .modal-row .label { color: var(--text-dim); }
+        .modal-row .value { font-weight: 600; font-family: 'Space Mono', monospace; }
+        .modal-row.total .label { color: var(--text); font-weight: 600; }
+        .modal-row.total .value { color: var(--xlm-blue); font-size: 1.05rem; }
+        .modal-recipients-preview {
+            max-height: 140px; overflow-y: auto; margin-bottom: 1rem;
+            background: var(--bg-inset); border: 1px solid var(--border);
+            border-radius: 8px; padding: 0.6rem 0.8rem;
+        }
+        .modal-recipients-preview::-webkit-scrollbar { width: 4px; }
+        .modal-recipients-preview::-webkit-scrollbar-thumb { background: var(--xlm-blue-border); border-radius: 4px; }
+        .modal-recip-item {
+            display: flex; justify-content: space-between;
+            font-size: 0.75rem; padding: 0.2rem 0;
+            font-family: 'Space Mono', monospace; color: var(--text-dim);
+        }
+        .modal-recip-item .addr { color: var(--text); }
+        .modal-buttons { display: flex; gap: 0.8rem; margin-top: 1rem; }
+        .modal-buttons button { flex: 1; padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.2s; }
+        .modal-cancel { background: var(--bg-inset); border: 1px solid var(--border); color: var(--text-dim); }
+        .modal-cancel:hover { border-color: var(--xlm-blue-border); color: var(--text); }
+        .modal-confirm { background: linear-gradient(135deg, var(--xlm-blue), var(--xlm-blue-deep)); border: 1px solid var(--xlm-blue-border); color: #fff; }
+        .modal-confirm:hover { background: linear-gradient(135deg, var(--xlm-blue-bright), var(--xlm-blue)); box-shadow: 0 4px 16px rgba(62,104,255,0.25); }
+        .modal-warning { font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.6rem; }
+
+        /* ── Landing Page Sections ────────────── */
+        .section-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .section-subtitle { color: var(--text-dim); margin-bottom: 3rem; }
+
+        .features { padding: 5rem 0; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
+        .feature-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.8rem; transition: all 0.25s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        .feature-card:hover { border-color: var(--xlm-blue-border); background: var(--bg-card-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .feature-icon { font-size: 1.6rem; margin-bottom: 0.8rem; }
+        .feature-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .feature-card p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; }
+
+        .how-it-works { padding: 5rem 0; }
+        .steps { display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; }
+        .step { flex: 1; min-width: 220px; max-width: 300px; text-align: center; }
+        .step-num {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--xlm-blue-dim); color: var(--xlm-blue); font-weight: 700;
+            font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem; border: 2px solid var(--xlm-blue-border);
+        }
+        .step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .step p { font-size: 0.85rem; color: var(--text-dim); }
+
+        .contract-section { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); }
+        .contract-address {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem 1.5rem; display: inline-block; margin-top: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .contract-address code { font-size: 0.85rem; color: var(--xlm-blue); word-break: break-all; }
+
+        .cta {
+            padding: 5rem 0; text-align: center;
+            background: radial-gradient(ellipse at 50% 100%, rgba(62,104,255,0.05) 0%, transparent 60%);
+        }
+        .cta h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.8rem; }
+        .cta p { color: var(--text-dim); margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+        footer { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+        .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--text); }
+        .footer-copy { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* ── Responsive ──────────────────────────── */
+        @media (max-width: 640px) {
+            .hero { padding: 8rem 0 3rem; }
+            .hero-stats { gap: 2rem; }
+            .integrations-inner { flex-direction: column; gap: 1rem; }
+            .nav-links a:not(.btn):not(.btn-connect):not(.btn-connected) { display: none; }
+            .chain-dropdown { display: none; }
+            .hamburger-btn { display: flex; }
+            .app-card { padding: 1.2rem; }
+            .recipient-row { grid-template-columns: 1fr; }
+            .wallet-options { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav>
+        <div class="container nav-inner">
+            <a href="https://spraay.app" class="logo">SPRAAY</a>
+            <div class="nav-links">
+                <div class="chain-dropdown" id="chainDropdown">
+                    <button class="chain-dropdown-btn" onclick="toggleChainDropdown(event)">
+                        <span class="chain-icon">✦</span>
+                        <span>Stellar</span>
+                        <span class="chevron">▼</span>
+                    </button>
+                    <div class="chain-dropdown-menu">
+                        <a href="/"><span class="chain-item-icon">🔵</span> Base <span class="chain-item-dot"></span></a>
+                        <a href="/ethereum"><span class="chain-item-icon">⟠</span> Ethereum <span class="chain-item-dot"></span></a>
+                        <a href="/arbitrum"><span class="chain-item-icon">⬡</span> Arbitrum <span class="chain-item-dot"></span></a>
+                        <a href="/polygon"><span class="chain-item-icon">🟣</span> Polygon <span class="chain-item-dot"></span></a>
+                        <a href="/bnb"><span class="chain-item-icon">🟡</span> BNB Chain <span class="chain-item-dot"></span></a>
+                        <a href="/avalanche"><span class="chain-item-icon">🔺</span> Avalanche <span class="chain-item-dot"></span></a>
+                        <a href="/unichain"><span class="chain-item-icon">🦄</span> Unichain <span class="chain-item-dot"></span></a>
+                        <a href="/plasma"><span class="chain-item-icon">🟢</span> Plasma <span class="chain-item-dot"></span></a>
+                        <a href="/bob"><span class="chain-item-icon">🔶</span> BOB <span class="chain-item-dot"></span></a>
+                        <a href="/tao"><span class="chain-item-icon">🧠</span> Bittensor <span class="chain-item-dot"></span></a>
+                        <a href="/solana"><span class="chain-item-icon">◎</span> Solana <span class="chain-item-dot"></span></a>
+                        <a href="/stacks"><span class="chain-item-icon">Ⓢ</span> Stacks <span class="chain-item-dot"></span></a>
+                        <a href="/bitcoin"><span class="chain-item-icon">₿</span> Bitcoin <span class="chain-item-dot"></span></a>
+                        <a href="/stellar" class="current"><span class="chain-item-icon">✦</span> Stellar <span class="chain-item-dot"></span></a>
+                    </div>
+                </div>
+                <a href="https://docs.spraay.app" target="_blank">Docs</a>
+                <button id="navConnectBtn" class="btn-connect" onclick="connectFreighter()">Connect Freighter</button>
+                <button class="hamburger-btn" onclick="openMobilePanel()" aria-label="Menu"><span></span></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Panel -->
+    <div class="mobile-panel-overlay" id="mobilePanelOverlay" onclick="closeMobilePanel()"></div>
+    <div class="mobile-panel" id="mobilePanel">
+        <div class="mobile-panel-header">
+            <span class="panel-title">Switch Chain</span>
+            <button class="mobile-panel-close" onclick="closeMobilePanel()">✕</button>
+        </div>
+        <div class="mobile-panel-section">
+            <div class="mobile-panel-section-label">Networks</div>
+            <a href="/"><span class="mp-icon">🔵</span> Base <span class="mp-dot"></span></a>
+            <a href="/ethereum"><span class="mp-icon">⟠</span> Ethereum <span class="mp-dot"></span></a>
+            <a href="/arbitrum"><span class="mp-icon">⬡</span> Arbitrum <span class="mp-dot"></span></a>
+            <a href="/polygon"><span class="mp-icon">🟣</span> Polygon <span class="mp-dot"></span></a>
+            <a href="/bnb"><span class="mp-icon">🟡</span> BNB Chain <span class="mp-dot"></span></a>
+            <a href="/avalanche"><span class="mp-icon">🔺</span> Avalanche <span class="mp-dot"></span></a>
+            <a href="/unichain"><span class="mp-icon">🦄</span> Unichain <span class="mp-dot"></span></a>
+            <a href="/plasma"><span class="mp-icon">🟢</span> Plasma <span class="mp-dot"></span></a>
+            <a href="/bob"><span class="mp-icon">🔶</span> BOB <span class="mp-dot"></span></a>
+            <a href="/tao"><span class="mp-icon">🧠</span> Bittensor <span class="mp-dot"></span></a>
+            <a href="/solana"><span class="mp-icon">◎</span> Solana <span class="mp-dot"></span></a>
+            <a href="/stacks"><span class="mp-icon">Ⓢ</span> Stacks <span class="mp-dot"></span></a>
+            <a href="/bitcoin"><span class="mp-icon">₿</span> Bitcoin <span class="mp-dot"></span></a>
+            <a href="/stellar" class="current"><span class="mp-icon">✦</span> Stellar <span class="mp-dot"></span></a>
+        </div>
+        <div class="mobile-panel-divider"></div>
+        <div class="mobile-panel-footer">
+            <a href="https://docs.spraay.app" target="_blank"><span class="mp-icon">📄</span> Docs</a>
+            <a href="https://twitter.com/Spraay_app" target="_blank"><span class="mp-icon">🐦</span> Twitter</a>
+            <a href="https://warpcast.com/plag" target="_blank"><span class="mp-icon">🟣</span> Farcaster</a>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                Stellar Native Batch Payments
+            </div>
+            <h1>Batch Payments on<br><span>Stellar</span></h1>
+            <p>Pay up to 99 recipients in a single atomic transaction. Native multi-op batching — no smart contract required. ~5 second finality.</p>
+            <div class="hero-buttons">
+                <a href="#app" class="btn btn-primary">Launch App →</a>
+                <a href="https://docs.spraay.app" target="_blank" class="btn btn-outline">View Docs</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-value">~5s</div>
+                    <div class="stat-label">Finality</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">99</div>
+                    <div class="stat-label">Recipients / Tx</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">0.3%</div>
+                    <div class="stat-label">Service Fee</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">x402</div>
+                    <div class="stat-label">Native Support</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wallet Support -->
+    <section class="integrations">
+        <div class="container integrations-inner">
+            <span class="integrations-label">Wallet Support</span>
+            <div class="integration-badge">
+                <span class="dot"></span> Freighter <span class="tag tag-live">Live</span>
+            </div>
+            <div class="integration-badge">
+                <span class="dot"></span> Albedo <span class="tag tag-live">Live</span>
+            </div>
+            <div class="integration-badge">
+                <span class="dot"></span> x402 on Stellar <span class="tag tag-x402">x402</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- APP SECTION -->
+    <section class="app-section" id="app">
+        <div class="container app-container">
+            <h2 class="section-title" style="text-align:center;">Batch Send XLM</h2>
+            <p class="section-subtitle" style="text-align:center;">
+                Pay multiple Stellar addresses in one atomic transaction. Your keys never leave your wallet.
+            </p>
+
+            <div class="app-card">
+                <div class="app-header">
+                    <h2>✦ Batch Send</h2>
+                    <div style="display:flex;align-items:center;gap:0.6rem;">
+                        <span class="chain-indicator">✦ Stellar</span>
+                        <div id="walletInfo" class="wallet-info" style="display:none;">
+                            <span class="wallet-dot"></span>
+                            <span id="walletAddr" class="mono"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wallet Selector -->
+                <div class="wallet-selector" id="walletSelector">
+                    <span class="wallet-selector-label">Connect Wallet</span>
+                    <div class="wallet-options">
+                        <div class="wallet-option" onclick="connectFreighter()">
+                            <span>🔭</span> Freighter
+                        </div>
+                        <div class="wallet-option" onclick="connectAlbedo()">
+                            <span>🌐</span> Albedo
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Balance Display -->
+                <div id="balanceDisplay" class="form-group" style="display:none;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 1rem;background:var(--bg-inset);border:1px solid var(--border);border-radius:8px;">
+                        <span style="font-size:0.82rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;">Balance</span>
+                        <span id="balanceValue" class="mono" style="font-size:0.9rem;font-weight:600;color:var(--xlm-blue);">— XLM</span>
+                    </div>
+                </div>
+
+                <!-- Equal Amount Toggle -->
+                <label class="equal-toggle">
+                    <input type="checkbox" id="equalToggle" onchange="toggleEqualMode()">
+                    <span class="toggle-track"></span>
+                    <span class="toggle-label">Send equal amount to all</span>
+                </label>
+
+                <!-- Equal Amount Input -->
+                <div id="equalAmountSection" class="form-group" style="display:none;">
+                    <label class="form-label">Amount Per Recipient (XLM)</label>
+                    <div class="amount-wrap" style="max-width:200px;">
+                        <input type="text" class="amt-input" id="equalAmount" placeholder="100" oninput="updateSummary()">
+                        <span class="amt-suffix">XLM</span>
+                    </div>
+                </div>
+
+                <!-- Recipients -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                    <label class="form-label" style="margin-bottom:0;">Recipients</label>
+                    <span class="recipient-count-badge"><strong id="recipientCount">0</strong> / 99</span>
+                </div>
+
+                <div class="recipients-list" id="recipientsList"></div>
+
+                <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.2rem;">
+                    <button class="add-recipient-btn" onclick="addRecipientRow()" style="margin-bottom:0;">+ Add Recipient</button>
+                    <div class="csv-upload" onclick="document.getElementById('csvFile').click()" style="margin-bottom:0;flex-shrink:0;">
+                        <span class="csv-upload-text">📋 Upload CSV</span>
+                        <input type="file" id="csvFile" accept=".csv,.txt" onchange="handleCSV(event)">
+                    </div>
+                </div>
+
+                <!-- Memo -->
+                <div class="form-group">
+                    <label class="form-label">Memo (optional)</label>
+                    <input type="text" class="form-input" id="memoInput" placeholder="e.g. payroll-march-2026" maxlength="28" style="font-size:0.88rem;">
+                    <span style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;display:block;">Max 28 characters. Used for reference tracking.</span>
+                </div>
+
+                <!-- Summary -->
+                <div class="summary-card">
+                    <div class="summary-row">
+                        <span class="summary-label">Recipients</span>
+                        <span class="summary-value" id="summaryRecipients">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Total Amount</span>
+                        <span class="summary-value" id="summaryAmount">0 XLM</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Service Fee (0.3%)</span>
+                        <span class="summary-value" id="summaryServiceFee">0 XLM</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Network Fee</span>
+                        <span class="summary-value" id="summaryNetworkFee">~0.0001 XLM</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span class="summary-label">Total Cost</span>
+                        <span class="summary-value" id="summaryTotal">0 XLM</span>
+                    </div>
+                </div>
+
+                <button class="spray-btn" id="sprayBtn" onclick="handleSprayClick()" disabled>
+                    ✦ Sign & Submit
+                </button>
+                <div class="wallet-note" id="walletNote">
+                    <a onclick="connectFreighter()">Connect Freighter</a> to send — or explore the interface first
+                </div>
+
+                <div class="status-msg" id="statusMsg"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Spraay on Stellar?</h2>
+            <p class="section-subtitle">Protocol-native batch payments with ~5 second finality.</p>
+            <div class="feature-grid">
+                <div class="feature-card"><div class="feature-icon">⚛️</div><h3>Native Batching</h3><p>Stellar supports up to 100 operations per transaction at the protocol level. No smart contract needed — batching is built in.</p></div>
+                <div class="feature-card"><div class="feature-icon">⚡</div><h3>5-Second Finality</h3><p>Transactions settle in approximately 5 seconds on Stellar. No waiting for block confirmations.</p></div>
+                <div class="feature-card"><div class="feature-icon">💸</div><h3>Near-Zero Fees</h3><p>Stellar network fees are ~0.00001 XLM per operation. A 99-recipient batch costs less than a fraction of a cent.</p></div>
+                <div class="feature-card"><div class="feature-icon">🔐</div><h3>Non-Custodial</h3><p>Spraay builds the transaction, your wallet signs it. Your keys never leave your browser. Atomic execution — all or nothing.</p></div>
+                <div class="feature-card"><div class="feature-icon">🌐</div><h3>x402 Native</h3><p>Stellar has first-class x402 support with OpenZeppelin facilitators. Spraay is x402-native on every chain.</p></div>
+                <div class="feature-card"><div class="feature-icon">📋</div><h3>CSV Import</h3><p>Upload a CSV with addresses and amounts. Perfect for payroll, airdrops, grants, and bulk distributions.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title" style="text-align:center">How It Works</h2>
+            <p class="section-subtitle" style="text-align:center">Four steps. One transaction. Atomic execution.</p>
+            <div class="steps">
+                <div class="step"><div class="step-num">1</div><h3>Connect Wallet</h3><p>Connect your Freighter or Albedo wallet. Your secret key stays local.</p></div>
+                <div class="step"><div class="step-num">2</div><h3>Add Recipients</h3><p>Enter Stellar addresses (G...) and XLM amounts, or upload a CSV file.</p></div>
+                <div class="step"><div class="step-num">3</div><h3>Review & Sign</h3><p>Spraay builds a multi-op transaction. Your wallet signs it locally.</p></div>
+                <div class="step"><div class="step-num">4</div><h3>Submit</h3><p>Signed transaction is submitted to Stellar. Settles in ~5 seconds.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fee Info -->
+    <section class="contract-section">
+        <div class="container">
+            <h2 class="section-title">Fee Structure</h2>
+            <p class="section-subtitle" style="margin-bottom: 0.5rem;">Transparent, atomic service fee</p>
+            <div class="contract-address">
+                <code>0.3% of batch total · Included as an operation in the same transaction · Atomic</code>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <span style="color: var(--text-dim); font-size: 0.85rem;">
+                    Fee address: <code style="color:var(--xlm-blue);">GCEXSX7N3WVG5MRXP7IK2ARQQQX7BZ5RVMUCO2WOSS2SHV5AUB3QLX5B</code>
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Batch Send on Stellar?</h2>
+            <p>Native multi-op batch payments. ~5 second finality. Near-zero network fees. Non-custodial.</p>
+            <div class="hero-buttons">
+                <a href="#app" class="btn btn-primary">Launch App →</a>
+                <a href="https://docs.spraay.app" target="_blank" class="btn btn-outline">Docs</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-inner">
+            <div>
+                <a href="https://spraay.app" class="logo" style="font-size:1.1rem">SPRAAY</a>
+                <span class="footer-copy" style="margin-left:1rem">Batch crypto payments, multi-chain</span>
+            </div>
+            <div class="footer-links">
+                <a href="/">Base</a>
+                <a href="/ethereum">Ethereum</a>
+                <a href="/arbitrum">Arbitrum</a>
+                <a href="/solana">Solana</a>
+                <a href="/stacks">Stacks</a>
+                <a href="/bitcoin">Bitcoin</a>
+                <a href="/stellar">Stellar</a>
+                <a href="https://docs.spraay.app" target="_blank">Docs</a>
+                <a href="https://twitter.com/Spraay_app" target="_blank">Twitter</a>
+                <a href="https://warpcast.com/plag" target="_blank">Farcaster</a>
+                <a href="https://github.com/plagtech" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3>✦ Confirm Batch Send</h3>
+            <p style="text-align:center;font-size:0.85rem;color:var(--text-dim);margin-bottom:1rem;">Review the details below before signing.</p>
+            <div id="modalRecipientsList" class="modal-recipients-preview"></div>
+            <div class="modal-summary">
+                <div class="modal-row"><span class="label">Recipients</span><span class="value" id="modalRecipients">0</span></div>
+                <div class="modal-row"><span class="label">Total Amount</span><span class="value" id="modalAmount">0 XLM</span></div>
+                <div class="modal-row"><span class="label">Service Fee (0.3%)</span><span class="value" id="modalServiceFee">0 XLM</span></div>
+                <div class="modal-row"><span class="label">Network Fee</span><span class="value" id="modalNetworkFee">~0 XLM</span></div>
+                <div class="modal-row total"><span class="label">Total</span><span class="value" id="modalTotal">0 XLM</span></div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-cancel" onclick="closeConfirmModal()">Cancel</button>
+                <button class="modal-confirm" id="modalConfirmBtn" onclick="confirmAndSend()">Sign & Submit</button>
+            </div>
+            <p class="modal-warning">Your wallet will prompt you to sign. No funds leave until you approve.</p>
+        </div>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════════════
+    // SPRAAY STELLAR – BATCH PAYMENTS UI
+    // ═══════════════════════════════════════════
+
+    const SPRAAY_FEE_ADDRESS = 'GCEXSX7N3WVG5MRXP7IK2ARQQQX7BZ5RVMUCO2WOSS2SHV5AUB3QLX5B';
+    const FEE_PERCENT = 0.003;
+    const HORIZON_URL = 'https://horizon.stellar.org';
+    const NETWORK_PASSPHRASE = 'Public Global Stellar Network ; September 2015';
+    const STELLAR_EXPERT_URL = 'https://stellar.expert/explorer/public';
+
+    let connectedWallet = null;
+    let userPublicKey = null;
+    let isEqualMode = false;
+    let rowCounter = 0;
+
+    // ── Chain Dropdown ──────────────────────────
+    function toggleChainDropdown(e) {
+        e.preventDefault(); e.stopPropagation();
+        document.getElementById('chainDropdown').classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+        const dd = document.getElementById('chainDropdown');
+        if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+    });
+    function openMobilePanel() {
+        document.getElementById('mobilePanelOverlay').classList.add('open');
+        requestAnimationFrame(() => { document.getElementById('mobilePanel').classList.add('open'); });
+        document.body.style.overflow = 'hidden';
+    }
+    function closeMobilePanel() {
+        document.getElementById('mobilePanel').classList.remove('open');
+        document.getElementById('mobilePanelOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    // ── Initialize ──────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+        addRecipientRow();
+        addRecipientRow();
+        addRecipientRow();
+    });
+
+    // ── Wallet: Freighter ───────────────────────
+    async function connectFreighter() {
+        if (typeof window.freighterApi === 'undefined') {
+            showStatus('Freighter wallet not detected. <a href="https://www.freighter.app/" target="_blank">Install Freighter →</a>', 'error');
+            return;
+        }
+        try {
+            const isAllowed = await window.freighterApi.isAllowed();
+            if (!isAllowed) {
+                await window.freighterApi.setAllowed();
+            }
+            const publicKey = await window.freighterApi.getPublicKey();
+            const network = await window.freighterApi.getNetwork();
+            if (network !== 'PUBLIC') {
+                showStatus('Please switch Freighter to Mainnet (Public network).', 'error');
+                return;
+            }
+            userPublicKey = publicKey;
+            connectedWallet = 'freighter';
+            onWalletConnected();
+        } catch (err) {
+            showStatus('Freighter connection failed: ' + (err.message || err), 'error');
+        }
+    }
+
+    // ── Wallet: Albedo ──────────────────────────
+    async function connectAlbedo() {
+        if (typeof window.albedo === 'undefined') {
+            showStatus('Albedo not detected. <a href="https://albedo.link/" target="_blank">Open Albedo →</a>', 'error');
+            return;
+        }
+        try {
+            const result = await window.albedo.publicKey({});
+            userPublicKey = result.pubkey;
+            connectedWallet = 'albedo';
+            onWalletConnected();
+        } catch (err) {
+            showStatus('Albedo connection failed: ' + (err.message || err), 'error');
+        }
+    }
+
+    function onWalletConnected() {
+        const shortKey = userPublicKey.slice(0, 6) + '...' + userPublicKey.slice(-4);
+        document.getElementById('walletAddr').textContent = shortKey;
+        document.getElementById('walletInfo').style.display = 'flex';
+        document.getElementById('walletNote').style.display = 'none';
+        document.getElementById('balanceDisplay').style.display = 'block';
+        document.querySelectorAll('.wallet-option').forEach(el => {
+            el.classList.toggle('active', el.textContent.trim().toLowerCase().includes(connectedWallet));
+        });
+        const navBtn = document.getElementById('navConnectBtn');
+        navBtn.textContent = shortKey;
+        navBtn.classList.add('btn-connected');
+        fetchBalance();
+        updateSummary();
+    }
+
+    async function fetchBalance() {
+        if (!userPublicKey) return;
+        try {
+            const res = await fetch(HORIZON_URL + '/accounts/' + userPublicKey);
+            if (!res.ok) {
+                document.getElementById('balanceValue').textContent = 'Account not found';
+                return;
+            }
+            const data = await res.json();
+            const native = data.balances.find(b => b.asset_type === 'native');
+            const xlm = native ? parseFloat(native.balance).toFixed(4) : '0';
+            document.getElementById('balanceValue').textContent = xlm + ' XLM';
+        } catch (err) {
+            document.getElementById('balanceValue').textContent = 'Error loading balance';
+        }
+    }
+
+    // ── Recipients ──────────────────────────────
+    function addRecipientRow() {
+        const list = document.getElementById('recipientsList');
+        const count = list.querySelectorAll('.recipient-row').length;
+        if (count >= 99) { showStatus('Maximum 99 recipients per transaction.', 'error'); return; }
+
+        const row = document.createElement('div');
+        row.className = 'recipient-row';
+        row.dataset.id = ++rowCounter;
+
+        const amountSection = isEqualMode ? '' : `
+            <div class="amount-wrap">
+                <input type="text" class="amt-input" placeholder="100" oninput="updateSummary()">
+                <span class="amt-suffix">XLM</span>
+            </div>`;
+
+        row.innerHTML = `
+            <input type="text" class="addr-input" placeholder="G..." oninput="validateAddress(this)">
+            ${amountSection}
+            <button class="remove-btn" onclick="this.closest('.recipient-row').remove();updateRecipientCount();updateSummary();">✕</button>
+        `;
+        list.appendChild(row);
+        updateRecipientCount();
+    }
+
+    function updateRecipientCount() {
+        const count = document.querySelectorAll('.recipient-row').length;
+        document.getElementById('recipientCount').textContent = count;
+    }
+
+    function validateAddress(input) {
+        const addr = input.value.trim();
+        if (!addr) { input.classList.remove('valid', 'invalid'); return; }
+        const isValid = /^G[A-Z2-7]{55}$/.test(addr);
+        input.classList.toggle('valid', isValid);
+        input.classList.toggle('invalid', !isValid);
+        updateSummary();
+    }
+
+    function toggleEqualMode() {
+        isEqualMode = document.getElementById('equalToggle').checked;
+        document.getElementById('equalAmountSection').style.display = isEqualMode ? 'block' : 'none';
+        const rows = document.querySelectorAll('.recipient-row');
+        rows.forEach(row => {
+            const existingWrap = row.querySelector('.amount-wrap');
+            if (isEqualMode && existingWrap) {
+                existingWrap.remove();
+            } else if (!isEqualMode && !existingWrap) {
+                const wrap = document.createElement('div');
+                wrap.className = 'amount-wrap';
+                wrap.innerHTML = '<input type="text" class="amt-input" placeholder="100" oninput="updateSummary()"><span class="amt-suffix">XLM</span>';
+                row.insertBefore(wrap, row.querySelector('.remove-btn'));
+            }
+        });
+        updateSummary();
+    }
+
+    function handleCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const lines = e.target.result.trim().split('\n');
+            document.getElementById('recipientsList').innerHTML = '';
+            rowCounter = 0;
+            lines.forEach(line => {
+                const parts = line.split(',').map(s => s.trim());
+                if (parts[0]) {
+                    addRecipientRow();
+                    const rows = document.querySelectorAll('.recipient-row');
+                    const lastRow = rows[rows.length - 1];
+                    lastRow.querySelector('.addr-input').value = parts[0];
+                    validateAddress(lastRow.querySelector('.addr-input'));
+                    if (!isEqualMode && parts[1]) {
+                        const amtInput = lastRow.querySelector('.amt-input');
+                        if (amtInput) amtInput.value = parts[1];
+                    }
+                }
+            });
+            updateSummary();
+            showStatus('Loaded ' + lines.length + ' recipients from CSV.', 'success');
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    function getRecipients() {
+        const rows = document.querySelectorAll('.recipient-row');
+        const recipients = [];
+        rows.forEach(row => {
+            const addr = row.querySelector('.addr-input').value.trim();
+            if (!addr || row.querySelector('.addr-input').classList.contains('invalid')) return;
+            let amount;
+            if (isEqualMode) {
+                amount = parseFloat(document.getElementById('equalAmount').value) || 0;
+            } else {
+                const amtInput = row.querySelector('.amt-input');
+                amount = amtInput ? (parseFloat(amtInput.value) || 0) : 0;
+            }
+            if (addr && amount > 0) {
+                recipients.push({ address: addr, amount: amount.toFixed(7) });
+            }
+        });
+        return recipients;
+    }
+
+    // ── Summary ─────────────────────────────────
+    function updateSummary() {
+        const recipients = getRecipients();
+        const totalXLM = recipients.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+        const serviceFee = totalXLM > 0 ? parseFloat((totalXLM * FEE_PERCENT).toFixed(7)) : 0;
+        const opsCount = recipients.length + 1;
+        const networkFee = (opsCount * 0.00001);
+        const total = totalXLM + serviceFee + networkFee;
+
+        document.getElementById('summaryRecipients').textContent = recipients.length;
+        document.getElementById('summaryAmount').textContent = totalXLM.toFixed(4) + ' XLM';
+        document.getElementById('summaryServiceFee').textContent = serviceFee.toFixed(7) + ' XLM';
+        document.getElementById('summaryNetworkFee').textContent = '~' + networkFee.toFixed(5) + ' XLM';
+        document.getElementById('summaryTotal').textContent = total.toFixed(4) + ' XLM';
+
+        const canSend = connectedWallet && recipients.length > 0 && totalXLM > 0;
+        document.getElementById('sprayBtn').disabled = !canSend;
+    }
+
+    // ── Spray Flow ──────────────────────────────
+    function handleSprayClick() {
+        const recipients = getRecipients();
+        if (recipients.length === 0) { showStatus('Add at least one valid recipient with an amount.', 'error'); return; }
+
+        const totalXLM = recipients.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+        const serviceFee = parseFloat((totalXLM * FEE_PERCENT).toFixed(7));
+        const networkFee = ((recipients.length + 1) * 0.00001);
+
+        document.getElementById('modalRecipients').textContent = recipients.length;
+        document.getElementById('modalAmount').textContent = totalXLM.toFixed(4) + ' XLM';
+        document.getElementById('modalServiceFee').textContent = serviceFee.toFixed(7) + ' XLM';
+        document.getElementById('modalNetworkFee').textContent = '~' + networkFee.toFixed(5) + ' XLM';
+        document.getElementById('modalTotal').textContent = (totalXLM + serviceFee + networkFee).toFixed(4) + ' XLM';
+
+        const previewEl = document.getElementById('modalRecipientsList');
+        previewEl.innerHTML = '';
+        recipients.forEach(r => {
+            const shortAddr = r.address.slice(0, 8) + '...' + r.address.slice(-4);
+            previewEl.innerHTML += '<div class="modal-recip-item"><span class="addr">' + shortAddr + '</span><span>' + parseFloat(r.amount).toFixed(4) + ' XLM</span></div>';
+        });
+
+        document.getElementById('confirmModal').classList.add('show');
+    }
+
+    function closeConfirmModal() { document.getElementById('confirmModal').classList.remove('show'); }
+    document.getElementById('confirmModal').addEventListener('click', function(e) { if (e.target === this) closeConfirmModal(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeConfirmModal(); });
+
+    async function confirmAndSend() {
+        closeConfirmModal();
+        await executeBatchSend();
+    }
+
+    // ── Core: Build XDR via Gateway, Sign, Submit ──
+    async function executeBatchSend() {
+        const recipients = getRecipients();
+        if (recipients.length === 0) return;
+
+        const btn = document.getElementById('sprayBtn');
+        btn.disabled = true; btn.classList.add('loading');
+        btn.textContent = '⏳ Building transaction...';
+
+        try {
+            const memo = document.getElementById('memoInput').value.trim() || undefined;
+
+            // 1. Call Spraay gateway to build the unsigned XDR
+            showStatus('Building batch transaction via Spraay gateway...', 'info');
+
+            const gatewayRes = await fetch('https://gateway.spraay.app/api/v1/stellar/batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sender: userPublicKey,
+                    recipients: recipients.map(r => ({ address: r.address, amount: r.amount })),
+                    memo: memo
+                })
+            });
+
+            if (!gatewayRes.ok) {
+                const errData = await gatewayRes.json().catch(() => ({}));
+
+                // Handle x402 — if the gateway requires payment
+                if (gatewayRes.status === 402) {
+                    // For now, build the transaction client-side as a fallback
+                    showStatus('Building transaction locally (gateway x402)...', 'info');
+                    await buildAndSignLocally(recipients, memo);
+                    return;
+                }
+
+                throw new Error(errData.error || 'Gateway error: ' + gatewayRes.status);
+            }
+
+            const data = await gatewayRes.json();
+            const unsignedXDR = data.transaction.unsignedXDR;
+
+            // 2. Sign with wallet
+            btn.textContent = '✍️ Sign in wallet...';
+            showStatus('Confirm the transaction in your wallet...', 'info');
+
+            let signedXDR;
+            if (connectedWallet === 'freighter') {
+                signedXDR = await window.freighterApi.signTransaction(unsignedXDR, {
+                    networkPassphrase: NETWORK_PASSPHRASE,
+                    network: 'PUBLIC'
+                });
+            } else if (connectedWallet === 'albedo') {
+                const result = await window.albedo.tx({
+                    xdr: unsignedXDR,
+                    network: 'public'
+                });
+                signedXDR = result.signed_envelope_xdr;
+            }
+
+            // 3. Submit to Horizon
+            btn.textContent = '📡 Submitting...';
+            showStatus('Submitting to Stellar network...', 'info');
+
+            const submitRes = await fetch(HORIZON_URL + '/transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'tx=' + encodeURIComponent(signedXDR)
+            });
+
+            const submitData = await submitRes.json();
+
+            if (submitData.successful || submitData.hash) {
+                const txHash = submitData.hash || submitData.id;
+                const link = STELLAR_EXPERT_URL + '/tx/' + txHash;
+                showStatus(
+                    '✅ Batch sent to ' + recipients.length + ' recipients! ' +
+                    '<a href="' + link + '" target="_blank">View on Stellar Expert →</a>',
+                    'success'
+                );
+                fetchBalance();
+            } else {
+                const extras = submitData.extras?.result_codes;
+                throw new Error('Transaction failed: ' + JSON.stringify(extras || submitData));
+            }
+
+        } catch (err) {
+            let msg = err.message || 'Transaction failed';
+            if (msg.includes('User declined') || msg.includes('cancel') || msg.includes('rejected')) {
+                msg = 'Transaction rejected by user.';
+            }
+            if (msg.length > 300) msg = msg.slice(0, 300) + '...';
+            showStatus(msg, 'error');
+        } finally {
+            btn.classList.remove('loading');
+            btn.textContent = '✦ Sign & Submit';
+            updateSummary();
+        }
+    }
+
+    // ── Fallback: Build transaction client-side ──
+    // Uses Horizon directly if gateway returns 402
+    async function buildAndSignLocally(recipients, memo) {
+        const btn = document.getElementById('sprayBtn');
+
+        // Load account from Horizon
+        const accRes = await fetch(HORIZON_URL + '/accounts/' + userPublicKey);
+        if (!accRes.ok) throw new Error('Account not found on Stellar network');
+        const accData = await accRes.json();
+
+        // Get base fee
+        const feeRes = await fetch(HORIZON_URL + '/fee_stats');
+        const feeData = await feeRes.json();
+        const baseFee = parseInt(feeData.last_ledger_base_fee) || 100;
+        const txFee = String(baseFee * (recipients.length + 1));
+
+        // We need the Stellar SDK for building transactions client-side
+        // Load it dynamically
+        if (!window.StellarSdk) {
+            showStatus('Loading Stellar SDK...', 'info');
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/11.3.0/stellar-sdk.min.js');
+        }
+
+        const StellarSdk = window.StellarSdk;
+        const server = new StellarSdk.Server(HORIZON_URL);
+        const sourceAccount = new StellarSdk.Account(userPublicKey, accData.sequence);
+
+        let builder = new StellarSdk.TransactionBuilder(sourceAccount, {
+            fee: txFee,
+            networkPassphrase: StellarSdk.Networks.PUBLIC,
+        });
+
+        // Add recipient payment ops
+        for (const r of recipients) {
+            builder = builder.addOperation(StellarSdk.Operation.payment({
+                destination: r.address,
+                asset: StellarSdk.Asset.native(),
+                amount: parseFloat(r.amount).toFixed(7),
+            }));
+        }
+
+        // Add Spraay fee op
+        const totalXLM = recipients.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+        const serviceFee = (totalXLM * FEE_PERCENT).toFixed(7);
+        builder = builder.addOperation(StellarSdk.Operation.payment({
+            destination: SPRAAY_FEE_ADDRESS,
+            asset: StellarSdk.Asset.native(),
+            amount: serviceFee,
+        }));
+
+        if (memo) {
+            builder = builder.addMemo(StellarSdk.Memo.text(memo.slice(0, 28)));
+        }
+
+        builder = builder.setTimeout(300);
+        const transaction = builder.build();
+        const unsignedXDR = transaction.toXDR();
+
+        // Sign
+        btn.textContent = '✍️ Sign in wallet...';
+        showStatus('Confirm the transaction in your wallet...', 'info');
+
+        let signedXDR;
+        if (connectedWallet === 'freighter') {
+            signedXDR = await window.freighterApi.signTransaction(unsignedXDR, {
+                networkPassphrase: StellarSdk.Networks.PUBLIC,
+                network: 'PUBLIC'
+            });
+        } else if (connectedWallet === 'albedo') {
+            const result = await window.albedo.tx({ xdr: unsignedXDR, network: 'public' });
+            signedXDR = result.signed_envelope_xdr;
+        }
+
+        // Submit
+        btn.textContent = '📡 Submitting...';
+        const submitRes = await fetch(HORIZON_URL + '/transactions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'tx=' + encodeURIComponent(signedXDR)
+        });
+
+        const submitData = await submitRes.json();
+        if (submitData.successful || submitData.hash) {
+            const link = STELLAR_EXPERT_URL + '/tx/' + (submitData.hash || submitData.id);
+            showStatus(
+                '✅ Batch sent to ' + recipients.length + ' recipients! ' +
+                '<a href="' + link + '" target="_blank">View on Stellar Expert →</a>',
+                'success'
+            );
+            fetchBalance();
+        } else {
+            throw new Error('Transaction failed: ' + JSON.stringify(submitData.extras?.result_codes || submitData));
+        }
+    }
+
+    function loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = src; s.onload = resolve; s.onerror = reject;
+            document.head.appendChild(s);
+        });
+    }
+
+    function showStatus(msg, type) {
+        const el = document.getElementById('statusMsg');
+        el.innerHTML = msg;
+        el.className = 'status-msg show ' + type;
+    }
+    </script>
+</body>
+</html>
