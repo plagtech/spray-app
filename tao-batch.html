@@ -204,8 +204,8 @@ Or drag &amp; drop a CSV file here."></textarea>
       </div>
     </div>
 
-    <button class="send-btn disabled" id="sendBtn" disabled>Send Batch Payout</button>
-    <p class="fee-hint" id="feeHint" style="display:none">1% batch fee applied at confirmation</p>
+    <button class="send-btn disabled" id="sendBtn" disabled>Review & Send Batch</button>
+    <p class="fee-hint">1% batch fee applied at confirmation</p>
     <div class="status-msg" id="statusMsg" style="display:none"></div>
   </main>
 
@@ -284,7 +284,7 @@ const previewTitle = document.getElementById('previewTitle');
 const previewTotal = document.getElementById('previewTotal');
 const previewBody = document.getElementById('previewBody');
 const sendBtn = document.getElementById('sendBtn');
-const feeHint = document.getElementById('feeHint');
+
 const statusMsg = document.getElementById('statusMsg');
 const modalOverlay = document.getElementById('modalOverlay');
 const modal = document.getElementById('modal');
@@ -417,15 +417,15 @@ function render() {
 
   const canSend = valid.length > 0 && selectedAccount && !sending && !sent;
   if (sent) {
-    sendBtn.className = 'send-btn sent'; sendBtn.disabled = true; sendBtn.textContent = '✓ Batch Sent'; feeHint.style.display = 'none';
+    sendBtn.className = 'send-btn sent'; sendBtn.disabled = true; sendBtn.textContent = '✓ Batch Sent'; 
   } else if (sending) {
     // controlled by executeSpray
   } else if (!selectedAccount && entries.length > 0) {
-    sendBtn.className = 'send-btn'; sendBtn.disabled = false; sendBtn.textContent = 'Connect Wallet to Send'; sendBtn.onclick = connectWallet; feeHint.style.display = 'block';
+    sendBtn.className = 'send-btn'; sendBtn.disabled = false; sendBtn.textContent = 'Connect Wallet to Send'; sendBtn.onclick = connectWallet; 
   } else if (canSend) {
-    sendBtn.className = 'send-btn'; sendBtn.disabled = false; sendBtn.textContent = `Send Batch Payout — ${total.toFixed(4)} τ`; sendBtn.onclick = openModal; feeHint.style.display = 'block';
+    sendBtn.className = 'send-btn'; sendBtn.disabled = false; sendBtn.textContent = `Review & Send Batch — ${total.toFixed(4)} τ`; sendBtn.onclick = openModal; 
   } else {
-    sendBtn.className = 'send-btn disabled'; sendBtn.disabled = true; sendBtn.textContent = 'Send Batch Payout'; sendBtn.onclick = null; feeHint.style.display = 'none';
+    sendBtn.className = 'send-btn disabled'; sendBtn.disabled = true; sendBtn.textContent = 'Review & Send Batch'; sendBtn.onclick = null; 
   }
   if (entries.length > MAX_RECIPIENTS) showStatus(`Max ${MAX_RECIPIENTS} recipients. You have ${entries.length}.`, 'error');
 }
@@ -467,7 +467,7 @@ async function executeSpray() {
   sending = true;
   sendBtn.className = 'send-btn sending'; sendBtn.disabled = true;
   sendBtn.innerHTML = '<span class="spinner-row"><span class="spinner"></span>Connecting to Finney...</span>';
-  feeHint.style.display = 'none';
+  
 
   try {
     const chainApi = await getApi();
