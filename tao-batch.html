@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TAO Batch Payouts — Send TAO to 100+ wallets in one transaction</title>
+  <meta name="description" content="Batch distribute TAO to multiple Bittensor wallets in a single transaction. Paste addresses, hit send, done.">
+  <meta property="og:title" content="TAO Batch Payouts">
+  <meta property="og:description" content="Send TAO to 100+ wallets in one transaction.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://spraay.app/tao-batch">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="TAO Batch Payouts">
+  <meta name="twitter:description" content="Send TAO to 100+ wallets in one transaction.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    ::selection { background: rgba(0,212,170,0.25); color: #fff; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulseGlow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.7; } }
+
+    body {
+      min-height: 100vh; background: #0a0a0a; color: #e0e0e0;
+      font-family: 'Outfit', sans-serif; display: flex; flex-direction: column;
+      align-items: center; padding: 48px 20px 32px; position: relative; overflow-x: hidden;
+    }
+    .glow-top { position: absolute; top: -180px; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; background: radial-gradient(ellipse, rgba(0,212,170,0.12) 0%, transparent 70%); pointer-events: none; animation: pulseGlow 6s ease-in-out infinite; }
+    .glow-bot { position: absolute; bottom: -200px; left: 30%; width: 500px; height: 400px; background: radial-gradient(ellipse, rgba(0,150,255,0.06) 0%, transparent 70%); pointer-events: none; }
+
+    header { text-align: center; margin-bottom: 36px; position: relative; z-index: 1; animation: fadeInUp 0.6s ease-out; }
+    .logo-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 14px; }
+    .logo-mark { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #00d4aa 0%, #009e7e 100%); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: #0a0a0a; font-family: 'JetBrains Mono', monospace; box-shadow: 0 4px 24px rgba(0,212,170,0.3); }
+    .logo-text { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; color: #fff; }
+    h1 { font-size: 40px; font-weight: 700; color: #fff; line-height: 1.15; letter-spacing: -1px; margin: 0 0 12px; max-width: 500px; }
+    h1 .accent { background: linear-gradient(135deg, #00d4aa 0%, #00e8bb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .tagline { font-size: 16px; color: #666; line-height: 1.6; font-weight: 400; max-width: 400px; margin: 0 auto; letter-spacing: 0.3px; }
+
+    .card { width: 100%; max-width: 560px; background: #111; border: 1px solid #1e1e1e; border-radius: 16px; padding: 28px; position: relative; z-index: 1; animation: fadeInUp 0.6s ease-out 0.1s both; }
+
+    .wallet-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 12px 16px; background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; }
+    .wallet-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; min-width: 0; overflow: hidden; }
+    .wallet-dot { width: 8px; height: 8px; border-radius: 50%; background: #333; flex-shrink: 0; }
+    .wallet-dot.connected { background: #28c840; box-shadow: 0 0 8px rgba(40,200,64,0.5); }
+    .wallet-balance { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #888; }
+    .btn-connect { padding: 8px 18px; border-radius: 8px; border: none; background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%); color: #0a0a0a; font-size: 13px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .btn-connect:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,212,170,0.3); }
+    .btn-connect.connected-btn { background: rgba(40,200,64,0.12); color: #28c840; border: 1px solid rgba(40,200,64,0.3); }
+
+    .field-label { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .csv-btn { display: flex; align-items: center; gap: 6px; background: none; border: 1px solid #2a2a2a; color: #00d4aa; font-size: 12px; font-family: 'Outfit', sans-serif; font-weight: 500; padding: 5px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    .csv-btn:hover { border-color: #00d4aa; }
+
+    .input-zone { position: relative; margin-bottom: 20px; }
+    .input-zone.drag-over { outline: 2px dashed #00d4aa; outline-offset: -2px; border-radius: 12px; }
+    textarea { width: 100%; min-height: 160px; background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; color: #d0d0d0; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7; padding: 16px; resize: vertical; outline: none; transition: border-color 0.2s; }
+    textarea:focus { border-color: #2a2a2a; }
+    textarea::placeholder { color: #555; }
+    .drop-overlay { position: absolute; inset: 34px 0 0 0; background: rgba(0,212,170,0.08); border: 2px dashed #00d4aa; border-radius: 12px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .drop-overlay span { color: #00d4aa; font-size: 16px; font-weight: 500; }
+
+    .chain-row { margin-bottom: 20px; }
+    .chain-pill { display: inline-flex; align-items: center; gap: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 10px; padding: 10px 18px; font-size: 14px; font-weight: 500; color: #ccc; }
+    .chain-dot { width: 8px; height: 8px; border-radius: 50%; background: #00d4aa; box-shadow: 0 0 8px rgba(0,212,170,0.5); }
+
+    .preview-wrap { margin-bottom: 20px; animation: fadeInUp 0.3s ease-out; }
+    .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .preview-title { font-size: 13px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: 0.8px; }
+    .preview-total { font-size: 15px; font-weight: 600; color: #00d4aa; font-family: 'JetBrains Mono', monospace; }
+    .table-wrap { max-height: 200px; overflow-y: auto; border-radius: 10px; border: 1px solid #1e1e1e; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 14px; background: #141414; color: #666; font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; position: sticky; top: 0; }
+    th.right { text-align: right; }
+    td { padding: 9px 14px; border-top: 1px solid #1a1a1a; color: #bbb; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+    td.right { text-align: right; }
+    td.wallet { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    tr.alt { background: #0e0e0e; }
+
+    .send-btn { width: 100%; padding: 20px; border-radius: 14px; border: none; background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%); color: #0a0a0a; font-size: 18px; font-weight: 700; font-family: 'Outfit', sans-serif; cursor: pointer; transition: all 0.25s; box-shadow: 0 6px 28px rgba(0,212,170,0.3); letter-spacing: 0.3px; }
+    .send-btn:hover { box-shadow: 0 8px 36px rgba(0,212,170,0.4); transform: translateY(-1px); }
+    .send-btn.disabled { background: #1e1e1e; color: #555; box-shadow: none; cursor: not-allowed; transform: none; }
+    .send-btn.sending { background: #1a3a30; color: #00d4aa; box-shadow: none; cursor: default; transform: none; }
+    .send-btn.sent { background: #0d3025; color: #00d4aa; box-shadow: 0 0 20px rgba(0,212,170,0.15); cursor: default; transform: none; }
+    .spinner-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .spinner { width: 18px; height: 18px; border: 2px solid transparent; border-top: 2px solid #00d4aa; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+    .fee-hint { text-align: center; color: #444; font-size: 12px; margin-top: 10px; font-weight: 400; letter-spacing: 0.2px; }
+    .status-msg { text-align: center; font-size: 13px; margin-top: 16px; font-weight: 400; animation: fadeInUp 0.4s ease-out; line-height: 1.5; word-break: break-all; }
+    .status-msg a { color: #00d4aa; text-decoration: underline; }
+    .status-msg.success { color: #28c840; }
+    .status-msg.error { color: #ff4757; }
+    .status-msg.info { color: #00d4aa; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; animation: fadeInUp 0.2s ease-out; }
+    .modal-overlay.hidden { display: none; }
+    .modal { width: 100%; max-width: 480px; background: #141414; border: 1px solid #252525; border-radius: 20px; padding: 32px; animation: fadeInUp 0.3s ease-out; max-height: 85vh; display: flex; flex-direction: column; }
+    .modal-header { text-align: center; margin-bottom: 24px; }
+    .modal-icon { width: 48px; height: 48px; border-radius: 14px; background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .modal-title { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 6px; }
+    .modal-subtitle { font-size: 14px; color: #666; margin: 0; font-weight: 400; }
+    .modal-summary { display: flex; align-items: center; justify-content: center; background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; padding: 16px 8px; margin-bottom: 20px; }
+    .modal-stat { flex: 1; text-align: center; display: flex; flex-direction: column; gap: 4px; }
+    .modal-stat-label { font-size: 11px; font-weight: 500; color: #555; text-transform: uppercase; letter-spacing: 0.8px; }
+    .modal-stat-value { font-size: 16px; font-weight: 600; color: #ddd; font-family: 'JetBrains Mono', monospace; }
+    .modal-stat-divider { width: 1px; height: 32px; background: #1e1e1e; }
+    .fee-breakdown { background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; }
+    .fee-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+    .fee-label { font-size: 13px; color: #666; font-weight: 400; }
+    .fee-val { font-size: 13px; color: #999; font-family: 'JetBrains Mono', monospace; }
+    .fee-divider { height: 1px; background: #1e1e1e; margin: 8px 0; }
+    .fee-total-label { font-size: 14px; color: #ccc; font-weight: 600; }
+    .fee-total-val { font-size: 15px; color: #00d4aa; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .modal-list-wrap { margin-bottom: 24px; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .modal-list-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 500; color: #555; text-transform: uppercase; letter-spacing: 0.8px; padding: 0 14px 8px; }
+    .modal-list { overflow-y: auto; max-height: 220px; border-radius: 10px; border: 1px solid #1e1e1e; }
+    .modal-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 14px; border-bottom: 1px solid #1a1a1a; }
+    .modal-row.alt { background: #111; }
+    .modal-wallet { font-size: 12.5px; color: #999; font-family: 'JetBrains Mono', monospace; }
+    .modal-amount { font-size: 13px; color: #ddd; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+    .modal-actions { display: flex; gap: 12px; }
+    .modal-cancel { flex: 1; padding: 16px; border-radius: 12px; border: 1px solid #2a2a2a; background: transparent; color: #888; font-size: 15px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; transition: all 0.2s; }
+    .modal-cancel:hover { border-color: #444; color: #aaa; }
+    .modal-confirm { flex: 2; padding: 16px; border-radius: 12px; border: none; background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%); color: #0a0a0a; font-size: 15px; font-weight: 700; font-family: 'Outfit', sans-serif; cursor: pointer; transition: all 0.25s; box-shadow: 0 4px 20px rgba(0,212,170,0.3); }
+    .modal-confirm:hover { box-shadow: 0 6px 28px rgba(0,212,170,0.4); transform: translateY(-1px); }
+
+    .picker-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1001; display: none; align-items: center; justify-content: center; }
+    .picker-overlay.show { display: flex; }
+    .picker-card { background: #141414; border: 1px solid #252525; border-radius: 16px; padding: 24px; max-width: 440px; width: 90%; max-height: 70vh; overflow-y: auto; }
+    .picker-card h3 { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .picker-subtitle { font-size: 13px; color: #666; margin-bottom: 16px; }
+    .account-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #1e1e1e; border-radius: 10px; cursor: pointer; margin-bottom: 8px; transition: all 0.2s; }
+    .account-item:hover { border-color: #00d4aa; background: rgba(0,212,170,0.05); }
+    .account-item.selected { border-color: #00d4aa; background: rgba(0,212,170,0.08); }
+    .account-icon { width: 36px; height: 36px; border-radius: 10px; background: #1e1e1e; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #888; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+    .account-info { flex: 1; min-width: 0; }
+    .account-name { font-size: 14px; font-weight: 600; color: #ddd; }
+    .account-addr { font-size: 11px; color: #555; font-family: 'JetBrains Mono', monospace; }
+    .account-bal { font-size: 12px; color: #888; font-family: 'JetBrains Mono', monospace; text-align: right; flex-shrink: 0; }
+
+    footer { margin-top: 48px; text-align: center; position: relative; z-index: 1; animation: fadeInUp 0.6s ease-out 0.2s both; }
+    footer span { font-size: 12px; color: #444; font-weight: 300; }
+    footer a { color: #555; text-decoration: none; border-bottom: 1px solid #333; transition: color 0.2s; }
+    footer a:hover { color: #00d4aa; }
+    @media (max-width: 600px) { h1 { font-size: 28px; } .logo-text { font-size: 22px; } .card { padding: 20px; } .modal { padding: 24px; } }
+  </style>
+</head>
+<body>
+  <div class="glow-top"></div>
+  <div class="glow-bot"></div>
+
+  <header>
+    <div class="logo-row">
+      <div class="logo-mark">τ</div>
+      <span class="logo-text">TAO Batch Payouts</span>
+    </div>
+    <h1>Send TAO to 100+ wallets<br><span class="accent">in one transaction</span></h1>
+    <p class="tagline">Paste addresses. Hit send. Done.</p>
+  </header>
+
+  <main class="card">
+    <div class="wallet-bar">
+      <div class="wallet-status">
+        <span class="wallet-dot" id="walletDot"></span>
+        <span id="walletLabel">No wallet connected</span>
+      </div>
+      <button class="btn-connect" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+    </div>
+
+    <div class="input-zone" id="inputZone">
+      <div class="field-label">
+        <span>Wallets &amp; Amounts</span>
+        <button class="csv-btn" id="csvBtn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 8 8)"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Upload CSV
+        </button>
+        <input type="file" id="csvInput" accept=".csv" style="display:none">
+      </div>
+      <textarea id="walletInput" spellcheck="false" placeholder="Paste wallet addresses and amounts, one per line:
+
+5F3sa2TJ...freqmY4p  1.5
+5Grwva...GKutQY  2.3
+5FHneW...M694ty  0.75
+
+Or drag &amp; drop a CSV file here."></textarea>
+      <div class="drop-overlay" id="dropOverlay" style="display:none"><span>Drop CSV here</span></div>
+    </div>
+
+    <div class="chain-row">
+      <div class="field-label">Network</div>
+      <div class="chain-pill"><span class="chain-dot"></span>Bittensor — Finney (Mainnet)</div>
+    </div>
+
+    <div class="preview-wrap" id="previewWrap" style="display:none">
+      <div class="preview-header">
+        <span class="preview-title" id="previewTitle"></span>
+        <span class="preview-total" id="previewTotal"></span>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th style="width:40px">#</th><th>Wallet</th><th class="right">Amount (τ)</th></tr></thead><tbody id="previewBody"></tbody></table>
+      </div>
+    </div>
+
+    <button class="send-btn disabled" id="sendBtn" disabled>Send Batch Payout</button>
+    <p class="fee-hint" id="feeHint" style="display:none">1% batch fee applied at confirmation</p>
+    <div class="status-msg" id="statusMsg" style="display:none"></div>
+  </main>
+
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <div class="modal-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#00d4aa" stroke-width="1.5" stroke-linejoin="round"/><path d="M2 17l10 5 10-5" stroke="#00d4aa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12l10 5 10-5" stroke="#00d4aa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h2 class="modal-title">Review Payout</h2>
+        <p class="modal-subtitle">Please verify the details before sending.</p>
+      </div>
+      <div class="modal-summary">
+        <div class="modal-stat"><span class="modal-stat-label">Payments</span><span class="modal-stat-value" id="modalCount"></span></div>
+        <div class="modal-stat-divider"></div>
+        <div class="modal-stat"><span class="modal-stat-label">Network</span><span class="modal-stat-value">Finney</span></div>
+        <div class="modal-stat-divider"></div>
+        <div class="modal-stat"><span class="modal-stat-label">Payout</span><span class="modal-stat-value" id="modalPayout"></span></div>
+      </div>
+      <div class="fee-breakdown">
+        <div class="fee-row"><span class="fee-label">Subtotal</span><span class="fee-val" id="feeSubtotal"></span></div>
+        <div class="fee-row"><span class="fee-label">Fee (1%)</span><span class="fee-val" id="feeAmount"></span></div>
+        <div class="fee-divider"></div>
+        <div class="fee-row"><span class="fee-total-label">Total charged</span><span class="fee-total-val" id="feeTotal"></span></div>
+      </div>
+      <div class="modal-list-wrap">
+        <div class="modal-list-header"><span>Recipient</span><span>Amount</span></div>
+        <div class="modal-list" id="modalList"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" id="modalCancel">Cancel</button>
+        <button class="modal-confirm" id="modalConfirm">Confirm &amp; Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="picker-overlay" id="accountPicker">
+    <div class="picker-card">
+      <h3>Select Account</h3>
+      <p class="picker-subtitle">Choose which account to send from.</p>
+      <div id="accountList"></div>
+    </div>
+  </div>
+
+  <footer><span>Powered by <a href="https://spraay.app" target="_blank" rel="noopener">Spraay Protocol</a></span></footer>
+
+<script src="/js/bundle-polkadot-util.js"></script>
+<script src="/js/bundle-polkadot-util-crypto.js"></script>
+<script src="/js/bundle-polkadot-keyring.js"></script>
+<script src="/js/bundle-polkadot-types.js"></script>
+<script src="/js/bundle-polkadot-api.js"></script>
+<script src="/js/bundle-polkadot-extension-dapp.js"></script>
+
+<script>
+// ═══════════════════════════════════════════
+// TAO BATCH PAYOUTS — FULLY FUNCTIONAL
+// utility.batchAll → transferKeepAlive × N + 1% fee
+// ═══════════════════════════════════════════
+
+const RPC_WS = 'wss://entrypoint-finney.opentensor.ai:443';
+const EXPLORER = 'https://x.taostats.io/extrinsic/';
+const FEE_COLLECTOR = '5CZjqeHFjmj39KuXanRApouyKFXokjazeor6h3bPoCzuzmJC';
+const FEE_BPS = 100;
+const TAO_DECIMALS = 9;
+const MAX_RECIPIENTS = 199;
+
+let api = null, selectedAccount = null, allAccounts = [], walletBalance = null;
+let entries = [], total = 0, sending = false, sent = false;
+let isConnecting = false, cryptoReady = false, bundlesLoaded = false;
+
+const walletInput = document.getElementById('walletInput');
+const inputZone = document.getElementById('inputZone');
+const dropOverlay = document.getElementById('dropOverlay');
+const csvBtn = document.getElementById('csvBtn');
+const csvInput = document.getElementById('csvInput');
+const previewWrap = document.getElementById('previewWrap');
+const previewTitle = document.getElementById('previewTitle');
+const previewTotal = document.getElementById('previewTotal');
+const previewBody = document.getElementById('previewBody');
+const sendBtn = document.getElementById('sendBtn');
+const feeHint = document.getElementById('feeHint');
+const statusMsg = document.getElementById('statusMsg');
+const modalOverlay = document.getElementById('modalOverlay');
+const modal = document.getElementById('modal');
+const modalConfirm = document.getElementById('modalConfirm');
+const modalCancel = document.getElementById('modalCancel');
+
+function checkBundles() {
+  const m = [];
+  if (typeof polkadotUtil === 'undefined') m.push('util');
+  if (typeof polkadotUtilCrypto === 'undefined') m.push('util-crypto');
+  if (typeof polkadotApi === 'undefined') m.push('api');
+  if (typeof polkadotExtensionDapp === 'undefined') m.push('extension-dapp');
+  return m;
+}
+
+window.addEventListener('load', async () => {
+  const m = checkBundles();
+  if (m.length > 0) { showStatus('Polkadot-js failed to load (' + m.join(', ') + '). Refresh the page.', 'error'); return; }
+  bundlesLoaded = true;
+  try { await polkadotUtilCrypto.cryptoWaitReady(); cryptoReady = true; } catch {}
+  render();
+});
+
+function isValidSS58(addr) {
+  if (!addr || addr.length < 46 || addr.length > 48) return false;
+  if (!/^5[A-HJ-NP-Za-km-z1-9]{45,47}$/.test(addr)) return false;
+  if (cryptoReady) { try { polkadotUtilCrypto.decodeAddress(addr); return true; } catch { return false; } }
+  return true;
+}
+
+async function getApi() {
+  if (!bundlesLoaded) throw new Error('Libraries not loaded');
+  if (api && api.isConnected) return api;
+  const { ApiPromise, WsProvider } = polkadotApi;
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('RPC timeout (30s)')), 30000));
+  api = await Promise.race([ApiPromise.create({ provider: new WsProvider(RPC_WS) }), timeout]);
+  return api;
+}
+
+async function fetchBalance(addr) {
+  try { const a = await getApi(); const { data: { free } } = await a.query.system.account(addr); return parseInt(free.toString(), 10) / 1e9; }
+  catch { return null; }
+}
+
+async function connectWallet() {
+  if (isConnecting || !bundlesLoaded) return;
+  isConnecting = true;
+  try {
+    const { web3Enable, web3Accounts } = polkadotExtensionDapp;
+    const ext = await web3Enable('TAO Batch Payouts');
+    if (!ext.length) { showStatus('No Polkadot wallet found. Install Polkadot.js, Talisman, or SubWallet.', 'error'); return; }
+    const accs = await web3Accounts();
+    if (!accs.length) { showStatus('No accounts found in wallet.', 'error'); return; }
+    allAccounts = accs;
+    accs.length === 1 ? await selectAccount(accs[0]) : showAccountPicker();
+  } catch (e) { showStatus('Connection failed: ' + e.message, 'error'); }
+  finally { isConnecting = false; }
+}
+
+function showAccountPicker() {
+  const el = document.getElementById('accountList'); el.innerHTML = '';
+  for (const acc of allAccounts) {
+    const short = acc.address.slice(0, 10) + '...' + acc.address.slice(-6);
+    const name = acc.meta.name || 'Unnamed';
+    const item = document.createElement('div');
+    item.className = 'account-item' + (selectedAccount?.address === acc.address ? ' selected' : '');
+    item.innerHTML = `<div class="account-icon">${name.slice(0,2).toUpperCase()}</div><div class="account-info"><div class="account-name">${name}</div><div class="account-addr">${short}</div></div><div class="account-bal">...</div>`;
+    item.onclick = () => { selectAccount(acc); closeAccountPicker(); };
+    el.appendChild(item);
+    fetchBalance(acc.address).then(b => { item.querySelector('.account-bal').textContent = b !== null ? b.toFixed(4) + ' TAO' : '—'; });
+  }
+  document.getElementById('accountPicker').classList.add('show');
+}
+function closeAccountPicker() { document.getElementById('accountPicker').classList.remove('show'); }
+document.getElementById('accountPicker').addEventListener('click', function(e) { if (e.target === this) closeAccountPicker(); });
+
+async function selectAccount(acc) {
+  selectedAccount = acc;
+  const short = acc.address.slice(0, 8) + '...' + acc.address.slice(-6);
+  const name = acc.meta.name || short;
+  document.getElementById('walletDot').classList.add('connected');
+  document.getElementById('walletLabel').innerHTML = `<span style="color:#ddd">${name}</span> <span class="wallet-balance" id="walletBal">loading...</span>`;
+  const btn = document.getElementById('connectBtn');
+  btn.textContent = name; btn.classList.add('connected-btn'); btn.onclick = () => showAccountPicker();
+  showStatus('Connected: ' + name + ' (' + short + ')', 'info');
+  const bal = await fetchBalance(acc.address);
+  walletBalance = bal;
+  const balEl = document.getElementById('walletBal');
+  if (balEl) balEl.textContent = bal !== null ? '— ' + bal.toFixed(4) + ' TAO' : '';
+  render();
+}
+
+function parseInput(text) {
+  if (!text.trim()) return [];
+  return text.trim().split('\n').map((l, i) => {
+    const p = l.trim().split(/[\s,\t]+/);
+    if (p.length < 2) return null;
+    const amt = parseFloat(p[p.length - 1]);
+    const w = p.slice(0, -1).join('');
+    if (!w || isNaN(amt) || amt <= 0) return null;
+    return { id: i, wallet: w, amount: amt, valid: isValidSS58(w) };
+  }).filter(Boolean);
+}
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const s = lines[0]?.toLowerCase().includes('wallet') ? 1 : 0;
+  return lines.slice(s).map((l, i) => {
+    const p = l.split(',').map(x => x.trim().replace(/^"|"$/g, ''));
+    if (p.length < 2) return null;
+    const amt = parseFloat(p[1]);
+    if (!p[0] || isNaN(amt) || amt <= 0) return null;
+    return { id: i, wallet: p[0], amount: amt, valid: isValidSS58(p[0]) };
+  }).filter(Boolean);
+}
+function trunc(w, n) { return w.length <= n ? w : w.slice(0, Math.floor(n/2)-1) + '…' + w.slice(-(Math.floor(n/2)-1)); }
+
+function render() {
+  entries = parseInput(walletInput.value);
+  total = entries.reduce((s, e) => s + e.amount, 0);
+  const valid = entries.filter(e => e.valid), inv = entries.length - valid.length;
+
+  if (entries.length > 0) {
+    previewWrap.style.display = 'block';
+    previewTitle.textContent = `Preview — ${entries.length} recipient${entries.length !== 1 ? 's' : ''}` + (inv > 0 ? ` (${inv} invalid)` : '');
+    previewTotal.textContent = total.toFixed(4) + ' τ';
+    previewBody.innerHTML = entries.map((e, i) =>
+      `<tr class="${i%2?'alt':''}" style="${!e.valid?'background:rgba(255,71,87,0.06)':''}"><td>${i+1}</td><td class="wallet" style="${!e.valid?'color:#ff4757':''}">${trunc(e.wallet,22)}${!e.valid?' ✗':''}</td><td class="right">${e.amount}</td></tr>`
+    ).join('');
+  } else { previewWrap.style.display = 'none'; }
+
+  const canSend = valid.length > 0 && selectedAccount && !sending && !sent;
+  if (sent) {
+    sendBtn.className = 'send-btn sent'; sendBtn.disabled = true; sendBtn.textContent = '✓ Batch Sent'; feeHint.style.display = 'none';
+  } else if (sending) {
+    // controlled by executeSpray
+  } else if (!selectedAccount && entries.length > 0) {
+    sendBtn.className = 'send-btn'; sendBtn.disabled = false; sendBtn.textContent = 'Connect Wallet to Send'; sendBtn.onclick = connectWallet; feeHint.style.display = 'block';
+  } else if (canSend) {
+    sendBtn.className = 'send-btn'; sendBtn.disabled = false; sendBtn.textContent = `Send Batch Payout — ${total.toFixed(4)} τ`; sendBtn.onclick = openModal; feeHint.style.display = 'block';
+  } else {
+    sendBtn.className = 'send-btn disabled'; sendBtn.disabled = true; sendBtn.textContent = 'Send Batch Payout'; sendBtn.onclick = null; feeHint.style.display = 'none';
+  }
+  if (entries.length > MAX_RECIPIENTS) showStatus(`Max ${MAX_RECIPIENTS} recipients. You have ${entries.length}.`, 'error');
+}
+
+walletInput.addEventListener('input', () => { sent = false; statusMsg.style.display = 'none'; render(); });
+csvBtn.addEventListener('click', () => csvInput.click());
+csvInput.addEventListener('change', e => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { const p = parseCSV(ev.target.result); if (p.length) { walletInput.value = p.map(x => x.wallet + ' ' + x.amount).join('\n'); render(); } }; r.readAsText(f); csvInput.value = ''; });
+inputZone.addEventListener('dragover', e => { e.preventDefault(); inputZone.classList.add('drag-over'); dropOverlay.style.display = 'flex'; });
+inputZone.addEventListener('dragleave', () => { inputZone.classList.remove('drag-over'); dropOverlay.style.display = 'none'; });
+inputZone.addEventListener('drop', e => { e.preventDefault(); inputZone.classList.remove('drag-over'); dropOverlay.style.display = 'none'; const f = e.dataTransfer?.files?.[0]; if (f && (f.name.endsWith('.csv') || f.type === 'text/csv')) { const r = new FileReader(); r.onload = ev => { const p = parseCSV(ev.target.result); if (p.length) { walletInput.value = p.map(x => x.wallet + ' ' + x.amount).join('\n'); render(); } }; r.readAsText(f); } });
+
+function openModal() {
+  const v = entries.filter(e => e.valid); if (!v.length) return;
+  const vt = v.reduce((s, e) => s + e.amount, 0);
+  document.getElementById('modalCount').textContent = v.length;
+  document.getElementById('modalPayout').textContent = vt.toFixed(4) + ' τ';
+  document.getElementById('feeSubtotal').textContent = vt.toFixed(4) + ' TAO';
+  document.getElementById('feeAmount').textContent = (vt * FEE_BPS / 10000).toFixed(4) + ' TAO';
+  document.getElementById('feeTotal').textContent = (vt * (1 + FEE_BPS / 10000)).toFixed(4) + ' TAO';
+  document.getElementById('modalList').innerHTML = v.map((e, i) =>
+    `<div class="modal-row ${i%2?'alt':''}"><span class="modal-wallet">${trunc(e.wallet,26)}</span><span class="modal-amount">${e.amount} τ</span></div>`
+  ).join('');
+  modalOverlay.classList.remove('hidden');
+}
+function closeModal() { modalOverlay.classList.add('hidden'); }
+modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+modal.addEventListener('click', e => e.stopPropagation());
+modalCancel.addEventListener('click', closeModal);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeAccountPicker(); } });
+modalConfirm.addEventListener('click', () => { closeModal(); executeSpray(); });
+
+// ═══════════════════════════════════════════
+// EXECUTE — Real batchAll transaction on Finney
+// ═══════════════════════════════════════════
+async function executeSpray() {
+  const valid = entries.filter(e => e.valid);
+  if (!valid.length || !selectedAccount) return;
+
+  sending = true;
+  sendBtn.className = 'send-btn sending'; sendBtn.disabled = true;
+  sendBtn.innerHTML = '<span class="spinner-row"><span class="spinner"></span>Connecting to Finney...</span>';
+  feeHint.style.display = 'none';
+
+  try {
+    const chainApi = await getApi();
+
+    // Balance check
+    sendBtn.innerHTML = '<span class="spinner-row"><span class="spinner"></span>Checking balance...</span>';
+    const freshBal = await fetchBalance(selectedAccount.address);
+    walletBalance = freshBal;
+
+    if (freshBal !== null) {
+      const vt = valid.reduce((s, e) => s + e.amount, 0);
+      const est = vt + vt * (FEE_BPS / 10000) + 0.001;
+      if (est > freshBal) {
+        showStatus(`Insufficient balance. Need ~${est.toFixed(4)} TAO, have ${freshBal.toFixed(4)} TAO.`, 'error');
+        sending = false; render(); return;
+      }
+    }
+
+    // Signer
+    const { web3FromSource } = polkadotExtensionDapp;
+    const injector = await web3FromSource(selectedAccount.meta.source);
+
+    // TAO → rao
+    const { BN } = polkadotUtil;
+    const RAO = new BN('1000000000');
+    function toRao(t) {
+      const p = String(t).split('.'), w = p[0] || '0';
+      let f = (p[1] || '').padEnd(TAO_DECIMALS, '0').slice(0, TAO_DECIMALS);
+      return new BN(w).mul(RAO).add(new BN(f));
+    }
+
+    // Build calls
+    let totalRao = new BN(0);
+    const calls = [];
+    for (const r of valid) {
+      const rao = toRao(r.amount);
+      calls.push(chainApi.tx.balances.transferKeepAlive(r.wallet, rao));
+      totalRao = totalRao.add(rao);
+    }
+
+    // 1% fee
+    const feeRao = totalRao.mul(new BN(FEE_BPS)).div(new BN(10000));
+    if (feeRao.gt(new BN(0))) calls.push(chainApi.tx.balances.transferKeepAlive(FEE_COLLECTOR, feeRao));
+
+    // batchAll
+    const batchTx = chainApi.tx.utility.batchAll(calls);
+    sendBtn.innerHTML = '<span class="spinner-row"><span class="spinner"></span>Confirm in wallet...</span>';
+    showStatus('Confirm the transaction in your wallet extension...', 'info');
+
+    await new Promise((resolve, reject) => {
+      batchTx.signAndSend(selectedAccount.address, { signer: injector.signer }, ({ status, dispatchError, txHash }) => {
+        if (status.isInBlock) {
+          sendBtn.innerHTML = '<span class="spinner-row"><span class="spinner"></span>In block, finalizing...</span>';
+          showStatus('In block: ' + txHash.toHex(), 'info');
+        } else if (status.isFinalized) {
+          if (dispatchError) {
+            let msg = 'Failed on-chain';
+            if (dispatchError.isModule) { try { const d = chainApi.registry.findMetaError(dispatchError.asModule); msg = `${d.section}.${d.name}: ${d.docs.join(' ')}`; } catch {} }
+            showStatus(msg, 'error');
+          } else {
+            sent = true;
+            showStatus(`✅ Sent TAO to ${valid.length} recipients! <a href="${EXPLORER}${txHash.toHex()}" target="_blank">View on TaoStats →</a>`, 'success');
+          }
+          resolve();
+        } else if (status.isDropped || status.isInvalid || status.isUsurped) {
+          reject(new Error('Transaction ' + status.type.toLowerCase()));
+        }
+      }).catch(reject);
+    });
+
+  } catch (err) {
+    let msg = err.message || 'Transaction failed';
+    if (msg.includes('Cancelled') || msg.includes('Rejected') || msg.includes('cancelled')) msg = 'Transaction rejected by user.';
+    else if (msg.includes('1010:')) msg = 'Insufficient balance (including existential deposit).';
+    else if (msg.length > 250) msg = msg.slice(0, 250) + '...';
+    showStatus(msg, 'error');
+  } finally { sending = false; render(); }
+}
+
+function showStatus(msg, type) { statusMsg.innerHTML = msg; statusMsg.className = 'status-msg ' + type; statusMsg.style.display = 'block'; }
+render();
+</script>
+</body>
+</html>
