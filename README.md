@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./1600x900-spraay.png" width="700" />
+</p>
+
 # Spraay — Multi-Chain Batch Crypto Payments
 
 Send ETH or ERC-20 tokens to **200+ recipients** in a single transaction. Live on **Base**, **Unichain**, **Plasma**, and **Bittensor**.
