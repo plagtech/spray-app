@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spraay Inference — OpenAI-compatible API, powered by Bittensor</title>
+<meta name="description" content="Drop-in replacement for OpenAI. Powered by Bittensor's decentralized AI network. Just change your base_url. No setup, no accounts.">
+<meta property="og:title" content="Spraay Inference — Use Bittensor like OpenAI">
+<meta property="og:description" content="OpenAI-compatible API powered by Bittensor. 43+ models. Just change your base_url.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://spraay.app/bittensor">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Spraay Inference — Use Bittensor like OpenAI">
+<meta name="twitter:description" content="Drop-in replacement for OpenAI, powered by decentralized AI. No setup needed.">
+<link rel="icon" href="spraay-logo-200x200.jpg">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#06060f;--surface:#0a0a1a;--surface2:#0d0d1f;--border:#1a1a3a;--border2:#2a2a4a;--text:#c8c8d8;--muted:#6a6a8a;--dim:#4a4a6a;--darkdim:#3a3a5a;--cyan:#00d2ff;--purple:#6c5ce7;--green:#00e676;--orange:#ff9100;--red:#ff6b6b}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono','Fira Code',monospace;min-height:100vh;position:relative;overflow-x:hidden}
+  .grid-bg{position:fixed;inset:0;opacity:.03;background-image:linear-gradient(var(--cyan) 1px,transparent 1px),linear-gradient(90deg,var(--cyan) 1px,transparent 1px);background-size:40px 40px;animation:gridScroll 8s linear infinite;pointer-events:none}
+  @keyframes gridScroll{0%{background-position:0 0}100%{background-position:0 40px}}
+  @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 16px;position:relative;z-index:1}
+  .hdr{margin-bottom:28px;text-align:center}
+  .hdr-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .hdr-title{font-family:'Outfit',sans-serif;font-weight:800;font-size:22px;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .hdr-badge{font-size:10px;font-weight:600;letter-spacing:1.5px;background:rgba(0,210,255,.08);color:var(--cyan);padding:3px 8px;border-radius:4px;border:1px solid rgba(0,210,255,.2)}
+  h1{font-family:'Outfit',sans-serif;font-size:28px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:8px;letter-spacing:-0.5px}
+  h1 .accent{background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .hdr-sub{font-family:'Outfit',sans-serif;font-size:15px;color:var(--muted);font-weight:300;line-height:1.5;margin-bottom:16px}
+  .value-props{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+  .prop{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+  .prop-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0}
+  .models-label{font-size:10px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+  .models-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+  .model-btn{padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:6px}
+  .model-btn:hover{border-color:rgba(0,210,255,.35);background:var(--surface)}
+  .model-btn.active{border-color:var(--cyan);background:rgba(0,210,255,.06);color:var(--cyan)}
+  .model-tag{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--border);color:var(--dim)}
+  .model-btn.active .model-tag{background:rgba(0,210,255,.12);color:var(--cyan)}
+  .chat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;min-height:280px;max-height:480px;overflow-y:auto;padding:16px;margin-bottom:12px}
+  .chat-box::-webkit-scrollbar{width:6px}.chat-box::-webkit-scrollbar-track{background:transparent}.chat-box::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+  .empty-state{text-align:center;padding-top:24px}
+  .empty-title{font-family:'Outfit',sans-serif;font-size:15px;font-weight:500;color:var(--dim);margin-bottom:16px}
+  .examples{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .example-pill{padding:6px 14px;border-radius:20px;font-size:12px;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s;background:transparent}
+  .example-pill:hover{background:rgba(0,210,255,.06);border-color:rgba(0,210,255,.3);color:var(--cyan)}
+  .msg{margin-bottom:16px;display:flex;gap:10px;animation:slideUp .3s ease}
+  .msg.user{flex-direction:row-reverse}
+  .msg-avatar{width:28px;height:28px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .msg.user .msg-avatar{background:rgba(108,92,231,.12);border:1px solid rgba(108,92,231,.25)}
+  .msg.assistant .msg-avatar{background:rgba(0,210,255,.06);border:1px solid rgba(0,210,255,.12)}
+  .msg-bubble{max-width:85%;padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.65;word-break:break-word;white-space:pre-wrap}
+  .msg.user .msg-bubble{background:rgba(108,92,231,.06);border:1px solid rgba(108,92,231,.12)}
+  .msg.assistant .msg-bubble{background:var(--surface2);border:1px solid var(--border)}
+  .msg.error .msg-bubble{border-color:rgba(255,74,74,.18);color:var(--red)}
+  .loading-bubble{padding:10px 14px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);font-size:13px;color:var(--dim)}
+  .loading-text{animation:pulse 1.5s infinite}.loading-cursor{animation:blink 1s infinite;margin-left:2px}
+  .demo-banner{display:none;text-align:center;padding:8px 14px;margin-bottom:12px;border-radius:8px;background:rgba(108,92,231,.06);border:1px solid rgba(108,92,231,.15);font-size:12px;color:var(--purple);cursor:pointer;transition:all .2s}
+  .demo-banner:hover{background:rgba(108,92,231,.1);border-color:rgba(108,92,231,.3)}
+  .demo-banner.show{display:block}
+  .provider-section{margin-bottom:16px;display:none}.provider-section.show{display:block}
+  .provider-bar{padding:10px 14px;border-radius:8px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s}
+  .provider-bar.connected{background:rgba(0,210,255,.03);border:1px solid rgba(0,210,255,.12)}
+  .provider-bar.disconnected{background:rgba(255,145,0,.03);border:1px solid rgba(255,145,0,.12)}
+  .provider-input-row{margin-top:8px;display:none;gap:8px}.provider-input-row.show{display:flex}
+  .provider-input-row input{flex:1;padding:8px 12px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:12px;font-family:inherit}
+  .provider-input-row input:focus{outline:none;border-color:var(--cyan)}
+  .provider-link{padding:8px 12px;border-radius:6px;font-size:11px;background:var(--border);color:var(--cyan);text-decoration:none;white-space:nowrap;display:flex;align-items:center}
+  .input-row{display:flex;gap:8px;margin-bottom:12px}
+  .input-row textarea{flex:1;resize:none;padding:12px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:13px;font-family:inherit;line-height:1.5}
+  .input-row textarea:focus{outline:none;border-color:var(--cyan)}
+  .input-row textarea::placeholder{color:var(--dim)}
+  .send-btn{padding:0 20px;border-radius:10px;border:none;background:var(--cyan);color:var(--bg);font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .2s}
+  .send-btn:disabled{background:var(--border);color:var(--dim);cursor:not-allowed}
+  .clear-btn{padding:0 14px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--dim);font-size:12px;cursor:pointer;font-family:inherit}
+  .stats-bar{display:none;flex-wrap:wrap;gap:12px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;font-size:11px;animation:slideUp .3s ease}
+  .stats-bar.show{display:flex}.stat-label{color:var(--dim)}.stat-value{font-weight:500}
+  .code-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--border);margin-bottom:12px}
+  .code-toggle-title{font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--muted)}
+  .code-toggle .arrow{margin-left:auto;font-size:10px;color:var(--dim)}
+  .code-block{display:none;margin-top:8px;padding:16px;border-radius:10px;background:#080818;border:1px solid var(--border);position:relative;margin-bottom:12px}
+  .code-block.show{display:block}
+  .code-block pre{margin:0;font-size:12px;line-height:1.7;overflow-x:auto;color:var(--muted);white-space:pre-wrap}
+  .copy-btn{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:4px;border:1px solid var(--border2);background:var(--border);color:var(--muted);font-size:10px;cursor:pointer;font-family:inherit}
+  .copy-btn:hover{color:var(--cyan);border-color:var(--cyan)}
+  .footer{text-align:center;padding:16px 0;font-size:11px;color:var(--darkdim);border-top:1px solid #0f0f2a}
+  .footer a{color:rgba(0,210,255,.5);text-decoration:none}
+  .footer-link{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;background:rgba(0,212,170,.06);border:1px solid rgba(0,212,170,.15);color:#00d4aa;font-size:12px;text-decoration:none;transition:all .2s;margin-bottom:8px}
+  .footer-link:hover{border-color:rgba(0,212,170,.4)}
+  @media(max-width:600px){h1{font-size:22px}.value-props{flex-direction:column;align-items:center}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="wrap">
+  <div class="hdr">
+    <div class="hdr-row">
+      <span style="font-size:22px">💧</span>
+      <span class="hdr-title">Spraay Inference</span>
+      <span class="hdr-badge">BETA</span>
+    </div>
+    <h1>Use Bittensor <span class="accent">like OpenAI</span></h1>
+    <p class="hdr-sub">Drop-in API for decentralized AI. Same SDKs, same format. Just change your base URL.</p>
+    <div class="value-props">
+      <div class="prop"><span class="prop-dot"></span>OpenAI-compatible</div>
+      <div class="prop"><span class="prop-dot"></span>43+ models</div>
+      <div class="prop"><span class="prop-dot"></span>No signup needed</div>
+      <div class="prop"><span class="prop-dot"></span>Pay per request</div>
+    </div>
+  </div>
+  <div>
+    <div class="models-label">Model</div>
+    <div class="models-row" id="modelsRow"></div>
+  </div>
+  <div class="chat-box" id="chatBox">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-title">Try it — ask anything</div>
+      <div class="examples" id="examples"></div>
+    </div>
+  </div>
+  <div class="demo-banner" id="demoBanner" onclick="showProviderSetup()">⚡ That was a demo response. <strong>Connect a provider</strong> for live inference →</div>
+  <div class="provider-section" id="providerSection">
+    <div class="provider-bar disconnected" id="providerBar" onclick="toggleProviderInput()">
+      <span style="font-size:14px" id="providerIcon">⚡</span>
+      <span style="font-size:12px;color:var(--orange)" id="providerStatus">Connect a Bittensor provider</span>
+      <span style="margin-left:auto;font-size:10px;color:var(--dim)" id="providerArrow">▼</span>
+    </div>
+    <div class="provider-input-row" id="providerInputRow">
+      <input type="password" id="apiKeyInput" placeholder="Paste provider API key..." oninput="onKeyChange()">
+      <a class="provider-link" href="https://chutes.ai/app/api" target="_blank" rel="noopener">Chutes ↗</a>
+    </div>
+    <div style="margin-top:6px;font-size:11px;color:var(--dim)">Supported: <span style="color:var(--muted)">Chutes AI</span> · <span style="color:var(--dim)">Nineteen AI (coming soon)</span></div>
+  </div>
+  <div class="input-row">
+    <textarea id="chatInput" rows="1" placeholder="Ask anything..." onkeydown="handleKey(event)" oninput="updateSendBtn()"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>Send</button>
+    <button class="clear-btn" id="clearBtn" onclick="clearChat()" style="display:none">Clear</button>
+  </div>
+  <div class="stats-bar" id="statsBar"></div>
+  <div class="code-toggle" onclick="toggleCode()">
+    <span style="font-size:14px">&lt;/&gt;</span>
+    <span class="code-toggle-title">Integrate in 3 lines — drop-in for OpenAI</span>
+    <span class="arrow" id="codeArrow">▼ show</span>
+  </div>
+  <div class="code-block" id="codeBlock">
+    <button class="copy-btn" onclick="copyCode()">Copy</button>
+    <pre id="codeSnippet"></pre>
+  </div>
+  <div class="footer">
+    <div style="margin-bottom:8px"><a href="/tao-batch" class="footer-link">τ TAO Batch Payouts — Send to 100+ wallets →</a></div>
+    <div style="margin-bottom:4px">
+      <a href="https://gateway.spraay.app/bittensor/v1">gateway.spraay.app/bittensor/v1</a>
+      <span style="margin:0 8px">·</span><span>x402 micropayments</span>
+      <span style="margin:0 8px">·</span><span>USDC on Base</span>
+    </div>
+    <div>Powered by <span style="color:var(--dim)">Spraay Protocol 💧</span></div>
+  </div>
+</div>
+<script>
+const CHUTES_URL="https://llm.chutes.ai/v1/chat/completions";
+const MODELS=[{id:"deepseek-ai/DeepSeek-V3-0324",label:"DeepSeek V3",tag:"fast"},{id:"deepseek-ai/DeepSeek-R1-0528",label:"DeepSeek R1",tag:"reasoning"},{id:"Qwen/Qwen3-32B",label:"Qwen3 32B",tag:"balanced"},{id:"Qwen/Qwen3-235B-A22B-Instruct-2507",label:"Qwen3 235B",tag:"large"},{id:"openai/gpt-oss-120b",label:"GPT-OSS 120B",tag:"open-source"},{id:"chutesai/Mistral-Small-3.1-24B-Instruct-2503",label:"Mistral Small",tag:"cheap"},{id:"deepseek-ai/DeepSeek-V3.2",label:"DeepSeek V3.2",tag:"newest"}];
+const EXAMPLES=["Explain decentralized AI in simple terms","What makes Bittensor different from OpenAI?","Write a Python function to batch transfer tokens","Generate a startup pitch for decentralized compute"];
+const DEMO_RESPONSES={"Explain decentralized AI in simple terms":"Decentralized AI is like Wikipedia for artificial intelligence. Instead of one company (like OpenAI or Google) controlling all the AI models, thousands of independent participants around the world contribute computing power and AI models to a shared network.\n\nEveryone competes to provide the best AI services, and the best contributors earn cryptocurrency rewards. Users get access to hundreds of AI models through a single network, often at lower cost than centralized alternatives.\n\nThink of it this way: centralized AI is like ordering from one restaurant. Decentralized AI is like a global food market where the best chefs compete for your business.","What makes Bittensor different from OpenAI?":"The core difference is ownership and access.\n\nOpenAI is a single company that builds, controls, and profits from its AI models. You pay them, you use their models, they set the rules.\n\nBittensor is an open network where anyone can contribute AI models and earn rewards. Instead of one company deciding which models exist, the market decides \u2014 the best models earn the most.\n\nKey differences:\n\n\u2022 Models: OpenAI has ~5 models. Bittensor has 43+ from different teams worldwide.\n\u2022 Control: OpenAI can change pricing, censor outputs, or shut down access. Bittensor is permissionless.\n\u2022 Cost: Bittensor inference can be 40-85% cheaper because it uses distributed GPU providers.\n\u2022 Openness: Every model on Bittensor is open-source. OpenAI\u2019s best models are closed.\n\nThe trade-off? OpenAI\u2019s models are currently more polished for consumer use. Bittensor\u2019s strength is in the breadth and openness of its ecosystem.","Write a Python function to batch transfer tokens":"```python\nfrom web3 import Web3\n\ndef batch_transfer(w3, contract, sender, private_key, recipients, amounts):\n    \"\"\"Batch transfer ERC-20 tokens to multiple recipients.\"\"\"\n    nonce = w3.eth.get_transaction_count(sender)\n    \n    txs = []\n    for recipient, amount in zip(recipients, amounts):\n        tx = contract.functions.transfer(\n            recipient, \n            amount\n        ).build_transaction({\n            'from': sender,\n            'nonce': nonce,\n            'gas': 65000,\n            'gasPrice': w3.eth.gas_price\n        })\n        \n        signed = w3.eth.account.sign_transaction(tx, private_key)\n        tx_hash = w3.eth.send_raw_transaction(signed.rawTransaction)\n        txs.append(tx_hash.hex())\n        nonce += 1\n    \n    return txs\n```\n\nFor production, consider using a batch contract like Spraay\u2019s SprayContract which handles all transfers in a single transaction \u2014 much cheaper on gas.","Generate a startup pitch for decentralized compute":"Pitch: NeuralGrid \u2014 The Airbnb of GPU Compute\n\nProblem: AI companies spend $2-10M/year on cloud GPU costs. AWS and Google have 80% market share and pricing power.\n\nSolution: NeuralGrid connects idle GPUs worldwide into a unified compute marketplace. Any GPU owner earns by contributing compute. Any developer accesses it through a standard API.\n\nHow it works:\n1. GPU providers install our agent (2 min setup)\n2. Developers use our OpenAI-compatible API\n3. We route inference to the cheapest, fastest provider\n4. Payments settle instantly via blockchain\n\nTraction: 500+ GPUs online, 12K daily inference requests, $45K MRR\n\nMarket: $65B cloud GPU market growing 35% YoY\n\nAsk: $3M seed to scale provider network and launch enterprise tier.\n\nBuilt on Bittensor. Powered by the network, not a single cloud."};
+let selectedModel=MODELS[0].id,messages=[],loading=false,hasUsedDemo=false,isLive=false;
+function init(){const r=document.getElementById("modelsRow");MODELS.forEach(m=>{const b=document.createElement("button");b.className="model-btn"+(m.id===selectedModel?" active":"");b.innerHTML=`<span>${m.label}</span><span class="model-tag">${m.tag}</span>`;b.onclick=()=>selectModel(m.id);b.dataset.id=m.id;r.appendChild(b)});const e=document.getElementById("examples");EXAMPLES.forEach(p=>{const pill=document.createElement("div");pill.className="example-pill";pill.textContent=p;pill.onclick=()=>{document.getElementById("chatInput").value=p;document.getElementById("chatInput").focus();updateSendBtn()};e.appendChild(pill)});updateCodeSnippet()}
+function selectModel(id){selectedModel=id;document.querySelectorAll(".model-btn").forEach(b=>b.classList.toggle("active",b.dataset.id===id));updateCodeSnippet()}
+function updateSendBtn(){document.getElementById("sendBtn").disabled=!document.getElementById("chatInput").value.trim()||loading}
+function handleKey(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}}
+function addMessage(role,content,isError){const box=document.getElementById("chatBox");document.getElementById("emptyState").style.display="none";const div=document.createElement("div");div.className=`msg ${role}${isError?" error":""}`;div.innerHTML=`<div class="msg-avatar">${role==="user"?"\u2192":"\uD83D\uDCA7"}</div><div class="msg-bubble">${escapeHtml(content)}</div>`;box.appendChild(div);box.scrollTop=box.scrollHeight;document.getElementById("clearBtn").style.display=""}
+function showLoading(){const box=document.getElementById("chatBox");const div=document.createElement("div");div.className="msg assistant";div.id="loadingMsg";div.innerHTML=`<div class="msg-avatar" style="background:rgba(0,210,255,.06);border:1px solid rgba(0,210,255,.12)">\uD83D\uDCA7</div><div class="loading-bubble"><span class="loading-text">Thinking</span><span class="loading-cursor">\u258A</span></div>`;box.appendChild(div);box.scrollTop=box.scrollHeight}
+function hideLoading(){const el=document.getElementById("loadingMsg");if(el)el.remove()}
+function showStats(s){const bar=document.getElementById("statsBar");const items=[{label:"Model",value:s.model,color:"var(--text)"},{label:"Latency",value:s.latencyMs+"ms",color:s.latencyMs<2000?"var(--green)":"var(--orange)"},{label:"Tokens",value:String(s.totalTokens),color:"var(--muted)"}];if(s.verified)items.push({label:"Verified",value:"\u2713",color:"var(--green)"});if(s.source)items.push({label:"Source",value:s.source,color:"var(--cyan)"});bar.innerHTML=items.map(i=>`<div><span class="stat-label">${i.label} </span><span class="stat-value" style="color:${i.color}">${i.value}</span></div>`).join("");bar.classList.add("show")}
+async function sendMessage(){const input=document.getElementById("chatInput");const text=input.value.trim();if(!text||loading)return;addMessage("user",text,false);messages.push({role:"user",content:text});input.value="";loading=true;updateSendBtn();const apiKey=document.getElementById("apiKeyInput").value.trim();if(!apiKey){const exact=DEMO_RESPONSES[text];if(exact||!hasUsedDemo){showLoading();await new Promise(r=>setTimeout(r,600+Math.random()*800));hideLoading();const content=exact||DEMO_RESPONSES[Object.keys(DEMO_RESPONSES)[0]];addMessage("assistant",content,false);messages.push({role:"assistant",content});showStats({model:selectedModel.split("/").pop(),latencyMs:Math.floor(600+Math.random()*900),totalTokens:Math.floor(80+Math.random()*120),source:"demo"});hasUsedDemo=true;document.getElementById("demoBanner").classList.add("show");loading=false;updateSendBtn();return}hideLoading();addMessage("assistant","Connect a Bittensor provider above for live inference. The demo is limited to sample queries.",true);showProviderSetup();loading=false;updateSendBtn();return}showLoading();const startTime=Date.now();try{const res=await fetch(CHUTES_URL,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${apiKey}`},body:JSON.stringify({model:selectedModel,messages,max_tokens:1024,temperature:0.7})});const data=await res.json();const latencyMs=Date.now()-startTime;if(data.error)throw new Error(data.error.message||JSON.stringify(data.error));const content=data.choices?.[0]?.message?.content||"No response";const usage=data.usage||{};hideLoading();addMessage("assistant",content,false);messages.push({role:"assistant",content});document.getElementById("demoBanner").classList.remove("show");showStats({model:(data.model||selectedModel).split("/").pop(),latencyMs,totalTokens:usage.total_tokens||0,verified:!!data.chutes_verification,source:"Bittensor"})}catch(err){hideLoading();addMessage("assistant",`Error: ${err.message}`,true)}finally{loading=false;updateSendBtn()}}
+function clearChat(){messages=[];hasUsedDemo=false;const box=document.getElementById("chatBox");box.innerHTML=`<div class="empty-state" id="emptyState"><div class="empty-title">Try it \u2014 ask anything</div><div class="examples" id="examples"></div></div>`;document.getElementById("statsBar").classList.remove("show");document.getElementById("clearBtn").style.display="none";document.getElementById("demoBanner").classList.remove("show");const ex=document.getElementById("examples");EXAMPLES.forEach(p=>{const pill=document.createElement("div");pill.className="example-pill";pill.textContent=p;pill.onclick=()=>{document.getElementById("chatInput").value=p;document.getElementById("chatInput").focus();updateSendBtn()};ex.appendChild(pill)})}
+function showProviderSetup(){document.getElementById("providerSection").classList.add("show");document.getElementById("providerInputRow").classList.add("show")}
+function toggleProviderInput(){const r=document.getElementById("providerInputRow");const a=document.getElementById("providerArrow");const s=!r.classList.contains("show");r.classList.toggle("show",s);a.textContent=s?"\u25B2":"\u25BC"}
+function onKeyChange(){const k=document.getElementById("apiKeyInput").value.trim();const bar=document.getElementById("providerBar");const icon=document.getElementById("providerIcon");const status=document.getElementById("providerStatus");if(k){bar.className="provider-bar connected";icon.textContent="\uD83D\uDFE2";status.textContent="Provider connected \u2014 live inference";status.style.color="var(--cyan)";isLive=true;document.getElementById("demoBanner").classList.remove("show")}else{bar.className="provider-bar disconnected";icon.textContent="\u26A1";status.textContent="Connect a Bittensor provider";status.style.color="var(--orange)";isLive=false}}
+function toggleCode(){const b=document.getElementById("codeBlock");const a=document.getElementById("codeArrow");const s=!b.classList.contains("show");b.classList.toggle("show",s);a.textContent=s?"\u25B2 hide":"\u25BC show"}
+function updateCodeSnippet(){document.getElementById("codeSnippet").textContent=`import OpenAI from "openai";\n\n// Drop-in replacement \u2014 just change the base URL\nconst client = new OpenAI({\n  baseURL: "https://gateway.spraay.app/bittensor/v1",\n  apiKey: "not-needed", // x402 handles payment\n});\n\nconst response = await client.chat.completions.create({\n  model: "${selectedModel}",\n  messages: [{ role: "user", content: "Your prompt here" }],\n});\n\nconsole.log(response.choices[0].message.content);`}
+function copyCode(){navigator.clipboard?.writeText(document.getElementById("codeSnippet").textContent).then(()=>{const b=document.querySelector(".copy-btn");b.textContent="Copied!";setTimeout(()=>b.textContent="Copy",1500)})}
+function escapeHtml(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+init();
+</script>
+</body>
+</html>
