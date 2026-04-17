@@ -209,7 +209,7 @@ Or drag &amp; drop a CSV file here."></textarea>
     </div>
 
     <button class="send-btn disabled" id="sendBtn" disabled>Review & Send Batch</button>
-    <p class="fee-hint">1% batch fee applied at confirmation</p>
+    <p class="fee-hint">0.3% batch fee applied at confirmation</p>
     <div class="status-msg" id="statusMsg" style="display:none"></div>
   </main>
 
@@ -229,7 +229,7 @@ Or drag &amp; drop a CSV file here."></textarea>
       </div>
       <div class="fee-breakdown">
         <div class="fee-row"><span class="fee-label">Subtotal</span><span class="fee-val" id="feeSubtotal"></span></div>
-        <div class="fee-row"><span class="fee-label">Fee (1%)</span><span class="fee-val" id="feeAmount"></span></div>
+        <div class="fee-row"><span class="fee-label">Fee (0.3%)</span><span class="fee-val" id="feeAmount"></span></div>
         <div class="fee-divider"></div>
         <div class="fee-row"><span class="fee-total-label">Total charged</span><span class="fee-total-val" id="feeTotal"></span></div>
       </div>
@@ -252,18 +252,6 @@ Or drag &amp; drop a CSV file here."></textarea>
     </div>
   </div>
 
-  <!-- Inference CTA — shown only after successful batch send -->
-  <div id="inferenceCta" style="display:none;max-width:560px;width:100%;margin:20px auto 0;animation:fadeInUp 0.5s ease-out">
-    <a href="/bittensor" style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-radius:14px;background:linear-gradient(135deg,rgba(0,210,255,0.08),rgba(108,92,231,0.08));border:1px solid rgba(0,210,255,0.2);text-decoration:none;transition:all 0.25s" onmouseover="this.style.borderColor='rgba(0,210,255,0.5)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='rgba(0,210,255,0.2)';this.style.transform='none'">
-      <span style="font-size:24px">💧</span>
-      <span style="flex:1">
-        <span style="display:block;font-size:14px;font-weight:600;color:#fff;font-family:'Outfit',sans-serif;margin-bottom:2px">Try Spraay Inference</span>
-        <span style="display:block;font-size:12px;color:#888;font-family:'Outfit',sans-serif">Use Bittensor like OpenAI — 43+ models, one API</span>
-      </span>
-      <span style="font-size:14px;color:rgba(0,210,255,0.6)">→</span>
-    </a>
-  </div>
-
   <footer><span>Powered by <a href="https://spraay.app" target="_blank" rel="noopener">Spraay Protocol</a></span></footer>
 
 <script src="/js/bundle-polkadot-util.js"></script>
@@ -276,13 +264,13 @@ Or drag &amp; drop a CSV file here."></textarea>
 <script>
 // ═══════════════════════════════════════════
 // TAO BATCH PAYOUTS — FULLY FUNCTIONAL
-// utility.batchAll → transferKeepAlive × N + 1% fee
+// utility.batchAll → transferKeepAlive × N + 0.3% fee
 // ═══════════════════════════════════════════
 
 const RPC_WS = 'wss://entrypoint-finney.opentensor.ai:443';
 const EXPLORER = 'https://x.taostats.io/extrinsic/';
 const FEE_COLLECTOR = '5CZjqeHFjmj39KuXanRApouyKFXokjazeor6h3bPoCzuzmJC';
-const FEE_BPS = 100;
+const FEE_BPS = 30;
 const TAO_DECIMALS = 9;
 const MAX_RECIPIENTS = 199;
 
@@ -524,7 +512,7 @@ async function executeSpray() {
       totalRao = totalRao.add(rao);
     }
 
-    // 1% fee
+    // 0.3% fee
     const feeRao = totalRao.mul(new BN(FEE_BPS)).div(new BN(10000));
     if (feeRao.gt(new BN(0))) calls.push(chainApi.tx.balances.transferKeepAlive(FEE_COLLECTOR, feeRao));
 
@@ -546,7 +534,6 @@ async function executeSpray() {
           } else {
             sent = true;
             showStatus(`✅ Sent TAO to ${valid.length} recipients! <a href="${EXPLORER}${txHash.toHex()}" target="_blank">View on TaoStats →</a>`, 'success');
-            showInferenceCta();
           }
           resolve();
         } else if (status.isDropped || status.isInvalid || status.isUsurped) {
@@ -562,12 +549,6 @@ async function executeSpray() {
     else if (msg.length > 250) msg = msg.slice(0, 250) + '...';
     showStatus(msg, 'error');
   } finally { sending = false; render(); }
-}
-
-function showInferenceCta() {
-  setTimeout(() => {
-    document.getElementById('inferenceCta').style.display = 'block';
-  }, 1500); // slight delay after success so it doesn't compete with the tx confirmation
 }
 
 function showStatus(msg, type) { statusMsg.innerHTML = msg; statusMsg.className = 'status-msg ' + type; statusMsg.style.display = 'block'; }
