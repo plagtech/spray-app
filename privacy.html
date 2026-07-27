@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Spraay App</title>
+<meta name="description" content="Privacy policy for the Spraay crypto address book & payroll app. Contacts stay on your device. Non-custodial. No accounts, no tracking.">
+<link rel="canonical" href="https://spraay.app/privacy">
+<style>
+  :root {
+    --blue: #0090e0;
+    --blue-deep: #005fa3;
+    --blue-bright: #00aaff;
+    --bg: #f0f7ff;
+    --bg-card: #ffffff;
+    --text: #0d1f2d;
+    --text-dim: #4a6070;
+    --text-muted: #8aa5b8;
+    --border: rgba(0, 144, 224, 0.2);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+  }
+  .top {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .top-inner {
+    max-width: 760px; margin: 0 auto; padding: 1rem 1.25rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .logo { font-weight: 800; letter-spacing: 0.06em; color: var(--blue-deep); text-decoration: none; font-size: 1.05rem; }
+  .top a.back { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; }
+  .top a.back:hover { color: var(--blue); }
+  main { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+  h1 { font-size: 1.7rem; line-height: 1.25; margin-bottom: 0.4rem; }
+  .date { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.6rem; }
+  .lede { color: var(--text-dim); margin-bottom: 1.8rem; }
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.1rem 1.25rem; margin-bottom: 2rem;
+  }
+  .card ul { margin: 0; padding-left: 1.1rem; }
+  .card li { margin: 0.35rem 0; }
+  h2 { font-size: 1.12rem; margin: 1.9rem 0 0.55rem; color: var(--blue-deep); }
+  p { margin-bottom: 0.85rem; }
+  ol, main > ul { padding-left: 1.25rem; margin-bottom: 0.85rem; }
+  li { margin: 0.3rem 0; }
+  a { color: var(--blue); }
+  .fine {
+    margin-top: 2.5rem; padding-top: 1.2rem; border-top: 1px solid var(--border);
+    color: var(--text-muted); font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="top-inner">
+    <a class="logo" href="/">SPRAAY</a>
+    <a class="back" href="/">← spraay.app</a>
+  </div>
+</div>
+<main>
+  <h1>Privacy Policy — Spraay: Crypto Address Book &amp; Payroll</h1>
+  <div class="date">Effective date: July 27, 2026</div>
+
+  <p class="lede">Spraay ("the app") is a non-custodial tool for saving wallet addresses and preparing group payments that you approve and sign in your own wallet. This policy explains what information the app handles and — mostly — what it doesn't.</p>
+
+  <div class="card">
+    <strong>The short version</strong>
+    <ul>
+      <li>Your contacts (names, wallet addresses, labels) are stored <strong>only on your device</strong>. We never see them.</li>
+      <li>The app has <strong>no accounts, no sign-up, and no server of ours that stores your data</strong>.</li>
+      <li>We <strong>never hold, receive, or transmit your funds</strong>. Transactions are signed in your own wallet app.</li>
+      <li>We don't sell data, show ads, or use advertising trackers.</li>
+    </ul>
+  </div>
+
+  <h2>What the app stores on your device</h2>
+  <ul>
+    <li><strong>Contacts you add</strong>: names, wallet addresses, and labels you assign. Stored in a local database on your phone. Deleting the app deletes them. You can export them yourself from Settings.</li>
+    <li><strong>Transaction history</strong>: records of sends you complete (date, recipients, amounts, and the public transaction hash). Also stored only on your device.</li>
+    <li><strong>App settings</strong>: your preferences.</li>
+  </ul>
+  <p>None of this is uploaded to us. We have no copy.</p>
+
+  <h2>What leaves your device, and why</h2>
+  <p>To function, the app makes network requests to:</p>
+  <ol>
+    <li><strong>The Base blockchain (public RPC nodes)</strong> — to read balances, fees, and contract state, and so your wallet can broadcast transactions you sign. Blockchain transactions are public by design: recipient addresses, amounts, and your sending address become part of the permanent public record on Base, viewable by anyone (e.g., on basescan.org). This is how blockchains work and is not controlled by us.</li>
+    <li><strong>The Spraay gateway (gateway.spraay.app)</strong> — free utility endpoints used to validate batch payments before you send (for example, checking address formats and batch structure). These requests contain the addresses and amounts in the batch you're preparing, are used only to answer the request, and are not used to build profiles.</li>
+    <li><strong>WalletConnect / Reown</strong> — the open protocol that connects the app to your wallet (such as MetaMask or Coinbase Wallet). Connection messages are end-to-end encrypted between the app and your wallet; Reown's infrastructure relays them. See Reown's privacy policy for their handling.</li>
+    <li><strong>Google Fonts</strong> — to load the app's typefaces.</li>
+  </ol>
+  <p>The app contains no advertising SDKs and no third-party analytics that collect your contacts or addresses.</p>
+
+  <h2>Your wallet and your funds</h2>
+  <p>Spraay never has access to your private keys, seed phrase, or funds. Every transaction is prepared by the app but approved and signed inside your own wallet application. We cannot access, hold, freeze, recover, or reverse your funds or transactions. Cryptocurrency transactions are irreversible — always verify recipient addresses before signing.</p>
+
+  <h2>Children</h2>
+  <p>Spraay is a financial tool intended for users aged 18 and over.</p>
+
+  <h2>Data requests and deletion</h2>
+  <p>Because your data lives on your device and not on our servers, deletion is in your hands: remove contacts or history in the app, or uninstall the app to remove everything. We have nothing to delete on our end and nothing to hand over.</p>
+
+  <h2>Changes to this policy</h2>
+  <p>If the app's data practices change (for example, if optional cloud backup is ever added), this policy will be updated and the effective date revised before those changes take effect.</p>
+
+  <h2>Contact</h2>
+  <p>Questions: <a href="mailto:support@spraay.app">support@spraay.app</a></p>
+
+  <div class="fine">Spraay is not affiliated with Circle or Coinbase. USDC is a trademark of Circle Internet Financial.</div>
+</main>
+</body>
+</html>
