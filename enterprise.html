@@ -765,7 +765,7 @@
         document.body.style.overflow = '';
     }
 
-    // Simple form submission handler
+    // Form submission via Formspree
     document.getElementById('contactForm').addEventListener('submit', function(e) {
         e.preventDefault();
         var form = this;
@@ -774,29 +774,24 @@
         btn.textContent = 'Sending...';
         btn.disabled = true;
 
-        // Mailto fallback — opens email client with form data
-        var name = data.get('name') || '';
-        var company = data.get('company') || '';
-        var email = data.get('email') || '';
-        var product = data.get('product') || '';
-        var message = data.get('message') || '';
-
-        var subject = encodeURIComponent('Spraay Enterprise Inquiry' + (company ? ' - ' + company : ''));
-        var body = encodeURIComponent(
-            'Name: ' + name + '\n' +
-            'Company: ' + company + '\n' +
-            'Email: ' + email + '\n' +
-            'Product: ' + product + '\n\n' +
-            'Message:\n' + message
-        );
-
-        window.location.href = 'mailto:enterprise@spraay.app?subject=' + subject + '&body=' + body;
-
-        setTimeout(function() {
-            btn.textContent = 'Sent! We\'ll be in touch.';
-            btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
-            btn.style.borderColor = '#22c55e';
-        }, 500);
+        fetch(form.action, {
+            method: 'POST',
+            body: data,
+            headers: { 'Accept': 'application/json' }
+        }).then(function(response) {
+            if (response.ok) {
+                btn.textContent = 'Sent! We\'ll be in touch.';
+                btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                btn.style.borderColor = '#22c55e';
+                form.reset();
+            } else {
+                btn.textContent = 'Error — please try again';
+                btn.disabled = false;
+            }
+        }).catch(function() {
+            btn.textContent = 'Error — please try again';
+            btn.disabled = false;
+        });
     });
     </script>
 
