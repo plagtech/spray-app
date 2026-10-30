@@ -9,7 +9,7 @@ async function main() {
 
   // Configuration
   const FEE_RECIPIENT = process.env.FEE_RECIPIENT || "YOUR_ADDRESS_HERE";
-  const FEE_BPS = 30; // 0.3% fee (30 basis points)
+  const FEE_BPS = process.env.FEE_BPS !== undefined ? Number(process.env.FEE_BPS) : 30; // basis points (default 30 = 0.3%)
 
   console.log(`Fee Recipient: ${FEE_RECIPIENT}`);
   console.log(`Fee: ${FEE_BPS / 100}%`);
