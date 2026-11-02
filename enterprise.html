@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spraay Enterprise – Batch Payment Infrastructure for Business</title>
-    <meta name="description" content="Enterprise-grade batch crypto payment APIs and gateway infrastructure. Deploy multi-chain payment operations at scale with Spraay.">
+    <meta name="description" content="Enterprise USDC batch payment API. Pay hundreds of recipients in one on-chain transaction, with gateway settlement on Base, Solana, and peaq.">
     <meta property="og:title" content="Spraay Enterprise – Batch Payment Infrastructure for Business">
-    <meta property="og:description" content="Enterprise-grade batch crypto payment APIs and gateway infrastructure. Multi-chain. Usage-based. Built for scale.">
+    <meta property="og:description" content="Enterprise USDC batch payment API. Hundreds of recipients per transaction. Gateway settlement on Base, Solana, and peaq.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://spraay.app/enterprise">
     <meta property="og:image" content="https://spraay.app/spraay-logo-1000x1000.png">
@@ -336,6 +336,54 @@
             font-weight: 600; font-size: 0.82rem; color: var(--text);
         }
 
+        .chains-note {
+            max-width: 720px; margin: 1.2rem auto 0; text-align: center;
+            font-size: 0.85rem; color: var(--text-dim); line-height: 1.55;
+        }
+
+        /* ── AWS Marketplace CTA ─────────────────── */
+        .marketplace-cta { text-align: center; margin-top: 2rem; }
+        .btn-marketplace {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.8rem 1.6rem; border-radius: 10px;
+            background: #232f3e; color: #fff; border: 1px solid #ff9900;
+            font-weight: 700; font-size: 0.95rem; text-decoration: none;
+            transition: all 0.25s ease;
+        }
+        .btn-marketplace:hover { background: #2f3d50; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,153,0,0.25); }
+        .btn-marketplace .aws-mark { color: #ff9900; }
+
+        /* ── Integrations ───────────────────────── */
+        .integrations-section { padding: 5rem 0; border-bottom: 1px solid var(--border); background: #e8f4fd; }
+        .integrations-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.2rem;
+        }
+        .integration-card {
+            display: block; text-decoration: none; color: var(--text);
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.4rem 1.5rem;
+            transition: all 0.25s ease;
+            box-shadow: 0 1px 4px rgba(0,144,224,0.06);
+        }
+        .integration-card:hover {
+            border-color: var(--border-bright); background: var(--bg-card-hover);
+            transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,170,255,0.1);
+        }
+        .integration-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+        .integration-card h3 { font-size: 1.1rem; font-weight: 700; }
+        .merged-tag {
+            font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em;
+            font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 6px;
+            background: rgba(130,80,223,0.12); color: #8250df;
+        }
+        .integration-card p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 0.6rem; }
+        .integration-card .pr-ref { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--blue); }
+        .integrations-subtext {
+            text-align: center; margin-top: 2rem; font-size: 0.9rem;
+            color: var(--text-dim); font-style: italic;
+        }
+
         /* ── Why Enterprise ─────────────────────── */
         .why-section { padding: 5rem 0; }
         .why-grid {
@@ -464,7 +512,7 @@
             <a href="/enterprise" class="active"><span class="mp-icon">&#127970;</span> Enterprise</a>
             <a href="https://docs.spraay.app" target="_blank"><span class="mp-icon">&#128214;</span> API Docs</a>
             <a href="#batch-api"><span class="mp-icon">&#9889;</span> Batch API</a>
-            <a href="#gateway"><span class="mp-icon">&#128279;</span> x402 Gateway</a>
+            <a href="#integrations"><span class="mp-icon">&#129513;</span> Integrations</a>
             <a href="#services"><span class="mp-icon">&#128736;</span> Integration</a>
             <a href="#contact"><span class="mp-icon">&#128172;</span> Talk to Sales</a>
         </div>
@@ -478,7 +526,7 @@
                 Enterprise Infrastructure
             </div>
             <h1>Crypto Payment Infrastructure<br><span>Built for Business</span></h1>
-            <p>Multi-chain batch payments, pay-per-call gateway APIs, and dedicated integration support. Production-ready infrastructure for teams that move money at scale.</p>
+            <p>USDC batch payouts to hundreds of recipients in a single on-chain transaction, plus hands-on integration support. Production-ready infrastructure for teams that move money at scale.</p>
             <div class="hero-buttons">
                 <a href="#contact" class="btn btn-primary">Talk to Sales &rarr;</a>
                 <a href="#batch-api" class="btn btn-outline">View Products</a>
@@ -489,16 +537,16 @@
                     <div class="stat-label">Supported Chains</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value">200+</div>
-                    <div class="stat-label">Recipients / Tx</div>
+                    <div class="stat-value">200</div>
+                    <div class="stat-label">Recipients / Batch</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value">~80%</div>
+                    <div class="stat-value">Up to 90%</div>
                     <div class="stat-label">Gas Savings</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value">150+</div>
-                    <div class="stat-label">API Endpoints</div>
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Settlement Chains</div>
                 </div>
             </div>
         </div>
@@ -527,6 +575,7 @@
                 <span class="chain-pill">&#127922; Robinhood Chain</span>
                 <span class="chain-pill">&#9881; peaq</span>
             </div>
+            <p class="chains-note">Gateway-executed settlement on Base, Solana, and peaq. Batch smart contracts deployed and verified on 12+ EVM chains. Broader platform support across 17 chains for validation, quoting, and payment rails.</p>
         </div>
     </section>
 
@@ -539,7 +588,7 @@
             <div class="product-header">
                 <div class="product-tag product-tag-api">Batch Payments API</div>
                 <h2>Multi-Chain Batch Payments at Scale</h2>
-                <p>Send to hundreds of recipients in a single transaction. Usage-based pricing that scales with your volume. Deploy across 17 chains with one integration.</p>
+                <p>Execute USDC batch payouts to hundreds of recipients in a single on-chain transaction. Gateway settlement on Base, Solana, and peaq, with batch contracts deployed across 12+ chains.</p>
             </div>
 
             <div class="pricing-wrap">
@@ -550,13 +599,12 @@
                         <div class="pricing-card-price">$1,499 <span class="period">/ month</span></div>
                         <div class="pricing-card-desc">For organizations running production payment workflows.</div>
                         <ul class="pricing-features">
-                            <li>1,000 batch transactions / month</li>
-                            <li>Up to 100 recipients per batch</li>
-                            <li>All 17 supported chains</li>
-                            <li>Priority API access</li>
-                            <li>Webhook notifications</li>
-                            <li>Dedicated support channel</li>
-                            <li>Custom token allowlisting</li>
+                            <li>Up to 500 batch transactions / month</li>
+                            <li>Up to 200 recipients per batch</li>
+                            <li>Gateway settlement on Base, Solana, and peaq</li>
+                            <li>API access and dashboard</li>
+                            <li>Email support</li>
+                            <li>0.3% on-chain protocol fee</li>
                         </ul>
                         <a href="#contact" class="pricing-btn pricing-btn-primary">Talk to Sales</a>
                     </div>
@@ -569,69 +617,23 @@
                         <ul class="pricing-features">
                             <li>Unlimited batch transactions</li>
                             <li>Up to 200 recipients per batch</li>
-                            <li>All 17 supported chains</li>
-                            <li>Dedicated infrastructure</li>
-                            <li>Custom SLA &amp; uptime guarantee</li>
-                            <li>Account manager</li>
-                            <li>SOC 2 compliance support</li>
+                            <li>Gateway settlement on Base, Solana, and peaq</li>
+                            <li>Dedicated support with SLA guarantees</li>
+                            <li>Custom integrations</li>
+                            <li>Priority onboarding with account manager</li>
                             <li>Custom contract terms</li>
+                            <li>0.3% on-chain protocol fee</li>
                         </ul>
                         <a href="#contact" class="pricing-btn pricing-btn-outline">Contact Sales</a>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-
-    <!-- ═══════════════════════════════════════════
-         PRODUCT 2: x402 GATEWAY
-         ═══════════════════════════════════════════ -->
-    <section class="product-section" id="gateway" style="background: #e8f4fd;">
-        <div class="container">
-            <div class="product-header">
-                <div class="product-tag product-tag-gateway">x402 Payment Gateway</div>
-                <h2>Pay-Per-Call Crypto Payment Gateway</h2>
-                <p>Production gateway at gateway.spraay.app. 150+ endpoints with x402 protocol support, API key access, and usage-based billing for AI agents and applications.</p>
-            </div>
-
-            <div class="pricing-wrap">
-                <div class="pricing-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 720px;">
-                    <!-- Professional -->
-                    <div class="pricing-card featured">
-                        <div class="pricing-card-name">Professional</div>
-                        <div class="pricing-card-price">$999 <span class="period">/ month</span></div>
-                        <div class="pricing-card-desc">For teams running production agent fleets and payment flows.</div>
-                        <ul class="pricing-features">
-                            <li>15,000 API requests / month</li>
-                            <li>All 150+ endpoints</li>
-                            <li>x402 &amp; API key auth</li>
-                            <li>Priority rate limits</li>
-                            <li>Webhook integrations</li>
-                            <li>Key rotation &amp; management</li>
-                            <li>Dedicated support</li>
-                        </ul>
-                        <a href="#contact" class="pricing-btn pricing-btn-primary">Talk to Sales</a>
-                    </div>
-
-                    <!-- Enterprise -->
-                    <div class="pricing-card">
-                        <div class="pricing-card-name">Enterprise</div>
-                        <div class="pricing-card-price">$2,999 <span class="period">/ month</span></div>
-                        <div class="pricing-card-desc">Unlimited gateway access with custom infrastructure.</div>
-                        <ul class="pricing-features">
-                            <li>Unlimited API requests</li>
-                            <li>All 150+ endpoints</li>
-                            <li>Dedicated gateway instance</li>
-                            <li>Custom rate limits</li>
-                            <li>SLA &amp; uptime guarantee</li>
-                            <li>Account manager</li>
-                            <li>Private endpoint deployment</li>
-                            <li>Custom contract terms</li>
-                        </ul>
-                        <a href="#contact" class="pricing-btn pricing-btn-outline">Contact Sales</a>
-                    </div>
-                </div>
+            <div class="marketplace-cta">
+                <!-- TODO: replace href="#" with the AWS Marketplace listing URL once approved -->
+                <a href="#" class="btn-marketplace" id="aws-marketplace-link" target="_blank" rel="noopener">
+                    <span class="aws-mark">&#9650;</span> Available on AWS Marketplace &rarr;
+                </a>
             </div>
         </div>
     </section>
@@ -644,8 +646,50 @@
         <div class="container" style="text-align: center; max-width: 680px;">
             <div class="product-tag product-tag-services" style="margin-bottom: 1rem;">Integration Services</div>
             <h2 style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.6rem;">Need Hands-On Integration?</h2>
-            <p style="color: var(--text-dim); font-size: 1.05rem; margin-bottom: 1.5rem;">Custom engineering engagements to deploy Spraay into your payment stack, agent framework, or treasury operations. Pilot engagements start at $5,000.</p>
+            <p style="color: var(--text-dim); font-size: 1.05rem; margin-bottom: 1.5rem;">Custom engineering engagements to integrate Spraay batch payments into your existing infrastructure. Whether you're building agent payment flows, vendor payout systems, or payroll automation, our team works directly with you.<br><br>Pilot engagements starting at $5,000.</p>
             <a href="#contact" class="btn btn-primary">Scope a Project &rarr;</a>
+        </div>
+    </section>
+
+
+    <!-- Integrations & Ecosystem -->
+    <section class="integrations-section" id="integrations">
+        <div class="container">
+            <h2 style="font-size:2rem;font-weight:700;text-align:center;margin-bottom:0.6rem;">Integrated with the frameworks you already use</h2>
+            <p style="color:var(--text-dim);text-align:center;margin-bottom:3rem;font-size:1.05rem;">Merged pull requests in official repositories. Public and verifiable.</p>
+            <div class="integrations-grid">
+                <a href="https://github.com/NVIDIA/NeMo-Agent-Toolkit-Examples/pull/27" class="integration-card" target="_blank" rel="noopener">
+                    <div class="integration-card-top"><h3>NVIDIA</h3><span class="merged-tag">Merged</span></div>
+                    <p>Payment tools merged into NeMo Agent Toolkit</p>
+                    <span class="pr-ref">NeMo-Agent-Toolkit-Examples #27 &#8599;</span>
+                </a>
+                <a href="https://github.com/google/adk-python-community/pull/95" class="integration-card" target="_blank" rel="noopener">
+                    <div class="integration-card-top"><h3>Google ADK</h3><span class="merged-tag">Merged</span></div>
+                    <p>Batch payment tools in the official ADK community package</p>
+                    <span class="pr-ref">adk-python-community #95 &#8599;</span>
+                </a>
+                <a href="https://github.com/strands-agents/docs/pull/825" class="integration-card" target="_blank" rel="noopener">
+                    <div class="integration-card-top"><h3>AWS Strands</h3><span class="merged-tag">Merged</span></div>
+                    <p>Community integration on the official Strands Agents documentation site</p>
+                    <span class="pr-ref">strands-agents/docs #825 &#8599;</span>
+                </a>
+                <a href="https://github.com/oracle-devrel/oracle-ai-developer-hub/pull/131" class="integration-card" target="_blank" rel="noopener">
+                    <div class="integration-card-top"><h3>Oracle</h3><span class="merged-tag">Merged</span></div>
+                    <p>First partner notebook in Oracle's AI Developer Hub</p>
+                    <span class="pr-ref">oracle-ai-developer-hub #131 &#8599;</span>
+                </a>
+                <a href="https://github.com/Uniswap/hooklist/pull/10617" class="integration-card" target="_blank" rel="noopener">
+                    <div class="integration-card-top"><h3>Uniswap</h3><span class="merged-tag">Merged</span></div>
+                    <p>BatchDistributeHook on the official Uniswap v4 hook list</p>
+                    <span class="pr-ref">hooklist #10617 &#8599;</span>
+                </a>
+                <a href="https://github.com/nodestark/mdb-esp32-cashless/pull/78" class="integration-card" target="_blank" rel="noopener">
+                    <div class="integration-card-top"><h3>VMflow</h3><span class="merged-tag">Merged</span></div>
+                    <p>x402 payment rail for autonomous vending machines</p>
+                    <span class="pr-ref">mdb-esp32-cashless #78 &#8599;</span>
+                </a>
+            </div>
+            <p class="integrations-subtext">Every integration above is a merged contribution to the project's official repository &mdash; not a fork, not a wrapper, not a claim of compatibility.</p>
         </div>
     </section>
 
@@ -659,32 +703,27 @@
                 <div class="why-card">
                     <div class="why-icon">&#9889;</div>
                     <h3>Production-Proven</h3>
-                    <p>Live smart contracts verified on-chain across 17 networks. Not a testnet demo.</p>
+                    <p>Live smart contracts deployed and verified on 12+ chains. Gateway-executed settlement on Base, Solana, and peaq.</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon">&#129302;</div>
                     <h3>AI Agent Native</h3>
-                    <p>Integrated with Google ADK, AWS Strands, and NVIDIA NeMo. Any agent framework can batch-send via Spraay.</p>
+                    <p>Merged integrations with NVIDIA, Google ADK, AWS Strands, Oracle, and Uniswap. Purpose-built for AI agent settlement and autonomous payments.</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon">&#128176;</div>
                     <h3>Usage-Based Pricing</h3>
-                    <p>Pay for what you use. 0.3% protocol fee on-chain. No hidden charges or per-seat licensing.</p>
+                    <p>0.3% on-chain protocol fee. No hidden charges, no per-seat licensing.</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon">&#128274;</div>
                     <h3>Enterprise Security</h3>
-                    <p>OpenZeppelin ReentrancyGuard, Pausable contracts, verified source on every chain explorer.</p>
-                </div>
-                <div class="why-card">
-                    <div class="why-icon">&#128279;</div>
-                    <h3>x402 Protocol</h3>
-                    <p>Standards-based pay-per-call gateway. No vendor lock-in. Works with any x402-compatible agent or client.</p>
+                    <p>OpenZeppelin ReentrancyGuard and Pausable contracts. Verified source code on chain explorers.</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon">&#128200;</div>
                     <h3>Scale Ready</h3>
-                    <p>200 recipients per transaction. ~80% gas savings vs individual sends. Built for high-volume operations.</p>
+                    <p>200 recipients per batch. Up to 90% gas savings vs individual sends. Built for high-volume operations.</p>
                 </div>
             </div>
         </div>
@@ -717,7 +756,6 @@
                     <select class="form-select" name="product">
                         <option value="">Select a product</option>
                         <option value="batch-api">Batch Payments API</option>
-                        <option value="gateway">x402 Payment Gateway</option>
                         <option value="integration">Integration Services</option>
                         <option value="multiple">Multiple Products</option>
                     </select>
