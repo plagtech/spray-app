@@ -379,6 +379,9 @@
         }
         .integration-card p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 0.6rem; }
         .integration-card .pr-ref { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--blue); }
+        .pr-ref-list { display: flex; flex-direction: column; gap: 0.3rem; }
+        .pr-ref-list a.pr-ref { text-decoration: none; }
+        .pr-ref-list a.pr-ref:hover { text-decoration: underline; }
         .integrations-subtext {
             text-align: center; margin-top: 2rem; font-size: 0.9rem;
             color: var(--text-dim); font-style: italic;
@@ -679,11 +682,14 @@
                     <p>First partner notebook in Oracle's AI Developer Hub</p>
                     <span class="pr-ref">oracle-ai-developer-hub #131 &#8599;</span>
                 </a>
-                <a href="https://github.com/Uniswap/hooklist/pull/10617" class="integration-card" target="_blank" rel="noopener">
+                <div class="integration-card">
                     <div class="integration-card-top"><h3>Uniswap</h3><span class="merged-tag">Merged</span></div>
-                    <p>BatchDistributeHook on the official Uniswap v4 hook list</p>
-                    <span class="pr-ref">hooklist #10617 &#8599;</span>
-                </a>
+                    <p>Two hooks in the official Uniswap v4 hook registry</p>
+                    <div class="pr-ref-list">
+                        <a href="https://github.com/Uniswap/hooklist/pull/10675" class="pr-ref" target="_blank" rel="noopener">BatchDistributeHook &middot; hooklist #10675 &#8599;</a>
+                        <a href="https://github.com/Uniswap/hooklist/pull/10699" class="pr-ref" target="_blank" rel="noopener">SwapAndSprayHook &middot; hooklist #10699 &#8599;</a>
+                    </div>
+                </div>
                 <a href="https://github.com/nodestark/mdb-esp32-cashless/pull/78" class="integration-card" target="_blank" rel="noopener">
                     <div class="integration-card-top"><h3>VMflow</h3><span class="merged-tag">Merged</span></div>
                     <p>x402 payment rail for autonomous vending machines</p>
